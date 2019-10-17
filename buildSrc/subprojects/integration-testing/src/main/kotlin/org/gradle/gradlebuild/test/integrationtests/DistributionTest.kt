@@ -135,10 +135,10 @@ class GradleInstallationForTestEnvironmentProvider(project: Project) : CommandLi
     override fun asArguments() =
         mapOf(
             "integTest.gradleHomeDir" to absolutePathOf(gradleHomeDir),
-            // "integTest.samplesdir" to absolutePathOf(gradleSnippetsDir),
+            "integTest.samplesdir" to absolutePathOf(gradleSnippetsDir),
             "integTest.gradleUserHomeDir" to absolutePathOf(gradleUserHomeDir),
-            // "integTest.gradleGeneratedApiJarCacheDir" to absolutePathOf(gradleGeneratedApiJarCacheDir),
-            // "org.gradle.integtest.daemon.registry" to absolutePathOf(daemonRegistry),
+            "integTest.gradleGeneratedApiJarCacheDir" to absolutePathOf(gradleGeneratedApiJarCacheDir),
+            "org.gradle.integtest.daemon.registry" to absolutePathOf(daemonRegistry),
             "integTest.toolingApiShadedJarDir" to absolutePathOf(toolingApiShadedJarDir)
         ).asSystemPropertyJvmArguments()
 
