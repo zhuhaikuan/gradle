@@ -24,6 +24,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
@@ -67,6 +68,10 @@ abstract class DistributionTest : Test() {
     fun setNoRerun(value: Boolean) {
         rerun.set(!value)
     }
+
+    @get:InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
+    val sourceCodeForSampleTests = project.files("src/main")
 
     init {
         dependsOn(Callable { if (binaryDistributions.distributionsRequired) ":distributions:buildDists" else null })
