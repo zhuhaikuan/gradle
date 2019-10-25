@@ -227,8 +227,10 @@ allprojects {
 
 subprojects {
 
-    apply {
-        from("${project.rootDir}/gradle/useTestDistribution.gradle")
+    if (project.hasProperty("distributed")) {
+        apply {
+            from("${project.rootDir}/gradle/useTestDistribution.gradle")
+        }
     }
     version = rootProject.version
 
