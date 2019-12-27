@@ -15,13 +15,14 @@
  */
 package org.gradle.api.internal.artifacts.verification.signatures;
 
-import org.gradle.api.internal.artifacts.verification.verifier.SignatureVerificationFailure;
 import org.gradle.internal.concurrent.Stoppable;
+import org.gradle.security.internal.PublicKeyService;
 
 import java.io.File;
-import java.util.Optional;
 import java.util.Set;
 
 public interface SignatureVerificationService extends Stoppable {
-    Optional<SignatureVerificationFailure> verify(File origin, File signature, Set<String> trustedKeys);
+    void verify(File origin, File signature, Set<String> trustedKeys, Set<String> ignoredKeys, SignatureVerificationResultBuilder result);
+
+    PublicKeyService getPublicKeyService();
 }

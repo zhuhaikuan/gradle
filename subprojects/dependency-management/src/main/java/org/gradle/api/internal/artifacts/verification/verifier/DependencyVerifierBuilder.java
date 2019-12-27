@@ -17,6 +17,7 @@ package org.gradle.api.internal.artifacts.verification.verifier;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -27,21 +28,28 @@ import org.gradle.api.internal.artifacts.verification.model.ArtifactVerification
 import org.gradle.api.internal.artifacts.verification.model.Checksum;
 import org.gradle.api.internal.artifacts.verification.model.ChecksumKind;
 import org.gradle.api.internal.artifacts.verification.model.ComponentVerificationMetadata;
+import org.gradle.api.internal.artifacts.verification.model.IgnoredKey;
 import org.gradle.api.internal.artifacts.verification.model.ImmutableArtifactVerificationMetadata;
 import org.gradle.api.internal.artifacts.verification.model.ImmutableComponentVerificationMetadata;
 import org.gradle.internal.component.external.model.ModuleComponentArtifactIdentifier;
 
 import javax.annotation.Nullable;
 import java.net.URI;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DependencyVerifierBuilder {
-    private final Map<ModuleComponentIdentifier, ComponentVerificationsBuilder> byComponent = Maps.newLinkedHashMap();
+    private static final Comparator<ModuleComponentIdentifier> MODULE_COMPONENT_IDENTIFIER_COMPARATOR = Comparator.comparing(ModuleComponentIdentifier::getGroup)
+        .thenComparing(ModuleComponentIdentifier::getModule)
+        .thenComparing(ModuleComponentIdentifier::getVersion);
+    private final Map<ModuleComponentIdentifier, ComponentVerificationsBuilder> byComponent = Maps.newHashMap();
     private final List<DependencyVerificationConfiguration.TrustedArtifact> trustedArtifacts = Lists.newArrayList();
+    private final Set<DependencyVerificationConfiguration.TrustedKey> trustedKeys = Sets.newLinkedHashSet();
     private final List<URI> keyServers = Lists.newArrayList();
+    private final Set<IgnoredKey> ignoredKeys = Sets.newLinkedHashSet();
     private boolean isVerifyMetadata = true;
     private boolean isVerifySignatures = false;
 
@@ -55,6 +63,12 @@ public class DependencyVerifierBuilder {
         ModuleComponentIdentifier componentIdentifier = artifact.getComponentIdentifier();
         byComponent.computeIfAbsent(componentIdentifier, id -> new ComponentVerificationsBuilder(id))
             .addTrustedKey(artifact, key);
+    }
+
+    public void addIgnoredKey(ModuleComponentArtifactIdentifier artifact, IgnoredKey key) {
+        ModuleComponentIdentifier componentIdentifier = artifact.getComponentIdentifier();
+        byComponent.computeIfAbsent(componentIdentifier, id -> new ComponentVerificationsBuilder(id))
+            .addIgnoredKey(artifact, key);
     }
 
     public void setVerifyMetadata(boolean verifyMetadata) {
@@ -73,9 +87,22 @@ public class DependencyVerifierBuilder {
         isVerifySignatures = verifySignatures;
     }
 
+    public List<URI> getKeyServers() {
+        return keyServers;
+    }
+
     public void addTrustedArtifact(@Nullable String group, @Nullable String name, @Nullable String version, @Nullable String fileName, boolean regex) {
         validateUserInput(group, name, version, fileName);
         trustedArtifacts.add(new DependencyVerificationConfiguration.TrustedArtifact(group, name, version, fileName, regex));
+    }
+
+    public void addIgnoredKey(IgnoredKey keyId) {
+        ignoredKeys.add(keyId);
+    }
+
+    public void addTrustedKey(String keyId, @Nullable String group, @Nullable String name, @Nullable String version, @Nullable String fileName, boolean regex) {
+        validateUserInput(group, name, version, fileName);
+        trustedKeys.add(new DependencyVerificationConfiguration.TrustedKey(keyId, group, name, version, fileName, regex));
     }
 
     private void validateUserInput(@Nullable String group, @Nullable String name, @Nullable String version, @Nullable String fileName) {
@@ -87,10 +114,13 @@ public class DependencyVerifierBuilder {
 
     public DependencyVerifier build() {
         ImmutableMap.Builder<ComponentIdentifier, ComponentVerificationMetadata> builder = ImmutableMap.builderWithExpectedSize(byComponent.size());
-        for (Map.Entry<ModuleComponentIdentifier, ComponentVerificationsBuilder> entry : byComponent.entrySet()) {
-            builder.put(entry.getKey(), entry.getValue().build());
-        }
-        return new DependencyVerifier(builder.build(), new DependencyVerificationConfiguration(isVerifyMetadata, isVerifySignatures, trustedArtifacts, ImmutableList.copyOf(keyServers)));
+        byComponent.entrySet()
+            .stream()
+            .sorted(Map.Entry.comparingByKey(MODULE_COMPONENT_IDENTIFIER_COMPARATOR))
+            .forEachOrdered(entry -> {
+                builder.put(entry.getKey(), entry.getValue().build());
+            });
+        return new DependencyVerifier(builder.build(), new DependencyVerificationConfiguration(isVerifyMetadata, isVerifySignatures, trustedArtifacts, ImmutableList.copyOf(keyServers), ImmutableSet.copyOf(ignoredKeys), ImmutableList.copyOf(trustedKeys)));
     }
 
     public List<DependencyVerificationConfiguration.TrustedArtifact> getTrustedArtifacts() {
@@ -103,7 +133,7 @@ public class DependencyVerifierBuilder {
 
     private static class ComponentVerificationsBuilder {
         private final ModuleComponentIdentifier component;
-        private final Map<String, ArtifactVerificationBuilder> byArtifact = Maps.newLinkedHashMap();
+        private final Map<String, ArtifactVerificationBuilder> byArtifact = Maps.newHashMap();
 
         private ComponentVerificationsBuilder(ModuleComponentIdentifier component) {
             this.component = component;
@@ -117,8 +147,18 @@ public class DependencyVerifierBuilder {
             byArtifact.computeIfAbsent(artifact.getFileName(), id -> new ArtifactVerificationBuilder()).addTrustedKey(key);
         }
 
+        void addIgnoredKey(ModuleComponentArtifactIdentifier artifact, IgnoredKey key) {
+            byArtifact.computeIfAbsent(artifact.getFileName(), id -> new ArtifactVerificationBuilder()).addIgnoredKey(key);
+        }
+
         private static ArtifactVerificationMetadata toArtifactVerification(Map.Entry<String, ArtifactVerificationBuilder> entry) {
-            return new ImmutableArtifactVerificationMetadata(entry.getKey(), entry.getValue().buildChecksums(), entry.getValue().buildPgpKeys());
+            String key = entry.getKey();
+            ArtifactVerificationBuilder value = entry.getValue();
+            return new ImmutableArtifactVerificationMetadata(
+                key,
+                value.buildChecksums(),
+                value.buildTrustedPgpKeys(),
+                value.buildIgnoredPgpKeys());
         }
 
         ComponentVerificationMetadata build() {
@@ -126,6 +166,7 @@ public class DependencyVerifierBuilder {
                 byArtifact.entrySet()
                     .stream()
                     .map(ComponentVerificationsBuilder::toArtifactVerification)
+                    .sorted(Comparator.comparing(ArtifactVerificationMetadata::getArtifactName))
                     .collect(Collectors.toList())
             );
         }
@@ -134,6 +175,7 @@ public class DependencyVerifierBuilder {
     private static class ArtifactVerificationBuilder {
         private final Map<ChecksumKind, ChecksumBuilder> builder = Maps.newEnumMap(ChecksumKind.class);
         private final Set<String> pgpKeys = Sets.newLinkedHashSet();
+        private final Set<IgnoredKey> ignoredPgpKeys = Sets.newLinkedHashSet();
 
         void addChecksum(ChecksumKind kind, String value, @Nullable String origin) {
             ChecksumBuilder builder = this.builder.computeIfAbsent(kind, ChecksumBuilder::new);
@@ -147,6 +189,7 @@ public class DependencyVerifierBuilder {
             return builder.values()
                 .stream()
                 .map(ChecksumBuilder::build)
+                .sorted(Comparator.comparing(Checksum::getKind))
                 .collect(Collectors.toList());
         }
 
@@ -154,8 +197,16 @@ public class DependencyVerifierBuilder {
             pgpKeys.add(key);
         }
 
-        public Set<String> buildPgpKeys() {
+        public void addIgnoredKey(IgnoredKey key) {
+            ignoredPgpKeys.add(key);
+        }
+
+        public Set<String> buildTrustedPgpKeys() {
             return pgpKeys;
+        }
+
+        public Set<IgnoredKey> buildIgnoredPgpKeys() {
+            return ignoredPgpKeys;
         }
     }
 

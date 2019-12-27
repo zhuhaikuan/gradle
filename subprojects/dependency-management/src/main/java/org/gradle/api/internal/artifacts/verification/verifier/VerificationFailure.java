@@ -15,18 +15,20 @@
  */
 package org.gradle.api.internal.artifacts.verification.verifier;
 
-import java.util.Optional;
+import org.gradle.internal.logging.text.TreeFormatter;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+import java.io.File;
+
 public interface VerificationFailure {
-    VerificationFailure MISSING = new VerificationFailure() {
-    };
-    VerificationFailure DELETED = new VerificationFailure() {
-    };
-    Optional<VerificationFailure> OPT_MISSING = Optional.of(MISSING);
-    Optional<VerificationFailure> OPT_DELETED = Optional.of(DELETED);
 
-    default String getMessage() {
-        return null;
+    File getFilePath();
+
+    default boolean isFatal() {
+        return true;
     }
+
+    default void explainTo(TreeFormatter formatter) {
+
+    }
+
 }

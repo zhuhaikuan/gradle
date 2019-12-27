@@ -19,10 +19,11 @@ import org.gradle.StartParameter;
 import org.gradle.api.GradleException;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
 import org.gradle.api.artifacts.verification.DependencyVerificationMode;
+import org.gradle.api.internal.DocumentationRegistry;
 import org.gradle.api.internal.artifacts.configurations.dynamicversion.CachePolicy;
 import org.gradle.api.internal.artifacts.ivyservice.ivyresolve.verification.ChecksumAndSignatureVerificationOverride;
 import org.gradle.api.internal.artifacts.ivyservice.ivyresolve.verification.DependencyVerificationOverride;
-import org.gradle.api.internal.artifacts.ivyservice.ivyresolve.verification.WriteDependencyVerificationFile;
+import org.gradle.api.internal.artifacts.ivyservice.ivyresolve.verification.writer.WriteDependencyVerificationFile;
 import org.gradle.api.internal.artifacts.ivyservice.resolutionstrategy.ExternalResourceCachePolicy;
 import org.gradle.api.internal.artifacts.repositories.resolver.MetadataFetchingCost;
 import org.gradle.api.internal.artifacts.verification.signatures.SignatureVerificationServiceFactory;
@@ -77,21 +78,25 @@ public class StartParameterResolutionOverride {
         return original;
     }
 
-    public DependencyVerificationOverride dependencyVerificationOverride(BuildOperationExecutor buildOperationExecutor, ChecksumService checksumService, SignatureVerificationServiceFactory signatureVerificationServiceFactory) {
+    public DependencyVerificationOverride dependencyVerificationOverride(BuildOperationExecutor buildOperationExecutor,
+                                                                         ChecksumService checksumService,
+                                                                         SignatureVerificationServiceFactory signatureVerificationServiceFactory,
+                                                                         DocumentationRegistry documentationRegistry) {
         File currentDir = startParameter.getCurrentDir();
         List<String> checksums = startParameter.getWriteDependencyVerifications();
         if (!checksums.isEmpty()) {
             SingleMessageLogger.incubatingFeatureUsed("Dependency verification");
-            return new WriteDependencyVerificationFile(currentDir, buildOperationExecutor, checksums, checksumService, startParameter.isDryRun());
+            return new WriteDependencyVerificationFile(currentDir, buildOperationExecutor, checksums, checksumService, signatureVerificationServiceFactory, startParameter.isDryRun(), startParameter.isExportKeys());
         } else {
             File verificationsFile = DependencyVerificationOverride.dependencyVerificationsFile(currentDir);
+            File keyringsFile = DependencyVerificationOverride.keyringsFile(currentDir);
             if (verificationsFile.exists()) {
                 if (startParameter.getDependencyVerificationMode() == DependencyVerificationMode.OFF) {
                     return DependencyVerificationOverride.NO_VERIFICATION;
                 }
                 SingleMessageLogger.incubatingFeatureUsed("Dependency verification");
                 try {
-                    return new ChecksumAndSignatureVerificationOverride(buildOperationExecutor, verificationsFile, checksumService, signatureVerificationServiceFactory, startParameter.getDependencyVerificationMode());
+                    return new ChecksumAndSignatureVerificationOverride(buildOperationExecutor, startParameter.getGradleUserHomeDir(), verificationsFile, keyringsFile, checksumService, signatureVerificationServiceFactory, startParameter.getDependencyVerificationMode(), documentationRegistry);
                 } catch (Exception e) {
                     return new FailureVerificationOverride(e, verificationsFile);
                 }

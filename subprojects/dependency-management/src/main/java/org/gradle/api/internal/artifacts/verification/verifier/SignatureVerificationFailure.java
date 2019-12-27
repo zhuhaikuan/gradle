@@ -18,38 +18,49 @@ package org.gradle.api.internal.artifacts.verification.verifier;
 import com.google.common.collect.Sets;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPPublicKeyRing;
+import org.gradle.internal.logging.text.TreeFormatter;
 import org.gradle.security.internal.PublicKeyService;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public class SignatureVerificationFailure implements VerificationFailure {
+public class SignatureVerificationFailure extends AbstractVerificationFailure {
     private final Map<String, SignatureError> errors;
     private final PublicKeyService keyService;
+    private final File signatureFile;
 
-    public SignatureVerificationFailure(Map<String, SignatureError> errors, PublicKeyService keyService) {
+    public SignatureVerificationFailure(File affectedFile, File signatureFile, Map<String, SignatureError> errors, PublicKeyService keyService) {
+        super(affectedFile);
         this.errors = errors;
         this.keyService = keyService;
+        this.signatureFile = signatureFile;
+    }
+
+    public File getSignatureFile() {
+        return signatureFile;
     }
 
     public Map<String, SignatureError> getErrors() {
         return errors;
     }
 
-    public String getMessage() {
+    @Override
+    public void explainTo(TreeFormatter formatter) {
         if (errors.size() == 1) {
             Map.Entry<String, SignatureError> entry = errors.entrySet().iterator().next();
-            return toMessage(entry.getKey(), entry.getValue());
+            formatter.append(toMessage(entry.getKey(), entry.getValue()));
+            return;
         }
-        StringBuilder sb = new StringBuilder();
-        sb.append("Multiple signature verification errors found: ");
+        formatter.append("Multiple signature verification errors found");
+        formatter.startChildren();
         errors.entrySet()
             .stream()
             .sorted(Map.Entry.comparingByKey())
-            .forEachOrdered(entry -> appendError(entry.getKey(), entry.getValue(), sb));
-        return sb.toString();
+            .forEachOrdered(entry -> formatter.node(toMessage(entry.getKey(), entry.getValue())));
+        formatter.endChildren();
     }
 
     private String toMessage(String key, SignatureError value) {
@@ -63,23 +74,24 @@ public class SignatureVerificationFailure implements VerificationFailure {
         PGPPublicKey publicKey = error.publicKey;
         switch (error.kind) {
             case PASSED_NOT_TRUSTED:
-                sb.append("(");
                 appendKeyDetails(sb, publicKey);
-                sb.append(") and passed verification but the key isn't in your trusted keys list.");
-                break;
-            case KEY_NOT_FOUND:
-                sb.append("but it wasn't found in any key server so it couldn't be verified");
+                sb.append("and passed verification but the key isn't in your trusted keys list.");
                 break;
             case FAILED:
+                appendKeyDetails(sb, publicKey);
                 sb.append("but signature didn't match");
+                break;
+            case MISSING_KEY:
+                sb.append("but it wasn't found in any key server so it couldn't be verified");
                 break;
         }
     }
 
     public enum FailureKind {
         PASSED_NOT_TRUSTED,
-        KEY_NOT_FOUND,
-        FAILED
+        FAILED,
+        IGNORED_KEY,
+        MISSING_KEY
     }
 
     private void appendKeyDetails(StringBuilder sb, PGPPublicKey key) {
@@ -91,7 +103,13 @@ public class SignatureVerificationFailure implements VerificationFailure {
                 collectUserIds(userIds, userkey);
             });
         });
+        if (!userIds.isEmpty()) {
+            sb.append("(");
+        }
         sb.append(String.join(", ", userIds));
+        if (!userIds.isEmpty()) {
+            sb.append(") ");
+        }
     }
 
     private void collectUserIds(Set<String> userIds, PGPPublicKey userkey) {
@@ -107,13 +125,9 @@ public class SignatureVerificationFailure implements VerificationFailure {
             this.kind = kind;
         }
 
-        @Nullable
-        public PGPPublicKey getPublicKey() {
-            return publicKey;
-        }
-
         public FailureKind getKind() {
             return kind;
         }
+
     }
 }

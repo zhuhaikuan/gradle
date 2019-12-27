@@ -53,11 +53,9 @@ public class PublicKeyDownloadService implements PublicKeyService {
 
     @Override
     public Optional<PGPPublicKey> findPublicKey(long id) {
-        List<URI> servers = new ArrayList<>(keyServers);
-        Collections.shuffle(servers);
-        Optional<PGPPublicKeyRing> pgpPublicKeys = tryDownloadKeyFromServer(id, servers);
-        if (pgpPublicKeys.isPresent()) {
-            return findMatchingKey(id, pgpPublicKeys.get());
+        Optional<PGPPublicKeyRing> keyRing = findKeyRing(id);
+        if (keyRing.isPresent()) {
+            return findMatchingKey(id, keyRing.get());
         }
         return Optional.empty();
     }
@@ -141,4 +139,7 @@ public class PublicKeyDownloadService implements PublicKeyService {
         return new URI(scheme, null, baseUri.getHost(), port, "/pks/lookup", "op=get&options=mr&search=0x" + keyId, null);
     }
 
+    @Override
+    public void close() {
+    }
 }

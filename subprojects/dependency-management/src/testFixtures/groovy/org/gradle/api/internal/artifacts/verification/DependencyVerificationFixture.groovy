@@ -22,6 +22,7 @@ import org.gradle.api.internal.artifacts.DefaultModuleIdentifier
 import org.gradle.api.internal.artifacts.verification.model.ArtifactVerificationMetadata
 import org.gradle.api.internal.artifacts.verification.model.ChecksumKind
 import org.gradle.api.internal.artifacts.verification.model.ComponentVerificationMetadata
+import org.gradle.api.internal.artifacts.verification.model.IgnoredKey
 import org.gradle.api.internal.artifacts.verification.serializer.DependencyVerificationsXmlReader
 import org.gradle.api.internal.artifacts.verification.serializer.DependencyVerificationsXmlWriter
 import org.gradle.api.internal.artifacts.verification.verifier.DependencyVerifier
@@ -65,17 +66,37 @@ class DependencyVerificationFixture {
         }
     }
 
+    void hasIgnoredKeys(Collection<String> ignoredKeys) {
+        withVerifier {
+            def actualIgnored = configuration.ignoredKeys
+            def expected = ignoredKeys as Set
+            assert actualIgnored == expected
+        }
+    }
+
+    void hasTrustedKeys(Collection<String> trustedKeys) {
+        withVerifier {
+            def actualIgnored = configuration.trustedKeys*.keyId as Set
+            def expected = trustedKeys as Set
+            assert actualIgnored == expected
+        }
+    }
+
     void hasNoModules() {
         hasModules([])
     }
 
     void assertXmlContents(String expected) {
         def actualContents = TextUtil.normaliseLineSeparators(verificationFile.text)
+        // remove namespace declaration for readability of tests
+        actualContents = actualContents.replaceAll("<verification-metadata .+>", "<verification-metadata>")
         assert actualContents == expected
     }
 
     void assertDryRunXmlContents(String expected) {
         def actualContents = TextUtil.normaliseLineSeparators(dryRunVerificationFile.text)
+        // remove namespace declaration for readability of tests
+        actualContents = actualContents.replaceAll("<verification-metadata .+>", "<verification-metadata>")
         assert actualContents == expected
     }
 
@@ -217,6 +238,10 @@ class DependencyVerificationFixture {
             builder.addTrustedArtifact(group, name, version, fileName, regex)
         }
 
+        void addGloballyIgnoredKey(String id, String reason = "for tests") {
+            builder.addIgnoredKey(new IgnoredKey(id, reason))
+        }
+
         void addChecksum(String id, String algo, String checksum, String type="jar", String ext="jar", String origin = null) {
             def parts = id.split(":")
             def group = parts[0]
@@ -271,6 +296,27 @@ class DependencyVerificationFixture {
                     fileName
                 ),
                 key
+            )
+        }
+
+        void addGloballyTrustedKey(String keyId, String group = null, String name = null, String version = null, String fileName = null, boolean regex = false) {
+            builder.addTrustedKey(keyId, group, name, version, fileName, regex)
+        }
+
+        void addIgnoredKeyByFileName(String id, String fileName, String key, String reason = "for tests") {
+            def parts = id.split(":")
+            def group = parts[0]
+            def name = parts[1]
+            def version = parts.size() == 3 ? parts[2] : "1.0"
+            builder.addIgnoredKey(
+                new ModuleComponentFileArtifactIdentifier(
+                    DefaultModuleComponentIdentifier.newId(
+                        DefaultModuleIdentifier.newId(group, name),
+                        version
+                    ),
+                    fileName
+                ),
+                new IgnoredKey(key, reason)
             )
         }
 

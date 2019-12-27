@@ -17,23 +17,29 @@ package org.gradle.api.internal.artifacts.verification.verifier;
 
 import com.google.common.collect.ImmutableList;
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier;
+import org.gradle.api.internal.artifacts.verification.model.IgnoredKey;
 import org.gradle.internal.component.external.model.ModuleComponentArtifactIdentifier;
 
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 public class DependencyVerificationConfiguration {
     private final boolean verifyMetadata;
     private final boolean verifySignatures;
     private final List<TrustedArtifact> trustedArtifacts;
     private final List<URI> keyServers;
+    private final Set<IgnoredKey> ignoredKeys;
+    private final List<TrustedKey> trustedKeys;
 
-    public DependencyVerificationConfiguration(boolean verifyMetadata, boolean verifySignatures, List<TrustedArtifact> trustedArtifacts, List<URI> keyServers) {
+    public DependencyVerificationConfiguration(boolean verifyMetadata, boolean verifySignatures, List<TrustedArtifact> trustedArtifacts, List<URI> keyServers, Set<IgnoredKey> ignoredKeys, List<TrustedKey> trustedKeys) {
         this.verifyMetadata = verifyMetadata;
         this.verifySignatures = verifySignatures;
         this.trustedArtifacts = ImmutableList.copyOf(trustedArtifacts);
         this.keyServers = keyServers;
+        this.ignoredKeys = ignoredKeys;
+        this.trustedKeys = trustedKeys;
     }
 
     public boolean isVerifySignatures() {
@@ -50,6 +56,14 @@ public class DependencyVerificationConfiguration {
 
     public List<URI> getKeyServers() {
         return keyServers;
+    }
+
+    public Set<IgnoredKey> getIgnoredKeys() {
+        return ignoredKeys;
+    }
+
+    public List<TrustedKey> getTrustedKeys() {
+        return trustedKeys;
     }
 
     public abstract static class TrustCoordinates {
@@ -104,11 +118,84 @@ public class DependencyVerificationConfiguration {
             }
             return expr.matches(value);
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            TrustCoordinates that = (TrustCoordinates) o;
+
+            if (regex != that.regex) {
+                return false;
+            }
+            if (group != null ? !group.equals(that.group) : that.group != null) {
+                return false;
+            }
+            if (name != null ? !name.equals(that.name) : that.name != null) {
+                return false;
+            }
+            if (version != null ? !version.equals(that.version) : that.version != null) {
+                return false;
+            }
+            return fileName != null ? fileName.equals(that.fileName) : that.fileName == null;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = group != null ? group.hashCode() : 0;
+            result = 31 * result + (name != null ? name.hashCode() : 0);
+            result = 31 * result + (version != null ? version.hashCode() : 0);
+            result = 31 * result + (fileName != null ? fileName.hashCode() : 0);
+            result = 31 * result + (regex ? 1 : 0);
+            return result;
+        }
     }
 
     public static class TrustedArtifact extends TrustCoordinates {
         TrustedArtifact(@Nullable String group, @Nullable String name, @Nullable String version, @Nullable String fileName, boolean regex) {
             super(group, name, version, fileName, regex);
+        }
+    }
+
+    public static class TrustedKey extends TrustCoordinates {
+        private final String keyId;
+
+        TrustedKey(String keyId, @Nullable String group, @Nullable String name, @Nullable String version, @Nullable String fileName, boolean regex) {
+            super(group, name, version, fileName, regex);
+            this.keyId = keyId;
+        }
+
+        public String getKeyId() {
+            return keyId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            if (!super.equals(o)) {
+                return false;
+            }
+
+            TrustedKey that = (TrustedKey) o;
+
+            return keyId.equals(that.keyId);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = super.hashCode();
+            result = 31 * result + keyId.hashCode();
+            return result;
         }
     }
 }
