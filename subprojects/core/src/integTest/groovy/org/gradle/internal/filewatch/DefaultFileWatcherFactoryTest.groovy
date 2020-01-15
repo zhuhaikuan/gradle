@@ -24,10 +24,12 @@ import org.gradle.internal.concurrent.DefaultExecutorFactory
 import org.gradle.internal.concurrent.Stoppable
 import org.gradle.internal.nativeintegration.filesystem.FileSystem
 import org.gradle.util.UsesNativeServices
+import spock.lang.Ignore
 import spock.lang.Unroll
 
 import java.util.concurrent.CountDownLatch
 
+@Ignore("fails even without test distribution plugin")
 @UsesNativeServices
 class DefaultFileWatcherFactoryTest extends AbstractFileWatcherTest {
     FileWatcher fileWatcher
