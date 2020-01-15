@@ -16,10 +16,19 @@
 
 buildscript {
     repositories {
-        mavenLocal()
+        maven {
+            url = uri("https://repo.gradle.org/gradle/enterprise-libs-snapshots-local")
+            credentials {
+                username = project.findProperty("enterprise.snapshots.username")?.toString() ?: System.getenv("ARTIFACTORY_USERNAME")
+                password = project.findProperty("enterprise.snapshots.password")?.toString() ?: System.getenv("ARTIFACTORY_PASSWORD")
+            }
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
     }
     dependencies {
-        classpath("com.gradle:testdistribution-gradle-plugin:0.0.2-prerelease-master")
+        classpath("com.gradle:test-distribution-gradle-plugin:0.3.0-20200115103822-master")
     }
 }
 
@@ -33,11 +42,7 @@ plugins.withId("java") {
         }
         distribution {
             enabled = true
-            useLocalExecutor = false
-            server {
-                url = uri("https://localhost:5080")
-            }
+            useLocalExecutor = true
         }
     }
 }
-
