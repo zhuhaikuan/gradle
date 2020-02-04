@@ -37,6 +37,7 @@ class ProjectCopySpecTest extends AbstractProjectBuilderSpec {
         def copyRootCalled = false
         def copyEachFileCalled = false
         def copyNestedEachFileCalled = false
+        throw new RuntimeException()
 
         copySource.createFile("file")
         def copySpec = project.copySpec {
