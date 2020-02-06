@@ -194,6 +194,19 @@ allprojects {
         }
     }
 
+    // Nothing actually uses lombok, this is just to get the relevant events included in the scan
+    // Any project which fails when these are
+    val projectsIncompatibleWithLombok =
+        listOf("internalTesting", "internalIntegTesting", "codeQuality", "buildInit", "internalPerformanceTesting", "ideNative")
+    if(!projectsIncompatibleWithLombok.contains(name)) {
+        configurations.maybeCreate("compileOnly")
+        configurations.maybeCreate("annotationProcessor")
+        dependencies {
+            "compileOnly" ("org.projectlombok:lombok:1.18.10")
+            "annotationProcessor" ("org.projectlombok:lombok:1.18.10")
+        }
+    }
+
     // patchExternalModules lives in the root project - we need to activate normalization there, too.
     normalization {
         runtimeClasspath {

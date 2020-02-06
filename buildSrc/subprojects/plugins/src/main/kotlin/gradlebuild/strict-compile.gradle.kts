@@ -21,7 +21,7 @@ val strictCompile = extensions.create<StrictCompileExtension>("strictCompile")
 
 afterEvaluate {
 
-    val strictCompilerArgs = listOf("-Werror", "-Xlint:all", "-Xlint:-options", "-Xlint:-serial", "-Xlint:-classfile")
+    val strictCompilerArgs = listOf("-Xlint:all", "-Xlint:-options", "-Xlint:-serial", "-Xlint:-classfile")
 
     val ignoreDeprecationsArg = "-Xlint:-deprecation"
 
