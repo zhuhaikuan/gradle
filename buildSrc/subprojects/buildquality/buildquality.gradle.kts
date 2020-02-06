@@ -9,7 +9,7 @@ dependencies {
     implementation(project(":plugins"))
     implementation(project(":profiling"))
 
-    implementation("org.owasp:dependency-check-gradle:3.1.0")
+    implementation("org.owasp:dependency-check-gradle:5.3.0")
     implementation("org.codenarc:CodeNarc:1.0") {
         exclude(group = "org.codehaus.groovy")
     }

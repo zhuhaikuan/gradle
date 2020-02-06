@@ -32,7 +32,7 @@ open class DependencyVulnerabilitiesPlugin : Plugin<Project> {
 
             configure<DependencyCheckExtension> {
                 failBuildOnCVSS = 8F // 10 is the maximum
-                skipConfigurations = listOf("jmh")
+                scanConfigurations = listOf("runtimeClasspath")
             }
         }
     }
