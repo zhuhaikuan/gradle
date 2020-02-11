@@ -25,6 +25,7 @@ import org.gradle.gradlebuild.UpdateBranchStatus
 import org.gradle.gradlebuild.buildquality.incubation.IncubatingApiAggregateReportTask
 import org.gradle.gradlebuild.buildquality.incubation.IncubatingApiReportTask
 import org.gradle.plugins.install.Install
+import java.lang.Double.parseDouble
 
 plugins {
     `java-base`
@@ -205,6 +206,21 @@ allprojects {
             dependencies {
                 "compileOnly" ("org.projectlombok:lombok:1.18.10")
                 "annotationProcessor" ("org.projectlombok:lombok:1.18.10")
+            }
+        }
+    }
+    val randomizeUpToDatePropName = "randomizeUpToDate"
+    if(project.hasProperty(randomizeUpToDatePropName)) {
+        val upToDateProp = project.property(randomizeUpToDatePropName) as String?
+        val upToDateThreshold = if(upToDateProp.isNullOrBlank()) {
+            0.5
+        } else {
+            parseDouble(upToDateProp)
+        }
+        val random = kotlin.random.Random(42)
+        tasks.configureEach {
+            outputs.upToDateWhen{
+                random.nextDouble() < upToDateThreshold
             }
         }
     }
