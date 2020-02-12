@@ -103,6 +103,8 @@ class PluginBuilder {
     }
 
     PluginHttpPublicationResults publishAs(String group, String artifact, String version, MavenHttpPluginRepository mavenRepo, GradleExecuter executer) {
+        def dir = executer.getGradleUserHomeDir()
+        assert dir.absolutePath.contains("user-home")
         return new PluginHttpPublicationResults(publishAs(group, artifact, version, mavenRepo as MavenRepository, executer))
     }
 
