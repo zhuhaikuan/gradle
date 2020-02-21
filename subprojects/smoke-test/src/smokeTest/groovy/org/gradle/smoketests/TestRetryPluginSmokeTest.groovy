@@ -47,7 +47,7 @@ class TestRetryPluginSmokeTest extends AbstractSmokeTest {
                 doFirst {
                     file("marker.file").delete()
                 }
-            
+
                 useJUnitPlatform()
                 retry {
                     maxRetries = 2
