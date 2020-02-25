@@ -87,10 +87,10 @@ public class DefaultUrlArtifactRepository implements UrlArtifactRepository {
     private void nagUserOfInsecureProtocol() {
         DeprecationLogger
             .deprecate("Using insecure protocols with repositories")
-            .withAdvice(String.format(
+            .withAdvice(
                 "Switch %s repository '%s' to a secure protocol (like HTTPS) or allow insecure protocols.",
                 repositoryType,
-                displayNameSupplier.get()))
+                displayNameSupplier.get())
             .willBeRemovedInGradle7()
             .withDslReference(UrlArtifactRepository.class, "allowInsecureProtocol")
             .nagUser();
@@ -107,10 +107,10 @@ public class DefaultUrlArtifactRepository implements UrlArtifactRepository {
         }
         DeprecationLogger
             .deprecate("Following insecure redirects")
-            .withAdvice(String.format(
+            .withAdvice(
                 "Switch %s repository '%s' to redirect to a secure protocol (like HTTPS) or allow insecure protocols.",
                 repositoryType,
-                displayNameSupplier.get()))
+                displayNameSupplier.get())
             .withContext(contextualAdvice)
             .willBeRemovedInGradle7()
             .withDslReference(UrlArtifactRepository.class, "allowInsecureProtocol")

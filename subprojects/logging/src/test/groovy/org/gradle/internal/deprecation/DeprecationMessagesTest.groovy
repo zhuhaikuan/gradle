@@ -105,6 +105,30 @@ class DeprecationMessagesTest extends Specification {
         expectMessage "Something has been deprecated. This is scheduled to be removed in Gradle ${NEXT_GRADLE_VERSION}."
     }
 
+    def "withAdvice accepts a format string"() {
+        when:
+        DeprecationLogger.deprecate("Something").withAdvice("%s is %d", "parameter", 2).willBeRemovedInGradle7().undocumented().nagUser()
+
+        then:
+        expectMessage "Something has been deprecated. This is scheduled to be removed in Gradle ${NEXT_GRADLE_VERSION}. parameter is 2"
+    }
+
+    def "withContext accepts a format string"() {
+        when:
+        DeprecationLogger.deprecate("Something").withContext("%s is %d", "parameter", 2).willBeRemovedInGradle7().undocumented().nagUser()
+
+        then:
+        expectMessage "Something has been deprecated. This is scheduled to be removed in Gradle ${NEXT_GRADLE_VERSION}. parameter is 2"
+    }
+
+    def "withContext treats null as an unset context"() {
+        when:
+        DeprecationLogger.deprecate("Something").withContext(null).willBeRemovedInGradle7().undocumented().nagUser()
+
+        then:
+        expectMessage "Something has been deprecated. This is scheduled to be removed in Gradle ${NEXT_GRADLE_VERSION}."
+    }
+
     def "logs deprecated behaviour message"() {
         when:
         DeprecationLogger.deprecateBehaviour("Some behaviour.").willBeRemovedInGradle7().undocumented().nagUser()

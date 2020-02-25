@@ -20,6 +20,7 @@ import com.google.common.base.Joiner;
 import org.gradle.util.GradleVersion;
 
 import javax.annotation.CheckReturnValue;
+import javax.annotation.Nullable;
 import java.util.List;
 
 @CheckReturnValue
@@ -38,14 +39,20 @@ public class DeprecationMessageBuilder<T extends DeprecationMessageBuilder<T>> {
     }
 
     @SuppressWarnings("unchecked")
-    public T withContext(String context) {
-        this.context = context;
+    public T withContext(@Nullable String fmt, Object...args) {
+        // TODO: Lazily calculate final string?
+        if (fmt != null) {
+            this.context = String.format(fmt, args);
+        } else {
+            this.context = null;
+        }
         return (T) this;
     }
 
     @SuppressWarnings("unchecked")
-    public T withAdvice(String advice) {
-        this.advice = advice;
+    public T withAdvice(String fmt, Object... args) {
+        // TODO: Lazily calculate final string?
+        this.advice = String.format(fmt, args);
         return (T) this;
     }
 

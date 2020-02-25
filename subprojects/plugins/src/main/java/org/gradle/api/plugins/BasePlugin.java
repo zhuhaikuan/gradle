@@ -132,12 +132,17 @@ public class BasePlugin implements Plugin<Project> {
                 }
                 AtomicBoolean usesMaven = new AtomicBoolean();
                 project.getPluginManager().withPlugin("maven", p -> usesMaven.set(true));
-                uploadArchives.doFirst(task -> DeprecationLogger
-                    .deprecateTask(UPLOAD_ARCHIVES_TASK_NAME)
-                    .withAdvice("Use the " + (usesMaven.get() ? "'maven-publish'" : "'ivy-publish'") + " plugin instead.")
-                    .willBeRemovedInGradle7()
-                    .withUpgradeGuideSection(5, "legacy_publication_system_is_deprecated_and_replaced_with_the_publish_plugins")
-                    .nagUser());
+                uploadArchives.doFirst(new Action<Task>() {
+                    @Override
+                    public void execute(Task task) {
+                        DeprecationLogger
+                                .deprecateTask(UPLOAD_ARCHIVES_TASK_NAME)
+                                .withAdvice("Use the " + (usesMaven.get() ? "'maven-publish'" : "'ivy-publish'") + " plugin instead.")
+                                .willBeRemovedInGradle7()
+                                .withUpgradeGuideSection(5, "legacy_publication_system_is_deprecated_and_replaced_with_the_publish_plugins")
+                                .nagUser();
+                    }
+                });
                 boolean hasIvyRepo = !uploadArchives.getRepositories().withType(IvyArtifactRepository.class).isEmpty();
                 if (!hasIvyRepo) {
                     return;
