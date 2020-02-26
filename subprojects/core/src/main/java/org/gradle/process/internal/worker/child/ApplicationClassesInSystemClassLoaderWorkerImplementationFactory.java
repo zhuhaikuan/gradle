@@ -91,15 +91,18 @@ public class ApplicationClassesInSystemClassLoaderWorkerImplementationFactory im
         execSpec.setMain("worker." + GradleWorkerMain.class.getName());
 
         boolean useOptionsFile = shouldUseOptionsFile(execSpec);
+        final File optionsFile;
+
         if (useOptionsFile) {
             // Use an options file to pass across application classpath
-            File optionsFile = temporaryFileProvider.createTemporaryFile("gradle-worker-classpath", "txt");
+            optionsFile = temporaryFileProvider.createTemporaryFile("gradle-worker-classpath", "txt");
             List<String> jvmArgs = writeOptionsFile(workerMainClassPath.getAsFiles(), applicationClasspath, optionsFile);
             execSpec.jvmArgs(jvmArgs);
         } else {
             // Use a dummy security manager, which hacks the application classpath into the system ClassLoader
             execSpec.classpath(workerMainClassPath.getAsFiles());
             execSpec.systemProperty("java.security.manager", "worker." + BootstrapSecurityManager.class.getName());
+            optionsFile = null;
         }
 
         // Serialize configuration for the worker process to it stdin
@@ -115,6 +118,10 @@ public class ApplicationClassesInSystemClassLoaderWorkerImplementationFactory im
                 }
                 // Serialize the actual security manager type, this is consumed by BootstrapSecurityManager
                 outstr.writeUTF(requestedSecurityManager == null ? "" : requestedSecurityManager.toString());
+                outstr.writeBoolean(false);
+            } else {
+                outstr.writeBoolean(true);
+                outstr.writeUTF(optionsFile.getAbsolutePath());
             }
 
             // Serialize the shared packages, this is consumed by GradleWorkerMain

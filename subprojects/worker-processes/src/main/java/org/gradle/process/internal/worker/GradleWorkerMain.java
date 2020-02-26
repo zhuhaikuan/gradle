@@ -20,6 +20,7 @@ import org.gradle.internal.classloader.FilteringClassLoader;
 import org.gradle.internal.stream.EncodedStream;
 
 import java.io.DataInputStream;
+import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -33,6 +34,12 @@ import java.util.concurrent.Callable;
 public class GradleWorkerMain {
     public void run() throws Exception {
         DataInputStream instr = new DataInputStream(new EncodedStream.EncodedInput(System.in));
+
+        boolean cleanup = instr.readBoolean();
+        if (cleanup) {
+            File optionsFile = new File(instr.readUTF());
+            optionsFile.deleteOnExit();
+        }
 
         // Read shared packages
         int sharedPackagesCount = instr.readInt();
