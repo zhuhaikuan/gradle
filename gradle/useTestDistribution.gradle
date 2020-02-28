@@ -28,7 +28,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("com.gradle:test-distribution-gradle-plugin:0.3.0-20200115103822-master")
+        classpath("com.gradle:test-distribution-gradle-plugin:1.0-20200228101028-master")
     }
 }
 
