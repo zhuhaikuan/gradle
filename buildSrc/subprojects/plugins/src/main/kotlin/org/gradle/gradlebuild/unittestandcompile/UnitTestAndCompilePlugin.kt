@@ -51,12 +51,12 @@ import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.ide.idea.IdeaPlugin
 import org.gradle.plugins.ide.idea.model.IdeaModel
 import org.gradle.process.CommandLineArgumentProvider
+import org.gradle.testing.PerformanceTest
 import org.gradle.testretry.TestRetryPlugin
 import testLibrary
 import java.util.concurrent.Callable
 import java.util.jar.Attributes
 import kotlin.reflect.full.declaredFunctions
-import org.gradle.testing.PerformanceTest
 
 
 enum class ModuleType(val compatibility: JavaVersion = JavaVersion.VERSION_1_8) {
@@ -101,7 +101,9 @@ class UnitTestAndCompilePlugin : Plugin<Project> {
     override fun apply(project: Project): Unit = project.run {
         apply(plugin = "groovy")
         plugins.apply(AvailableJavaInstallationsPlugin::class.java)
-        plugins.apply(TestRetryPlugin::class.java)
+        if (!project.hasProperty("distributed")) {
+            plugins.apply(TestRetryPlugin::class.java)
+        }
 
         val extension = extensions.create<UnitTestAndCompileExtension>("gradlebuildJava", this)
 
@@ -259,9 +261,11 @@ class UnitTestAndCompilePlugin : Plugin<Project> {
             addOsAsInputs()
 
             if (BuildEnvironment.isCiServer && this !is PerformanceTest) {
-                retry {
-                    maxRetries.set(1)
-                    maxFailures.set(10)
+                if (!project.hasProperty("distributed")) {
+                    retry {
+                        maxRetries.set(1)
+                        maxFailures.set(10)
+                    }
                 }
                 doFirst {
                     logger.lifecycle("maxParallelForks for '$path' is $maxParallelForks")
