@@ -42,7 +42,11 @@ plugins.withId("java") {
         }
         distribution {
             enabled = true
-            useLocalExecutor = true
+            useLocalExecutor = false
+            server {
+                url = uri("https://ge-experiment.grdev.net")
+            }
+            requirements = ["os=linux", "jdk=8", "jdk=11"]
         }
     }
 }
