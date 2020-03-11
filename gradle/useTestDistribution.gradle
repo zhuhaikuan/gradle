@@ -48,7 +48,6 @@ plugins.withId("java") {
                 url = uri("https://ge-experiment.grdev.net")
             }
             requirements = ["os=linux", "jdk=8", "jdk=11"]
-            writeTraceFile = true
         }
     }
 }
