@@ -28,7 +28,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("com.gradle:test-distribution-gradle-plugin:1.0-20200303161303-master")
+        classpath("com.gradle:test-distribution-gradle-plugin:1.0-20200311091000-master")
     }
 }
 
@@ -48,6 +48,7 @@ plugins.withId("java") {
                 url = uri("https://ge-experiment.grdev.net")
             }
             requirements = ["os=linux", "jdk=8", "jdk=11"]
+            writeTraceFile = true
         }
     }
 }
