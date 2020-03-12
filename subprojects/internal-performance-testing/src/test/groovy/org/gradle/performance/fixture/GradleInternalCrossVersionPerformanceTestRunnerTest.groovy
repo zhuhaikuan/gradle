@@ -30,6 +30,7 @@ import org.gradle.util.Requires
 import org.gradle.util.SetSystemProperties
 import org.gradle.util.TestPrecondition
 import org.junit.Rule
+import spock.lang.Ignore
 
 class GradleInternalCrossVersionPerformanceTestRunnerTest extends ResultSpecification {
     private static interface ReporterAndStore extends DataReporter, ResultsStore {}
@@ -257,6 +258,7 @@ class GradleInternalCrossVersionPerformanceTestRunnerTest extends ResultSpecific
         results.baselineVersions*.version == [MOST_RECENT_RELEASE, '3.1-20160801000011+0000']
     }
 
+    @Ignore
     def "a performance regression is identified in speed"() {
         given:
         def runner = runner()

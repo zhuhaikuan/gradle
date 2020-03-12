@@ -20,8 +20,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
-import org.gradle.kotlin.dsl.execAndGetStdout
-import org.gradle.kotlin.dsl.property
+import org.gradle.kotlin.dsl.*
 import javax.inject.Inject
 
 
@@ -46,15 +45,15 @@ open class DetermineBaselines @Inject constructor(isDistributed: Boolean) : Defa
 
     @TaskAction
     fun determineForkPointCommitBaseline() {
-        if (configuredBaselines.getOrElse("") == forceDefaultBaseline) {
+//        if (configuredBaselines.getOrElse("") == forceDefaultBaseline) {
             determinedBaselines.set(defaultBaseline)
-        } else if (configuredBaselines.getOrElse("") == flakinessDetectionCommitBaseline) {
-            determinedBaselines.set(determineFlakinessDetectionBaseline())
-        } else if (!currentBranchIsMasterOrRelease() && configuredBaselines.isDefaultValue()) {
-            determinedBaselines.set(forkPointCommitBaseline())
-        } else {
-            determinedBaselines.set(configuredBaselines)
-        }
+//        } else if (configuredBaselines.getOrElse("") == flakinessDetectionCommitBaseline) {
+//            determinedBaselines.set(determineFlakinessDetectionBaseline())
+//        } else if (!currentBranchIsMasterOrRelease() && configuredBaselines.isDefaultValue()) {
+//            determinedBaselines.set(forkPointCommitBaseline())
+//        } else {
+//            determinedBaselines.set(configuredBaselines)
+//        }
     }
 
     /**
