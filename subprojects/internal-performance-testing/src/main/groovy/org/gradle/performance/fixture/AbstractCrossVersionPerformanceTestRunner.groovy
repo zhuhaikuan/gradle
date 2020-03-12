@@ -111,11 +111,11 @@ class AbstractCrossVersionPerformanceTestRunner extends PerformanceTestSpec {
         def baselineVersions = toBaselineVersions(releases, targetVersions, minimumBaseVersion).collect { results.baseline(it) }
         def maxWorkingDirLength = (['current'] + baselineVersions*.version).collect { sanitizeVersionWorkingDir(it) }*.length().max()
 
-        runVersion('current', current, perVersionWorkingDirectory('current', maxWorkingDirLength), results.current)
-
         baselineVersions.each { baselineVersion ->
             runVersion(baselineVersion.version, buildContext.distribution(baselineVersion.version), perVersionWorkingDirectory(baselineVersion.version, maxWorkingDirLength), baselineVersion.results)
         }
+
+        runVersion('current', current, perVersionWorkingDirectory('current', maxWorkingDirLength), results.current)
 
         results.endTime = clock.getCurrentTime()
 
