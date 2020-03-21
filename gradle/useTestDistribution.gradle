@@ -28,7 +28,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath("com.gradle.enterprise:test-distribution-gradle-plugin:1.0-20200321173304-marc_test_distribution_statistics_spike")
+        classpath("com.gradle.enterprise:test-distribution-gradle-plugin:1.0-20200321210056-marc_test_distribution_statistics_spike")
     }
 }
 
