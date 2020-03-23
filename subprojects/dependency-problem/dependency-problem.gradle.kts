@@ -5,11 +5,10 @@ plugins {
     `maven-publish`
 }
 
-val localRepoUrl = project.uri(file("repo"))
 
 repositories {
     maven {
-        url = localRepoUrl
+        url = project.uri("https://repo.gradle.org/gradle/enterprise-libs-training-local/")
     }
 }
 
@@ -47,7 +46,7 @@ publishing {
     repositories {
         maven {
             name = "local"
-            url = localRepoUrl
+            url = project.uri(file("repo"))
         }
     }
     publications {
