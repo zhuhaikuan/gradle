@@ -23,12 +23,19 @@ import org.gradle.api.Transformer;
 import org.gradle.api.internal.artifacts.configurations.dynamicversion.CachePolicy;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
+import org.gradle.cache.AsyncCacheAccess;
+import org.gradle.cache.CacheDecorator;
 import org.gradle.cache.CacheRepository;
+import org.gradle.cache.CrossProcessCacheAccess;
 import org.gradle.cache.FileLockManager;
+import org.gradle.cache.MultiProcessSafePersistentIndexedCache;
 import org.gradle.cache.PersistentCache;
 import org.gradle.cache.PersistentIndexedCache;
 import org.gradle.cache.PersistentIndexedCacheParameters;
+import org.gradle.cache.internal.AsyncCacheAccessDecoratedCache;
+import org.gradle.cache.internal.CrossProcessSynchronizingCache;
 import org.gradle.cache.internal.InMemoryCacheDecoratorFactory;
+import org.gradle.cache.internal.MultiProcessSafeAsyncPersistentIndexedCache;
 import org.gradle.cache.internal.filelock.LockOptionsBuilder;
 import org.gradle.internal.Cast;
 import org.gradle.internal.action.ConfigurableRule;
@@ -91,9 +98,7 @@ public class CrossBuildCachingRuleExecutor<KEY, DETAILS, RESULT> implements Cach
             name,
             new HashCodeSerializer(),
             createEntrySerializer(resultSerializer)
-        ).withCacheDecorator(
-            cacheDecoratorFactory.decorator(2000, true)
-        );
+        ).withCacheDecorator(CacheLockingDecorator.INSTANCE);
     }
 
     private Serializer<CachedEntry<RESULT>> createEntrySerializer(final Serializer<RESULT> resultSerializer) {
@@ -369,6 +374,16 @@ public class CrossBuildCachingRuleExecutor<KEY, DETAILS, RESULT> implements Cach
             encoder.writeSmallInt(-2);
             encoder.writeString(anyType.getName());
             serializer.write(encoder, value);
+        }
+    }
+
+    private static class CacheLockingDecorator implements CacheDecorator {
+        private static final CacheLockingDecorator INSTANCE = new CacheLockingDecorator();
+
+        @Override
+        public <K, V> MultiProcessSafePersistentIndexedCache<K, V> decorate(String cacheId, String cacheName, MultiProcessSafePersistentIndexedCache<K, V> persistentCache, CrossProcessCacheAccess crossProcessCacheAccess, AsyncCacheAccess asyncCacheAccess) {
+            MultiProcessSafeAsyncPersistentIndexedCache<K, V> asyncCache = new AsyncCacheAccessDecoratedCache<K, V>(asyncCacheAccess, persistentCache);
+            return new CrossProcessSynchronizingCache<K, V>(asyncCache, crossProcessCacheAccess);
         }
     }
 }
