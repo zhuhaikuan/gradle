@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import org.gradle.gradlebuild.unittestandcompile.ModuleType
 import build.futureKotlin
 import build.kotlin
 import build.kotlinVersion
 import codegen.GenerateKotlinDependencyExtensions
 import org.gradle.build.ReproduciblePropertiesWriter
+import org.gradle.gradlebuild.unittestandcompile.ModuleType
+import org.gradle.gradlebuild.testing.integrationtests.cleanup.WhenNotEmpty
+
 
 plugins {
     `kotlin-dsl-module`
@@ -91,7 +93,7 @@ dependencies {
     testImplementation(testLibrary("jackson_kotlin"))
 
     testImplementation(testLibrary("archunit"))
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
     testImplementation("org.awaitility:awaitility-kotlin:3.1.6")
 
     testRuntimeOnly(project(":runtimeApiInfo"))
@@ -111,15 +113,9 @@ dependencies {
 // --- Enable automatic generation of API extensions -------------------
 val apiExtensionsOutputDir = layout.buildDirectory.dir("generated-sources/kotlin")
 
-val publishedKotlinDslPluginVersion = "1.3.3" // TODO:kotlin-dsl
+val publishedKotlinDslPluginVersion = "1.3.5" // TODO:kotlin-dsl
 
 tasks {
-
-    // TODO:kotlin-dsl
-    verifyTestFilesCleanup {
-        enabled = false
-    }
-
     val generateKotlinDependencyExtensions by registering(GenerateKotlinDependencyExtensions::class) {
         outputDir.set(apiExtensionsOutputDir)
         embeddedKotlinVersion.set(kotlinVersion)
@@ -143,6 +139,10 @@ tasks {
     processResources {
         from(writeVersionsManifest)
     }
+}
+
+testFilesCleanup {
+    policy.set(WhenNotEmpty.REPORT)
 }
 
 

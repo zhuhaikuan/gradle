@@ -15,6 +15,7 @@
  */
 
 import java.util.*
+import org.gradle.internal.os.OperatingSystem
 
 plugins {
     `java`
@@ -66,7 +67,6 @@ subprojects {
 
         apply(from = "../../../gradle/shared-with-buildSrc/code-quality-configuration.gradle.kts")
     }
-    apply(plugin = "eclipse")
 }
 
 allprojects {
@@ -89,12 +89,20 @@ allprojects {
             }
         }
         maven {
+            name = "Gradle Enterprise Gradle plugin RC"
+            url = uri("https://repo.gradle.org/gradle/enterprise-libs-release-candidates-local")
+        }
+        maven {
             name = "kotlinx"
             url = uri("https://dl.bintray.com/kotlin/kotlinx")
         }
         maven {
             name = "kotlin-dev"
             url = uri("https://dl.bintray.com/kotlin/kotlin-dev")
+        }
+        maven {
+            name = "kotlin-eap"
+            url = uri("https://dl.bintray.com/kotlin/kotlin-eap")
         }
     }
 }
@@ -138,6 +146,11 @@ if (isSkipBuildSrcVerification) {
 }
 
 if (isCiServer) {
+    println("Current machine has ${Runtime.getRuntime().availableProcessors()} CPU cores")
+
+    if (OperatingSystem.current().isWindows) {
+        require(Runtime.getRuntime().availableProcessors() >= 6) { "Windows CI machines must have at least 6 CPU cores!" }
+    }
     gradle.buildFinished {
         allprojects.forEach { project ->
             project.tasks.all {
@@ -173,9 +186,11 @@ fun readProperties(propertiesFile: File) = Properties().apply {
 }
 
 val checkSameDaemonArgs by tasks.registering {
+    val buildSrcPropertiesFile = project.rootDir.resolve("gradle.properties")
+    val rootPropertiesFile = project.rootDir.resolve("../gradle.properties")
     doLast {
-        val buildSrcProperties = readProperties(File(project.rootDir, "gradle.properties"))
-        val rootProperties = readProperties(File(project.rootDir, "../gradle.properties"))
+        val buildSrcProperties = readProperties(buildSrcPropertiesFile)
+        val rootProperties = readProperties(rootPropertiesFile)
         val jvmArgs = listOf(buildSrcProperties, rootProperties).map { it.getProperty("org.gradle.jvmargs") }.toSet()
         if (jvmArgs.size > 1) {
             throw GradleException("gradle.properties and buildSrc/gradle.properties have different org.gradle.jvmargs " +
@@ -203,6 +218,7 @@ fun Project.applyGroovyProjectConventions() {
     tasks.withType<GroovyCompile>().configureEach {
         groovyOptions.apply {
             encoding = "utf-8"
+            forkOptions.jvmArgs?.add("-XX:+HeapDumpOnOutOfMemoryError")
         }
         options.apply {
             isFork = true

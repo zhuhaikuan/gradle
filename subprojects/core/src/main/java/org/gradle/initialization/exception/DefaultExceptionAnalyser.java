@@ -25,6 +25,7 @@ import org.gradle.groovy.scripts.ScriptSource;
 import org.gradle.internal.event.ListenerManager;
 import org.gradle.internal.exceptions.Contextual;
 import org.gradle.internal.exceptions.LocationAwareException;
+import org.gradle.internal.service.ServiceCreationException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -61,6 +62,8 @@ public class DefaultExceptionAnalyser implements ExceptionCollector, ScriptExecu
                 projectConfigurationException.initCauses(additionalFailures);
                 failures.add(transform(projectConfigurationException));
             }
+        } else if (exception instanceof ServiceCreationException) {
+            failures.add(transform(new InitializationException(exception)));
         } else {
             failures.add(transform(exception));
         }
@@ -84,8 +87,10 @@ public class DefaultExceptionAnalyser implements ExceptionCollector, ScriptExecu
 
         if (source == null) {
             for (
-                    Throwable currentException = actualException; currentException != null;
-                    currentException = currentException.getCause()) {
+                Throwable currentException = actualException;
+                currentException != null;
+                currentException = currentException.getCause()
+            ) {
                 for (StackTraceElement element : currentException.getStackTrace()) {
                     if (element.getLineNumber() >= 0 && scripts.containsKey(element.getFileName())) {
                         source = scripts.get(element.getFileName());

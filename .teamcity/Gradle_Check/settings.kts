@@ -1,5 +1,6 @@
 package Gradle_Check
 
+import Gradle_Check.model.JsonBasedGradleSubprojectProvider
 import Gradle_Check.model.StatisticBasedGradleBuildBucketProvider
 import jetbrains.buildServer.configs.kotlin.v2019_2.project
 import jetbrains.buildServer.configs.kotlin.v2019_2.version
@@ -27,7 +28,7 @@ Subprojects can be defined either in their own settings.kts or by
 calling the subProjects() method in this project.
 */
 
-version = "2019.1"
-val model = CIBuildModel(buildScanTags = listOf("Check"))
+version = "2019.2"
+val model = CIBuildModel(buildScanTags = listOf("Check"), subprojects = JsonBasedGradleSubprojectProvider(File("./subprojects.json")))
 val gradleBuildBucketProvider = StatisticBasedGradleBuildBucketProvider(model, File("./test-class-data.json"))
-project(RootProject(model,gradleBuildBucketProvider))
+project(RootProject(model, gradleBuildBucketProvider))

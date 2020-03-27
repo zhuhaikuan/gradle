@@ -16,6 +16,7 @@
 
 package common
 
+import Gradle_Check.configurations.allBranchesFilter
 import configurations.m2CleanScriptUnixLike
 import configurations.m2CleanScriptWindows
 import jetbrains.buildServer.configs.kotlin.v2019_2.AbsoluteId
@@ -54,10 +55,7 @@ fun Requirements.requiresOs(os: Os) {
 }
 
 fun VcsSettings.filterDefaultBranch() {
-    branchFilter = """
-                +:*
-                -:<default>
-            """.trimIndent()
+    branchFilter = allBranchesFilter
 }
 
 fun BuildType.applyDefaultSettings(os: Os = Os.linux, timeout: Int = 30, vcsRoot: String = "Gradle_Branches_GradlePersonalBranches") {
@@ -65,8 +63,10 @@ fun BuildType.applyDefaultSettings(os: Os = Os.linux, timeout: Int = 30, vcsRoot
         build/report-* => .
         buildSrc/build/report-* => .
         subprojects/*/build/tmp/test files/** => test-files
+        subprojects/*/build/tmp/test files/** => test-files
         build/errorLogs/** => errorLogs
         build/reports/incubation/** => incubation-reports
+        build/reports/dependency-verification/** => dependency-verification-reports
     """.trimIndent()
 
     vcs {
@@ -83,6 +83,7 @@ fun BuildType.applyDefaultSettings(os: Os = Os.linux, timeout: Int = 30, vcsRoot
 
     failureConditions {
         executionTimeoutMin = timeout
+        testFailure = false
     }
 
     if (os == Os.linux || os == Os.macos) {
@@ -107,13 +108,13 @@ fun buildToolGradleParameters(daemon: Boolean = true, isContinue: Boolean = true
         // for each test task, such that we are independent of whatever default value is defined in the build itself.
         "-Dorg.gradle.workers.max=%maxParallelForks%",
         "-PmaxParallelForks=%maxParallelForks%",
+        // Drop the VFS on before the build CI for dogfooding, until we do that automatically
+        "-Dorg.gradle.unsafe.vfs.drop=true",
         "-s",
         if (daemon) "--daemon" else "--no-daemon",
         if (isContinue) "--continue" else "",
         """-I "%teamcity.build.checkoutDir%/gradle/init-scripts/build-scan.init.gradle.kts"""",
-        "-Dorg.gradle.internal.tasks.createops",
-        // // https://github.com/gradle/gradle-private/issues/2725
-        if (os == Os.macos) "" else "-Dorg.gradle.internal.plugins.portal.url.override=%gradle.plugins.portal.url%"
+        "-Dorg.gradle.internal.tasks.createops"
     )
 
 fun buildToolParametersString(daemon: Boolean = true, os: Os = Os.linux) = buildToolGradleParameters(daemon, os = os).joinToString(separator = " ")
@@ -131,13 +132,5 @@ fun Dependencies.compileAllDependency(compileAllId: String = "Gradle_Check_Compi
         id = "ARTIFACT_DEPENDENCY_$compileAllId"
         cleanDestination = true
         artifactRules = "build-receipt.properties => incoming-distributions"
-    }
-}
-
-fun BuildSteps.verifyTestFilesCleanup(daemon: Boolean = true, os: Os = Os.linux) {
-    gradleWrapper {
-        name = "VERIFY_TEST_FILES_CLEANUP"
-        tasks = "verifyTestFilesCleanup"
-        gradleParams = buildToolParametersString(daemon, os)
     }
 }

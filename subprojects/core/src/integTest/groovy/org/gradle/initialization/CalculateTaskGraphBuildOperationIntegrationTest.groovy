@@ -36,7 +36,7 @@ class CalculateTaskGraphBuildOperationIntegrationTest extends AbstractIntegratio
             include "b"
             include "a:c"
         """
-        
+
         buildFile << """
             allprojects {
                 task otherTask
@@ -206,7 +206,6 @@ class CalculateTaskGraphBuildOperationIntegrationTest extends AbstractIntegratio
         }
     }
 
-    @ToBeFixedForInstantExecution
     def "exposes plan details with nested artifact transforms"() {
         file('producer/src/main/java/artifact/transform/sample/producer/Producer.java') << """
             package artifact.transform.sample.producer;
@@ -313,7 +312,7 @@ class CalculateTaskGraphBuildOperationIntegrationTest extends AbstractIntegratio
         then:
         with(operations()[0].result.taskPlan) {
             task.taskPath == [":producer:compileJava", ":producer:processResources", ":producer:classes", ":producer:jar", ":compileJava", ":processResources", ":classes", ":jar", ":startScripts", ":distZip"]
-            dependencies.taskPath.collect { it.sort() } == [[], [], [":producer:compileJava", ":producer:processResources"], [":producer:classes"], [":producer:compileJava"], [], [":compileJava", ":processResources"], [":classes"], [], [":jar", ":producer:jar", ":startScripts"]]
+            dependencies.taskPath.collect { it.sort() } == [[], [], [":producer:compileJava", ":producer:processResources"], [":producer:classes"], [":producer:compileJava"], [], [":compileJava", ":processResources"], [":classes"], [":jar", ":producer:jar"], [":jar", ":producer:jar", ":startScripts"]]
         }
     }
 

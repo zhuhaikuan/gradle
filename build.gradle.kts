@@ -33,7 +33,6 @@ plugins {
     gradlebuild.`ci-reporting`
     gradlebuild.security
     gradlebuild.install
-    id("org.gradle.ci.tag-single-build") version ("0.74")
 }
 
 buildscript {
@@ -60,7 +59,7 @@ buildTypes {
     create("sanityCheck") {
         tasks(
             "classes", "docs:checkstyleApi", "codeQuality", "allIncubationReportsZip",
-            "docs:check", "distribution:checkBinaryCompatibility", "docs:javadocAll",
+            "distribution:checkBinaryCompatibility", "docs:javadocAll",
             "architectureTest:test", "toolingApi:toolingApiShadedJar")
     }
 
@@ -72,13 +71,13 @@ buildTypes {
     // Used for builds to run all tests
     create("fullTest") {
         tasks("test", "forkingIntegTest", "forkingCrossVersionTest")
-        projectProperties("testAllVersions" to true)
+        projectProperties("testVersions" to "all")
     }
 
     // Used for builds to test the code on certain platforms
     create("platformTest") {
         tasks("test", "forkingIntegTest", "forkingCrossVersionTest")
-        projectProperties("testPartialVersions" to true)
+        projectProperties("testVersions" to "partial")
     }
 
     // Tests not using the daemon mode
@@ -137,13 +136,13 @@ buildTypes {
     // Used for cross version tests on CI
     create("allVersionsCrossVersionTest") {
         tasks("allVersionsCrossVersionTests")
-        projectProperties("testAllVersions" to true)
+        projectProperties("testVersions" to "all")
         projectProperties("useAllDistribution" to true)
     }
 
     create("allVersionsIntegMultiVersionTest") {
         tasks("integMultiVersionTest")
-        projectProperties("testAllVersions" to true)
+        projectProperties("testVersions" to "all")
         projectProperties("useAllDistribution" to true)
     }
 
@@ -154,9 +153,8 @@ buildTypes {
 
     // Used to build production distros and smoke test them
     create("packageBuild") {
-        tasks(
-            "verifyIsProductionBuildEnvironment", "clean", "buildDists",
-            "distributions:integTest")
+        tasks("verifyIsProductionBuildEnvironment", "clean", "buildDists",
+            "distributions:integTest", ":docs:checkSamples", "docs:check")
     }
 
     // Used to build production distros and smoke test them
@@ -167,8 +165,8 @@ buildTypes {
     }
 
     create("soakTest") {
-        tasks("soak:soakTest")
-        projectProperties("testAllVersions" to true)
+        tasks("soak:soakIntegTest")
+        projectProperties("testVersions" to "all")
     }
 
     // Used to run the dependency management engine in "force component realization" mode
@@ -192,6 +190,10 @@ allprojects {
         maven {
             name = "kotlin-dev"
             url = uri("https://dl.bintray.com/kotlin/kotlin-dev")
+        }
+        maven {
+            name = "kotlin-eap"
+            url = uri("https://dl.bintray.com/kotlin/kotlin-eap")
         }
     }
 
@@ -245,6 +247,7 @@ apply(plugin = "gradlebuild.quick-check")
 apply(plugin = "gradlebuild.update-versions")
 apply(plugin = "gradlebuild.dependency-vulnerabilities")
 apply(plugin = "gradlebuild.add-verify-production-environment-task")
+apply(plugin = "gradlebuild.generate-subprojects-info")
 
 // https://github.com/gradle/gradle-private/issues/2463
 apply(from = "gradle/remove-teamcity-temp-property.gradle")
@@ -269,8 +272,6 @@ subprojects {
     if (project !in kotlinJsProjects) {
         apply(plugin = "gradlebuild.task-properties-validation")
     }
-
-    apply(plugin = "gradlebuild.test-files-cleanup")
 }
 
 val runtimeUsage = objects.named(Usage::class.java, Usage.JAVA_RUNTIME)

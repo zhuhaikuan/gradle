@@ -241,6 +241,11 @@ public class DefaultIvyArtifactRepository extends AbstractAuthenticationSupporte
         configureAction.execute(metadataSources);
     }
 
+    @Override
+    public MetadataSources getMetadataSources() {
+        return metadataSources;
+    }
+
     private ImmutableMetadataSources createMetadataSources() {
         ImmutableList.Builder<MetadataSource<?>> sources = ImmutableList.builder();
         DefaultGradleModuleMetadataSource gradleModuleMetadataSource = new DefaultGradleModuleMetadataSource(moduleMetadataParser, metadataFactory, true, checksumService);
@@ -353,6 +358,7 @@ public class DefaultIvyArtifactRepository extends AbstractAuthenticationSupporte
     public void layout(String layoutName, Closure config) {
         DeprecationLogger.deprecateMethod(IvyArtifactRepository.class, "layout(String, Closure)")
             .replaceWith("IvyArtifactRepository.patternLayout(Action)")
+            .willBeRemovedInGradle7()
             .withUserManual("declaring_repositories", "sub:defining_custom_pattern_layout_for_an_ivy_repository")
             .nagUser();
         internalLayout(layoutName, ConfigureUtil.<RepositoryLayout>configureUsing(config));
@@ -362,6 +368,7 @@ public class DefaultIvyArtifactRepository extends AbstractAuthenticationSupporte
     public void layout(String layoutName, Action<? extends RepositoryLayout> config) {
         DeprecationLogger.deprecateMethod(IvyArtifactRepository.class, "layout(String, Action)")
             .replaceWith("IvyArtifactRepository.patternLayout(Action)")
+            .willBeRemovedInGradle7()
             .withUserManual("declaring_repositories", "sub:defining_custom_pattern_layout_for_an_ivy_repository")
             .nagUser();
         internalLayout(layoutName, config);
@@ -504,6 +511,26 @@ public class DefaultIvyArtifactRepository extends AbstractAuthenticationSupporte
         @Override
         public void ignoreGradleMetadataRedirection() {
             ignoreGradleMetadataRedirection = true;
+        }
+
+        @Override
+        public boolean isGradleMetadataEnabled() {
+            return gradleMetadata;
+        }
+
+        @Override
+        public boolean isIvyDescriptorEnabled() {
+            return ivyDescriptor;
+        }
+
+        @Override
+        public boolean isArtifactEnabled() {
+            return artifact;
+        }
+
+        @Override
+        public boolean isIgnoreGradleMetadataRedirectionEnabled() {
+            return ignoreGradleMetadataRedirection;
         }
     }
 

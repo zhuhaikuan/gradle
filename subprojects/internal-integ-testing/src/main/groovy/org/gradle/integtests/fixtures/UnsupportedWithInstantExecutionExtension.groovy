@@ -17,15 +17,32 @@
 package org.gradle.integtests.fixtures
 
 import org.gradle.integtests.fixtures.executer.GradleContextualExecuter
+import org.junit.AssumptionViolatedException
 import org.spockframework.runtime.extension.AbstractAnnotationDrivenExtension
 import org.spockframework.runtime.extension.IMethodInterceptor
 import org.spockframework.runtime.extension.IMethodInvocation
 import org.spockframework.runtime.model.FeatureInfo
+import org.spockframework.runtime.model.SpecInfo
 
+import static org.gradle.integtests.fixtures.ToBeFixedForInstantExecutionExtension.iterationMatches
+import static org.gradle.integtests.fixtures.ToBeFixedForInstantExecutionExtension.isAllIterations
 import static org.gradle.integtests.fixtures.ToBeFixedForInstantExecutionExtension.isEnabledBottomSpec
 
 
 class UnsupportedWithInstantExecutionExtension extends AbstractAnnotationDrivenExtension<UnsupportedWithInstantExecution> {
+
+    @Override
+    void visitSpecAnnotation(UnsupportedWithInstantExecution annotation, SpecInfo spec) {
+        if (GradleContextualExecuter.isInstant()) {
+            if (isAllIterations(annotation.iterationMatchers()) && isEnabledBottomSpec(annotation.bottomSpecs(), { spec.bottomSpec.name == it })) {
+                spec.skipped = true
+            } else {
+                spec.features.each { feature ->
+                    feature.iterationInterceptors.add(new IterationMatchingMethodInterceptor(annotation.iterationMatchers()))
+                }
+            }
+        }
+    }
 
     @Override
     void visitFeatureAnnotation(UnsupportedWithInstantExecution annotation, FeatureInfo feature) {
@@ -36,14 +53,6 @@ class UnsupportedWithInstantExecutionExtension extends AbstractAnnotationDrivenE
                 feature.iterationInterceptors.add(new IterationMatchingMethodInterceptor(annotation.iterationMatchers()))
             }
         }
-    }
-
-    static boolean iterationMatches(String[] iterationMatchers, String iterationName) {
-        return isAllIterations(iterationMatchers) || iterationMatchers.any { iterationName.matches(it) }
-    }
-
-    private static boolean isAllIterations(String[] iterationMatchers) {
-        return iterationMatchers.length == 0
     }
 
     private static class IterationMatchingMethodInterceptor implements IMethodInterceptor {
@@ -59,8 +68,7 @@ class UnsupportedWithInstantExecutionExtension extends AbstractAnnotationDrivenE
             if (!iterationMatches(iterationMatchers, invocation.iteration.name)) {
                 invocation.proceed()
             } else {
-                // This will show up in test reports, necessary because we can't mark the test as skipped
-                println("Skipping test @${UnsupportedWithInstantExecution.simpleName}")
+                throw new AssumptionViolatedException("Unsupported with instant execution")
             }
         }
     }

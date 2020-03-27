@@ -62,6 +62,7 @@ import org.gradle.api.tasks.TaskDependency;
 import org.gradle.api.tasks.TaskDestroyables;
 import org.gradle.api.tasks.TaskInstantiationException;
 import org.gradle.api.tasks.TaskLocalState;
+import org.gradle.initialization.ProjectAccessNotifier;
 import org.gradle.internal.Factory;
 import org.gradle.internal.execution.history.changes.InputChangesInternal;
 import org.gradle.internal.extensibility.ExtensibleDynamicObject;
@@ -143,8 +144,6 @@ public abstract class AbstractTask implements TaskInternal, DynamicObjectAware {
     private final TaskLocalStateInternal taskLocalState;
     private LoggingManagerInternal loggingManager;
 
-    private String toStringValue;
-
     private Set<Provider<? extends BuildService<?>>> requiredServices;
 
     protected AbstractTask() {
@@ -211,7 +210,15 @@ public abstract class AbstractTask implements TaskInternal, DynamicObjectAware {
 
     @Override
     public Project getProject() {
+        if (state.getExecuting()) {
+            notifyProjectAccess();
+        }
         return project;
+    }
+
+    private void notifyProjectAccess() {
+        services.get(ProjectAccessNotifier.class).getListener()
+            .onProjectAccess("Task.project", this);
     }
 
     @Override
@@ -447,14 +454,6 @@ public abstract class AbstractTask implements TaskInternal, DynamicObjectAware {
         } else {
             return depthCompare;
         }
-    }
-
-    @Override
-    public String toString() {
-        if (toStringValue == null) {
-            toStringValue = "task '" + getIdentityPath() + "'";
-        }
-        return toStringValue;
     }
 
     @Override

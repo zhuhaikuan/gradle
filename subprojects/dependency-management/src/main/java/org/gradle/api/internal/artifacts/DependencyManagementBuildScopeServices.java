@@ -114,6 +114,7 @@ import org.gradle.api.internal.notations.ProjectDependencyFactory;
 import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.internal.project.ProjectRegistry;
 import org.gradle.api.internal.project.ProjectStateRegistry;
+import org.gradle.api.internal.properties.GradleProperties;
 import org.gradle.api.internal.resources.ApiTextResourceAdapter;
 import org.gradle.api.internal.runtimeshaded.RuntimeShadedJarFactory;
 import org.gradle.authentication.Authentication;
@@ -123,7 +124,7 @@ import org.gradle.cache.internal.GeneratedGradleJarCache;
 import org.gradle.cache.internal.InMemoryCacheDecoratorFactory;
 import org.gradle.cache.internal.ProducerGuard;
 import org.gradle.initialization.InternalBuildFinishedListener;
-import org.gradle.initialization.ProjectAccessListener;
+import org.gradle.initialization.ProjectAccessNotifier;
 import org.gradle.initialization.layout.ProjectCacheDir;
 import org.gradle.initialization.layout.BuildLayoutConfiguration;
 import org.gradle.initialization.layout.BuildLayoutFactory;
@@ -189,7 +190,7 @@ class DependencyManagementBuildScopeServices {
 
     DependencyFactory createDependencyFactory(
         Instantiator instantiator,
-        ProjectAccessListener projectAccessListener,
+        ProjectAccessNotifier projectAccessNotifier,
         StartParameter startParameter,
         ClassPathRegistry classPathRegistry,
         CurrentGradleInstallation currentGradleInstallation,
@@ -199,7 +200,7 @@ class DependencyManagementBuildScopeServices {
         SimpleMapInterner stringInterner) {
         NotationParser<Object, Capability> capabilityNotationParser = new CapabilityNotationParserFactory(false).create();
         DefaultProjectDependencyFactory factory = new DefaultProjectDependencyFactory(
-            projectAccessListener, instantiator, startParameter.isBuildProjectDependencies(), capabilityNotationParser, attributesFactory);
+            projectAccessNotifier.getListener(), instantiator, startParameter.isBuildProjectDependencies(), capabilityNotationParser, attributesFactory);
         ProjectDependencyFactory projectDependencyFactory = new ProjectDependencyFactory(factory);
 
         return new DefaultDependencyFactory(
@@ -425,23 +426,25 @@ class DependencyManagementBuildScopeServices {
                                                                 TemporaryFileProvider temporaryFileProvider,
                                                                 FileStoreAndIndexProvider fileStoreAndIndexProvider,
                                                                 BuildCommencedTimeProvider buildCommencedTimeProvider,
+                                                                ArtifactCachesProvider artifactCachesProvider,
                                                                 List<ResourceConnectorFactory> resourceConnectorFactories,
                                                                 BuildOperationExecutor buildOperationExecutor,
                                                                 ProducerGuard<ExternalResourceName> producerGuard,
                                                                 FileResourceRepository fileResourceRepository,
                                                                 ChecksumService checksumService,
                                                                 StartParameterResolutionOverride startParameterResolutionOverride) {
-        return new RepositoryTransportFactory(
+        return artifactCachesProvider.withWritableCache((md, manager) -> new RepositoryTransportFactory(
             resourceConnectorFactories,
             progressLoggerFactory,
             temporaryFileProvider,
             fileStoreAndIndexProvider.getExternalResourceIndex(),
             buildCommencedTimeProvider,
+            manager,
             buildOperationExecutor,
             startParameterResolutionOverride,
             producerGuard,
             fileResourceRepository,
-            checksumService);
+            checksumService));
     }
 
     RepositoryBlacklister createRepositoryBlacklister() {
@@ -459,8 +462,10 @@ class DependencyManagementBuildScopeServices {
                                                                         ChecksumService checksumService,
                                                                         SignatureVerificationServiceFactory signatureVerificationServiceFactory,
                                                                         DocumentationRegistry documentationRegistry,
-                                                                        ListenerManager listenerManager) {
-        DependencyVerificationOverride override = startParameterResolutionOverride.dependencyVerificationOverride(buildOperationExecutor, checksumService, signatureVerificationServiceFactory, documentationRegistry);
+                                                                        ListenerManager listenerManager,
+                                                                        BuildCommencedTimeProvider timeProvider,
+                                                                        ServiceRegistry serviceRegistry) {
+        DependencyVerificationOverride override = startParameterResolutionOverride.dependencyVerificationOverride(buildOperationExecutor, checksumService, signatureVerificationServiceFactory, documentationRegistry, timeProvider, () -> serviceRegistry.get(GradleProperties.class));
         registerBuildFinishedHooks(listenerManager, override);
         return override;
     }

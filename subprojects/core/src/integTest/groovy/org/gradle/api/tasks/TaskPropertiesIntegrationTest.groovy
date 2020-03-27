@@ -17,6 +17,7 @@
 package org.gradle.api.tasks
 
 import org.gradle.integtests.fixtures.AbstractIntegrationSpec
+import spock.lang.Issue
 
 class TaskPropertiesIntegrationTest extends AbstractIntegrationSpec {
     def "can define task with abstract read-only Property<T> property"() {
@@ -287,6 +288,41 @@ class TaskPropertiesIntegrationTest extends AbstractIntegrationSpec {
         outputContains("count = 12")
     }
 
+    def "can define task with non-abstract read-only @Nested property"() {
+        given:
+        buildFile << """
+            interface Params {
+                @Internal
+                Property<Integer> getCount()
+            }
+            class MyTask extends DefaultTask {
+                private final params = project.objects.newInstance(Params)
+
+                @Nested
+                Params getParams() { return params }
+
+                @TaskAction
+                void go() {
+                    println("count = \${params.count.get()}")
+                }
+            }
+
+            tasks.create("thing", MyTask) {
+                println("params = \$params")
+                println("params.count = \$params.count")
+                params.count = 12
+            }
+        """
+
+        when:
+        succeeds("thing")
+
+        then:
+        outputContains("params = task ':thing' property 'params'")
+        outputContains("params.count = task ':thing' property 'params.count'")
+        outputContains("count = 12")
+    }
+
     def "can query generated read only property in constructor"() {
         given:
         buildFile << """
@@ -329,5 +365,54 @@ class TaskPropertiesIntegrationTest extends AbstractIntegrationSpec {
 
         then:
         errorOutput.contains("java.lang.UnsupportedOperationException")
+    }
+
+    @Issue("https://github.com/gradle/gradle/issues/12133")
+    def "abstract super type can define concrete property"() {
+        // Problem is exposed by Java compiler
+        file("buildSrc/src/main/java/AbstractCustomTask.java") << """
+            import org.gradle.api.file.ConfigurableFileCollection;
+            import org.gradle.api.internal.AbstractTask;
+            import org.gradle.api.tasks.InputFiles;
+
+            abstract class AbstractCustomTask extends AbstractTask {
+                private final ConfigurableFileCollection sourceFiles = getProject().files();
+
+                @InputFiles
+                public ConfigurableFileCollection getSourceFiles() {
+                    System.out.println("get files from field");
+                    return sourceFiles;
+                }
+
+                public void setSourceFiles(Object files) {
+                    System.out.println("set files using field");
+                    sourceFiles.setFrom(files);
+                }
+            }
+        """
+        file("buildSrc/src/main/java/CustomTask.java") << """
+            import org.gradle.api.GradleException;
+            import org.gradle.api.tasks.TaskAction;
+
+            public class CustomTask extends AbstractCustomTask {
+                @TaskAction
+                public void checkFiles() {
+                    System.out.println("checking files");
+                    if (getSourceFiles().isEmpty()) {
+                        throw new GradleException("sourceFiles are unexpectedly empty");
+                    }
+                    System.out.println("done checking files");
+                }
+            }
+        """
+
+        buildFile << """
+            task check(type: CustomTask) {
+                check.setSourceFiles("in.txt")
+            }
+        """
+
+        expect:
+        succeeds("check")
     }
 }

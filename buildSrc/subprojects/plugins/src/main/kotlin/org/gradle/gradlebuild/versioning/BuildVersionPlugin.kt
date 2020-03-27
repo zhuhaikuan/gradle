@@ -17,6 +17,7 @@
 package org.gradle.gradlebuild.versioning
 
 import org.gradle.StartParameter
+import org.gradle.api.Describable
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
@@ -54,9 +55,9 @@ fun Project.setBuildVersion() {
         logger.logStartParameter(gradle.startParameter)
     }
 
-    val finalRelease: Any? by project
-    val rcNumber: String? by project
-    val milestoneNumber: String? by project
+    val finalRelease = gradleProperty("finalRelease").orNull
+    val rcNumber = gradleProperty("rcNumber").orNull
+    val milestoneNumber = gradleProperty("milestoneNumber").orNull
     if ((finalRelease != null && rcNumber != null) ||
         (finalRelease != null && milestoneNumber != null) ||
         (rcNumber != null && milestoneNumber != null)) {
@@ -66,7 +67,7 @@ fun Project.setBuildVersion() {
         )
     }
 
-    val versionQualifier: String? by project
+    val versionQualifier = gradleProperty("versionQualifier").orNull
     val isSnapshot = finalRelease == null && rcNumber == null && milestoneNumber == null
     val isFinalRelease = finalRelease != null
     val baseVersion = rootProject.trimmedContentsOfFile("version.txt")
@@ -181,7 +182,6 @@ fun Project.buildTimestamp(): Provider<String> =
             )
             buildTimestampFromGradleProperty.set(
                 gradleProperty("buildTimestamp")
-                    .uncheckedCast<Provider<String>>()
             )
             runningOnCi.set(
                 providers.environmentVariable(CI_ENVIRONMENT_VARIABLE)
@@ -213,7 +213,7 @@ fun Project.buildTimestampFromBuildReceipt(): Provider<String> =
     }
 
 
-abstract class BuildTimestampValueSource : ValueSource<String, BuildTimestampValueSource.Parameters> {
+abstract class BuildTimestampValueSource : ValueSource<String, BuildTimestampValueSource.Parameters>, Describable {
 
     interface Parameters : ValueSourceParameters {
 
@@ -251,6 +251,21 @@ abstract class BuildTimestampValueSource : ValueSource<String, BuildTimestampVal
         }
         return timestampFormat.format(buildTime)
     }
+
+    override fun getDisplayName(): String =
+        "the build timestamp ($timestampSource)"
+
+    private
+    val timestampSource: String
+        get() = parameters.run {
+            when {
+                buildTimestampFromBuildReceipt.isPresent -> "from build receipt"
+                buildTimestampFromGradleProperty.isPresent -> "from buildTimestamp property"
+                runningInstallTask.get() -> "from current time because installing"
+                runningOnCi.get() -> "from current time because CI"
+                else -> "from current date"
+            }
+        }
 }
 
 
@@ -302,10 +317,9 @@ val Project.buildTypes
     get() = extensions.getByName<NamedDomainObjectContainer<BuildType>>("buildTypes")
 
 
-// TODO: move to ProviderFactory and make it a build logic input
 private
-fun Project.gradleProperty(propertyName: String): Provider<Any> =
-    provider { findProperty(propertyName) }
+fun Project.gradleProperty(propertyName: String): Provider<String> =
+    providers.gradleProperty(propertyName)
 
 
 /**

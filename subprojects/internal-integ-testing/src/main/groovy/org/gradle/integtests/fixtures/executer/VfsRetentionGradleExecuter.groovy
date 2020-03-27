@@ -16,14 +16,11 @@
 
 package org.gradle.integtests.fixtures.executer
 
-import com.google.common.collect.ImmutableList
-import org.gradle.internal.service.scopes.VirtualFileSystemServices
+import org.gradle.integtests.fixtures.VfsRetentionHelper
 import org.gradle.test.fixtures.file.TestDirectoryProvider
 import org.gradle.util.GradleVersion
 
 class VfsRetentionGradleExecuter extends DaemonGradleExecuter {
-
-    private boolean firstUse = true
 
     VfsRetentionGradleExecuter(
         GradleDistribution distribution,
@@ -33,17 +30,14 @@ class VfsRetentionGradleExecuter extends DaemonGradleExecuter {
     ) {
         super(distribution, testDirectoryProvider, gradleVersion, buildContext)
         beforeExecute {
-            // Wait a second to pick up changes
-            Thread.sleep(1000)
+            VfsRetentionHelper.waitForChangesToBePickedUp()
         }
     }
 
     @Override
     protected List<String> getAllArgs() {
-        List<Object> conditionalArgs = firstUse ? ["-D${VirtualFileSystemServices.VFS_DROP_PROPERTY}=true"] : ImmutableList.of()
-        firstUse = false
         super.getAllArgs() + ([
-            "-D${VirtualFileSystemServices.VFS_RETENTION_ENABLED_PROPERTY}=true",
-        ] + conditionalArgs).collect { it.toString() }
+            VfsRetentionHelper.enableVfsRetentionArgument,
+        ])
     }
 }

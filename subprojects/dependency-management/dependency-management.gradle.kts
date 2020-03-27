@@ -88,7 +88,10 @@ dependencies {
     integTestRuntimeOnly(project(":resourcesS3"))
     integTestRuntimeOnly(project(":resourcesSftp"))
     integTestRuntimeOnly(project(":testKit"))
+
+    integTestRuntimeOnly(project(":apiMetadata"))
     integTestRuntimeOnly(project(":kotlinDsl"))
+    integTestRuntimeOnly(project(":kotlinDslProviderPlugins"))
     integTestRuntimeOnly(project(":pluginDevelopment"))
 
     testFixturesApi(project(":baseServices")) {
@@ -131,6 +134,16 @@ testFilesCleanup {
 
 tasks.classpathManifest {
     additionalProjects.add(":runtimeApiInfo")
+}
+
+tasks.clean {
+    doFirst {
+        // On daemon crash, read-only cache tests can leave read-only files around.
+        // clean now takes care of those files as well
+        fileTree("$buildDir/tmp/test files").matching {
+            include("**/read-only-cache/**")
+        }.visit { this.file.setWritable(true) }
+    }
 }
 
 afterEvaluate {

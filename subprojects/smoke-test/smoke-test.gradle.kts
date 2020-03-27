@@ -79,7 +79,7 @@ fun SmokeTest.configureForSmokeTest() {
     classpath = smokeTest.runtimeClasspath
     maxParallelForks = 1 // those tests are pretty expensive, we shouldn"t execute them concurrently
     gradleInstallationForTest.gradleGeneratedApiJarCacheDir.set(
-        defaultGradleGeneratedApiJarCacheDirProvider()
+        defaultGradleGeneratedApiJarCacheDirProvider(rootProject.providers, rootProject.layout)
     )
 }
 
@@ -100,13 +100,6 @@ plugins.withType<IdeaPlugin>().configureEach {
         testResourceDirs = testResourceDirs + smokeTest.resources.srcDirs
         scopes["TEST"]!!["plus"]!!.add(smokeTestCompileClasspath)
         scopes["TEST"]!!["plus"]!!.add(smokeTestRuntimeClasspath)
-    }
-}
-
-plugins.withType<EclipsePlugin>().configureEach {
-    eclipse.classpath {
-        plusConfigurations.add(smokeTestCompileClasspath)
-        plusConfigurations.add(smokeTestRuntimeClasspath)
     }
 }
 

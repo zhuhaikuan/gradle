@@ -19,6 +19,7 @@ package org.gradle.internal.vfs.watch;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 public interface FileWatcherRegistry extends Closeable {
 
@@ -36,13 +37,19 @@ public interface FileWatcherRegistry extends Closeable {
     }
 
     /**
-     * Stop watching and handle the accumulated changes.
+     * Get statistics about the received changes.
      */
-    void stopWatching(ChangeHandler handler) throws IOException;
+    FileWatchingStatistics getAndResetStatistics();
 
     /**
      * Close the watcher registry. Stops watching without handling the changes.
      */
     @Override
     void close() throws IOException;
+
+    interface FileWatchingStatistics {
+        Optional<Throwable> getErrorWhileReceivingFileChanges();
+        boolean isUnknownEventEncountered();
+        int getNumberOfReceivedEvents();
+    }
 }

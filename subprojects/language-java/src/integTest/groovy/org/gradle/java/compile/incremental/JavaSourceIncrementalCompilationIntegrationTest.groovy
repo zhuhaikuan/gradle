@@ -18,7 +18,6 @@ package org.gradle.java.compile.incremental
 
 import groovy.transform.NotYetImplemented
 import org.gradle.integtests.fixtures.CompiledLanguage
-import org.gradle.integtests.fixtures.ToBeFixedForInstantExecution
 import org.gradle.util.Requires
 import org.gradle.util.TestPrecondition
 import spock.lang.Unroll
@@ -32,7 +31,6 @@ class JavaSourceIncrementalCompilationIntegrationTest extends AbstractSourceIncr
     }
 
     @Unroll
-    @ToBeFixedForInstantExecution
     def "change to #retention retention annotation class recompiles #desc"() {
         def annotationClass = file("src/main/${language.name}/SomeAnnotation.${language.name}") << """
             import java.lang.annotation.*;
@@ -57,12 +55,8 @@ class JavaSourceIncrementalCompilationIntegrationTest extends AbstractSourceIncr
         'annotated types' | 'RUNTIME' | ['SomeAnnotation', 'A']
     }
 
-    @Requires(TestPrecondition.JDK8_OR_LATER)
     def "deletes headers when source file is deleted"() {
         given:
-        buildFile << """
-            compileJava.options.headerOutputDirectory = file("build/headers/java/main")
-        """
         def sourceFile = file("src/main/java/my/org/Foo.java")
         sourceFile.text = """
             package my.org;
@@ -75,8 +69,8 @@ class JavaSourceIncrementalCompilationIntegrationTest extends AbstractSourceIncr
                 }
             }
         """
-        def generatedHeaderFile = file("build/headers/java/main/my_org_Foo.h")
-        def generatedInnerClassHeaderFile = file("build/headers/java/main/my_org_Foo_Inner.h")
+        def generatedHeaderFile = file("build/generated/sources/headers/java/main/my_org_Foo.h")
+        def generatedInnerClassHeaderFile = file("build/generated/sources/headers/java/main/my_org_Foo_Inner.h")
 
         source("""class Bar {
             public native void bar();
@@ -93,7 +87,7 @@ class JavaSourceIncrementalCompilationIntegrationTest extends AbstractSourceIncr
         then:
         generatedHeaderFile.assertDoesNotExist()
         generatedInnerClassHeaderFile.assertDoesNotExist()
-        file("build/headers/java/main/Bar.h").assertExists()
+        file("build/generated/sources/headers/java/main/Bar.h").assertExists()
     }
 
     def "changed class with used non-private constant incurs full rebuild"() {
@@ -151,7 +145,6 @@ class JavaSourceIncrementalCompilationIntegrationTest extends AbstractSourceIncr
         result.assertHasErrorOutput("package java.util.logging is not visible")
     }
 
-    @ToBeFixedForInstantExecution
     def "reports source type that does not support detection of source root"() {
         given:
         buildFile << "${language.compileTaskName}.source([file('extra'), file('other'), file('text-file.txt')])"
@@ -175,7 +168,6 @@ class JavaSourceIncrementalCompilationIntegrationTest extends AbstractSourceIncr
         output.contains("Full recompilation is required because the source roots could not be inferred.")
     }
 
-    @ToBeFixedForInstantExecution
     def "does not recompile when a resource changes"() {
         given:
         buildFile << """
