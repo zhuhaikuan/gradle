@@ -36,6 +36,8 @@ import org.eclipse.jgit.transport.URIish;
 import org.gradle.api.GradleException;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.logging.Logging;
+import org.gradle.internal.deprecation.DeprecationLogger;
+import org.gradle.util.GUtil;
 import org.gradle.vcs.VersionControlSpec;
 import org.gradle.vcs.git.GitVersionControlSpec;
 import org.gradle.vcs.internal.VersionControlSystem;
@@ -48,6 +50,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Set;
+
+import static org.gradle.util.GUtil.safeUri;
 
 /**
  * A Git {@link VersionControlSystem} implementation.
@@ -113,7 +117,7 @@ public class GitVersionControlSystem implements VersionControlSystem {
 
     private Collection<Ref> getRemoteRefs(GitVersionControlSpec gitSpec, boolean tags, boolean heads) {
         try {
-            return configureTransport(Git.lsRemoteRepository()).setRemote(normalizeUri(gitSpec.getUrl())).setTags(tags).setHeads(heads).call();
+            return configureTransport(Git.lsRemoteRepository()).setRemote(normalizeUri(validateUri(gitSpec.getUrl()))).setTags(tags).setHeads(heads).call();
         } catch (URISyntaxException | GitAPIException e) {
             throw wrapGitCommandException("ls-remote", gitSpec.getUrl(), null, e);
         }
@@ -123,7 +127,7 @@ public class GitVersionControlSystem implements VersionControlSystem {
         Git git = null;
         try {
             CloneCommand clone = configureTransport(Git.cloneRepository()).
-                    setURI(normalizeUri(gitSpec.getUrl())).
+                    setURI(normalizeUri(validateUri(gitSpec.getUrl()))).
                     setDirectory(workingDir).
                     setCloneSubmodules(true);
             git = clone.call();
@@ -176,6 +180,19 @@ public class GitVersionControlSystem implements VersionControlSystem {
         // We have to go through URIish and back to deal with differences between how
         // Java File and Git implement file URIs.
         return new URIish(uri.toString()).toPrivateASCIIString();
+    }
+
+    private static URI validateUri(URI uri) {
+        if (!GUtil.isSecureUrl(uri)) {
+            DeprecationLogger
+                    .deprecate("Resolving source dependencies from insecure URIs")
+                    .withAdvice(String.format("Use '%s' instead.", GUtil.toSecureUrl(safeUri(uri))))
+                    .withContext(String.format("The provided URI '%s' uses an insecure protocol (HTTP).", safeUri(uri)))
+                    .willBeRemovedInGradle7()
+                    .withUpgradeGuideSection(6, "deprecation:insecure_source_dependencies")
+                    .nagUser();
+        }
+        return uri;
     }
 
     private static GitVersionControlSpec cast(VersionControlSpec spec) {

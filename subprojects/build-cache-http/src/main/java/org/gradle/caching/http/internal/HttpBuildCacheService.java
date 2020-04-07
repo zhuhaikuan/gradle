@@ -31,9 +31,9 @@ import org.gradle.caching.BuildCacheEntryWriter;
 import org.gradle.caching.BuildCacheException;
 import org.gradle.caching.BuildCacheKey;
 import org.gradle.caching.BuildCacheService;
-import org.gradle.internal.UncheckedException;
 import org.gradle.internal.resource.transport.http.HttpClientHelper;
 import org.gradle.internal.resource.transport.http.HttpClientResponse;
+import org.gradle.util.GUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +85,7 @@ public class HttpBuildCacheService implements BuildCacheService {
         try (HttpClientResponse response = httpClientHelper.performHttpRequest(httpGet)) {
             StatusLine statusLine = response.getStatusLine();
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Response for GET {}: {}", safeUri(uri), statusLine);
+                LOGGER.debug("Response for GET {}: {}", GUtil.safeUri(uri), statusLine);
             }
             int statusCode = statusLine.getStatusCode();
             if (isHttpSuccess(statusCode)) {
@@ -94,7 +94,7 @@ public class HttpBuildCacheService implements BuildCacheService {
             } else if (statusCode == HttpStatus.SC_NOT_FOUND) {
                 return false;
             } else {
-                String defaultMessage = String.format("Loading entry from '%s' response status %d: %s", safeUri(uri), statusCode, statusLine.getReasonPhrase());
+                String defaultMessage = String.format("Loading entry from '%s' response status %d: %s", GUtil.safeUri(uri), statusCode, statusLine.getReasonPhrase());
                 if (isRedirect(statusCode)) {
                     return handleRedirect(uri, response, statusCode, defaultMessage, "loading entry from");
                 } else {
@@ -113,7 +113,7 @@ public class HttpBuildCacheService implements BuildCacheService {
         }
         try {
             throw new BuildCacheException(String.format("Received unexpected redirect (HTTP %d) to %s when " + action + " '%s'. "
-                + "Ensure the configured URL for the remote build cache is correct.", statusCode, safeUri(new URI(locationHeader)), safeUri(uri)));
+                + "Ensure the configured URL for the remote build cache is correct.", statusCode, GUtil.safeUri(new URI(locationHeader)), GUtil.safeUri(uri)));
         } catch (URISyntaxException e) {
             return throwHttpStatusCodeException(statusCode, defaultMessage);
         }
@@ -159,11 +159,11 @@ public class HttpBuildCacheService implements BuildCacheService {
         try (HttpClientResponse response = httpClientHelper.performHttpRequest(httpPut)) {
             StatusLine statusLine = response.getStatusLine();
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Response for PUT {}: {}", safeUri(uri), statusLine);
+                LOGGER.debug("Response for PUT {}: {}", GUtil.safeUri(uri), statusLine);
             }
             int statusCode = statusLine.getStatusCode();
             if (!isHttpSuccess(statusCode)) {
-                String defaultMessage = String.format("Storing entry at '%s' response status %d: %s", safeUri(uri), statusCode, statusLine.getReasonPhrase());
+                String defaultMessage = String.format("Storing entry at '%s' response status %d: %s", GUtil.safeUri(uri), statusCode, statusLine.getReasonPhrase());
                 if (isRedirect(statusCode)) {
                     handleRedirect(uri, response, statusCode, defaultMessage, "storing entry at");
                 } else {
@@ -205,19 +205,5 @@ public class HttpBuildCacheService implements BuildCacheService {
     @Override
     public void close() throws IOException {
         httpClientHelper.close();
-    }
-
-    /**
-     * Create a safe URI from the given one by stripping out user info.
-     *
-     * @param uri Original URI
-     * @return a new URI with no user info
-     */
-    private static URI safeUri(URI uri) {
-        try {
-            return new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment());
-        } catch (URISyntaxException e) {
-            throw UncheckedException.throwAsUncheckedException(e);
-        }
     }
 }

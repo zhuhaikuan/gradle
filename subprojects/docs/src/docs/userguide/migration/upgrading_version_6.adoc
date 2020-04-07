@@ -94,7 +94,12 @@ Affected is configuration code inside the `application {}` and `java {}` configu
 
 === Deprecations
 
-There were no deprecations between Gradle 6.3 and 6.4.
+[[deprecation:insecure_source_dependencies]]
+==== Resolving source dependencies from HTTP git repositories
+
+In Gradle 6.0, we deprecated using the https://docs.gradle.org/6.0/release-notes.html#protecting-the-integrity-of-builds[insecure HTTP protocol] when resolving dependencies, build script files and text resources.
+
+We have also deprecated using HTTP to clone https://blog.gradle.org/introducing-source-dependencies[source dependencies].  You can still use HTTPS or SSH.
 
 [[changes_6.3]]
 == Upgrading from 6.2
