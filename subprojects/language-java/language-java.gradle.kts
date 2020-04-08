@@ -39,6 +39,8 @@ dependencies {
     implementation(library("asm_commons"))
     implementation(library("inject"))
 
+    runtimeOnly(project(":javaCompilerPlugin"))
+
     testImplementation(project(":baseServicesGroovy"))
     testImplementation(library("commons_io"))
     testImplementation(testFixtures(project(":core")))
