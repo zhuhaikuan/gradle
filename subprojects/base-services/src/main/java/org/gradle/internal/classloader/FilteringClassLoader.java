@@ -94,7 +94,7 @@ public class FilteringClassLoader extends ClassLoader implements ClassLoaderHier
         }
 
         if (!classAllowed(name)) {
-            throw new ClassNotFoundException(name + " not found.");
+            throw new FilteredClassException(name + " not found.");
         }
 
         Class<?> cl = super.loadClass(name, false);
@@ -375,6 +375,17 @@ public class FilteringClassLoader extends ClassLoader implements ClassLoaderHier
         @Override
         public Iterator<String> iterator() {
             return set.iterator();
+        }
+    }
+
+    private static class FilteredClassException extends ClassNotFoundException {
+        public FilteredClassException(String s) {
+            super(s);
+        }
+
+        @Override
+        public synchronized Throwable fillInStackTrace() {
+            return this;
         }
     }
 }

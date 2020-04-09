@@ -89,7 +89,6 @@ public class JdkTools {
     private ClassLoader getSystemFilteringClassLoader(ClassLoaderFactory classLoaderFactory) {
         FilteringClassLoader.Spec filterSpec = new FilteringClassLoader.Spec();
         filterSpec.allowPackage("com.sun.tools");
-        filterSpec.allowPackage("com.sun.source");
         return classLoaderFactory.createFilteringClassLoader(getSystemClassLoader(), filterSpec);
     }
 
