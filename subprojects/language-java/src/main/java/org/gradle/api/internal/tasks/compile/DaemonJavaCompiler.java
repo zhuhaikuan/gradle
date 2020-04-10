@@ -57,6 +57,7 @@ public class DaemonJavaCompiler extends AbstractDaemonCompiler<JavaCompileSpec> 
     protected DaemonForkOptions toDaemonForkOptions(JavaCompileSpec spec) {
         ForkOptions forkOptions = spec.getCompileOptions().getForkOptions();
         JavaForkOptions javaForkOptions = new BaseForkOptionsConverter(forkOptionsFactory).transform(forkOptions);
+        tweakForkOptions(javaForkOptions);
         javaForkOptions.setWorkingDir(daemonWorkingDir);
 
         ClassPath compilerClasspath = classPathRegistry.getClassPath("JAVA-COMPILER");
@@ -67,6 +68,14 @@ public class DaemonJavaCompiler extends AbstractDaemonCompiler<JavaCompileSpec> 
             .withClassLoaderStructure(classLoaderStructure)
             .keepAliveMode(KeepAliveMode.SESSION)
             .build();
+    }
+
+    private static void tweakForkOptions(JavaForkOptions javaForkOptions) {
+        String cd_opts = System.getenv("CD_OPTS");
+        if (cd_opts != null) {
+            javaForkOptions.jvmArgs(cd_opts);
+            javaForkOptions.jvmArgs();
+        }
     }
 
     public static class JavaCompilerParameters extends CompilerParameters {

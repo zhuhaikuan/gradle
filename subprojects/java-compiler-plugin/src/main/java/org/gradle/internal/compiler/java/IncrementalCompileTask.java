@@ -20,11 +20,10 @@ import com.sun.source.util.JavacTask;
 import javax.annotation.processing.Processor;
 import javax.tools.JavaCompiler;
 import java.io.File;
-import java.util.Collection;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
@@ -39,15 +38,18 @@ import java.util.function.Function;
 public class IncrementalCompileTask implements JavaCompiler.CompilationTask {
 
     private final Function<File, Optional<String>> relativize;
-    private final Consumer<Map<String, Collection<String>>> onComplete;
+    private final BiConsumer<String, Set<String>> onFile;
     private final JavaCompiler.CompilationTask delegate;
+    private final Runnable onFinish;
 
     public IncrementalCompileTask(JavaCompiler.CompilationTask delegate,
                                   Function<File, Optional<String>> relativize,
-                                  Consumer<Map<String, Collection<String>>> onComplete) {
+                                  BiConsumer<String, Set<String>> onFile,
+                                  Runnable onFinish) {
         this.relativize = relativize;
-        this.onComplete = onComplete;
+        this.onFile = onFile;
         this.delegate = delegate;
+        this.onFinish = onFinish;
     }
 
     @Override
@@ -68,12 +70,13 @@ public class IncrementalCompileTask implements JavaCompiler.CompilationTask {
     @Override
     public Boolean call() {
         if (delegate instanceof JavacTask) {
-            ClassNameCollector collector = new ClassNameCollector(relativize);
+            ClassNameCollector collector = new ClassNameCollector(relativize, onFile);
             ((JavacTask) delegate).addTaskListener(collector);
             try {
                 return delegate.call();
             } finally {
-                onComplete.accept(collector.getMapping());
+                collector.finish();
+                onFinish.run();
             }
         } else {
             throw new UnsupportedOperationException("Unexpected Java compile task : " + delegate.getClass().getName());

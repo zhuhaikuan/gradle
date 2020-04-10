@@ -76,6 +76,18 @@ public final class UncheckedException extends RuntimeException {
         }
     }
 
+    public interface CheckedCode {
+        void run() throws Exception;
+    }
+
+    public static void runUnchecked(CheckedCode runnable) {
+        try {
+            runnable.run();
+        } catch (Exception e) {
+            throw throwAsUncheckedException(e);
+        }
+    }
+
     /**
      * Unwraps passed InvocationTargetException hence making the stack of exceptions cleaner without losing information.
      *

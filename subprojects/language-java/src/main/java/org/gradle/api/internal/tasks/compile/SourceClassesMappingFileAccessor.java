@@ -89,13 +89,19 @@ public class SourceClassesMappingFileAccessor {
     public static void writeSourceClassesMappingFile(File mappingFile, Map<String, Collection<String>> mapping) {
         try (Writer wrt = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mappingFile, false), StandardCharsets.UTF_8), BUFFER_SIZE)) {
             for (Map.Entry<String, Collection<String>> entry : mapping.entrySet()) {
-                wrt.write(entry.getKey() + "\n");
-                for (String className : entry.getValue()) {
-                    wrt.write(" " + className + "\n");
-                }
+                String relativePath = entry.getKey();
+                Collection<String> symbols = entry.getValue();
+                writeSingleEntry(wrt, relativePath, symbols);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        }
+    }
+
+    public static void writeSingleEntry(Writer wrt, String relativePath, Collection<String> symbols) throws IOException {
+        wrt.write(relativePath + "\n");
+        for (String className : symbols) {
+            wrt.write(" " + className + "\n");
         }
     }
 

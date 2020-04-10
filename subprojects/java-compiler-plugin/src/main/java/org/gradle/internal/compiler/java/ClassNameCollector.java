@@ -23,23 +23,25 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class ClassNameCollector implements TaskListener {
-    private final Map<String, Collection<String>> mapping = new HashMap<>();
     private final Function<File, Optional<String>> relativize;
+    private final BiConsumer<String, Set<String>> onFile;
+    private String currentClass;
+    private final Set<String> symbols = new TreeSet<>();
 
-    public ClassNameCollector(Function<File, Optional<String>> relativize) {
+    public ClassNameCollector(Function<File, Optional<String>> relativize, BiConsumer<String, Set<String>> onFile) {
         this.relativize = relativize;
+        this.onFile = onFile;
     }
 
-    public Map<String, Collection<String>> getMapping() {
-        return mapping;
+    public void finish() {
+        flush();
     }
 
     @Override
@@ -109,12 +111,19 @@ public class ClassNameCollector implements TaskListener {
     }
 
     public void registerMapping(String key, String symbol) {
-        Collection<String> symbols = mapping.get(key);
-        if (symbols == null) {
-            symbols = new TreeSet<String>();
-            mapping.put(key, symbols);
+        if (!key.equals(currentClass)) {
+            flush();
+            currentClass = key;
         }
         symbols.add(symbol);
+    }
+
+    private void flush() {
+        if (currentClass != null) {
+            onFile.accept(currentClass, symbols);
+            currentClass = null;
+            symbols.clear();
+        }
     }
 
 }

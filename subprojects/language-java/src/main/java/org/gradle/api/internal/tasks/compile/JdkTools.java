@@ -35,19 +35,21 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
-import java.util.Collection;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static java.lang.ClassLoader.getSystemClassLoader;
@@ -159,9 +161,18 @@ public class JdkTools {
         @Override
         public JavaCompiler.CompilationTask makeIncremental(JavaCompiler.CompilationTask task, File mappingFile, CompilationSourceDirs compilationSourceDirs) {
             ensureCompilerTask();
-            return DirectInstantiator.instantiate(incrementalCompileTaskClass, task,
-                (Function<File, Optional<String>>) file -> compilationSourceDirs.relativize(file),
-                (Consumer<Map<String, Collection<String>>>) mapping -> SourceClassesMappingFileAccessor.writeSourceClassesMappingFile(mappingFile, mapping));
+
+            Function<File, Optional<String>> relativize = compilationSourceDirs::relativize;
+            Writer writer = UncheckedException.callUnchecked(() -> new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mappingFile, false), StandardCharsets.UTF_8)));
+            BiConsumer<String, Set<String>> onFile = (relativePath, symbols) -> UncheckedException.runUnchecked(() -> SourceClassesMappingFileAccessor.writeSingleEntry(writer, relativePath, symbols));
+            Runnable onFinish = () -> UncheckedException.runUnchecked(writer::close);
+
+            return DirectInstantiator.instantiate(
+                incrementalCompileTaskClass,
+                task,
+                relativize,
+                onFile,
+                onFinish);
         }
     }
 
