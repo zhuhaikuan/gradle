@@ -20,9 +20,9 @@ import org.gradle.api.Transformer;
 import org.gradle.cache.AsyncCacheAccess;
 import org.gradle.cache.FileLock;
 import org.gradle.cache.MultiProcessSafePersistentIndexedCache;
-import org.gradle.internal.Factory;
 
 import javax.annotation.Nullable;
+import java.util.concurrent.Callable;
 
 public class AsyncCacheAccessDecoratedCache<K, V> implements MultiProcessSafeAsyncPersistentIndexedCache<K, V> {
     private final AsyncCacheAccess asyncCacheAccess;
@@ -41,9 +41,9 @@ public class AsyncCacheAccessDecoratedCache<K, V> implements MultiProcessSafeAsy
     @Nullable
     @Override
     public V get(final K key) {
-        return asyncCacheAccess.read(new Factory<V>() {
+        return asyncCacheAccess.read(new Callable<V>() {
             @Override
-            public V create() {
+            public V call() {
                 return persistentCache.get(key);
             }
         });

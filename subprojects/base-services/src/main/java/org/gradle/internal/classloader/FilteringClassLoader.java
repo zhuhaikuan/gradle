@@ -94,7 +94,7 @@ public class FilteringClassLoader extends ClassLoader implements ClassLoaderHier
         }
 
         if (!classAllowed(name)) {
-            throw new FilteredClassException(name + " not found.");
+            throw new ClassNotFoundException(name + " not found.");
         }
 
         Class<?> cl = super.loadClass(name, false);
@@ -232,12 +232,12 @@ public class FilteringClassLoader extends ClassLoader implements ClassLoaderHier
          */
         public boolean isEmpty() {
             return classNames.isEmpty()
-                    && packageNames.isEmpty()
-                    && packagePrefixes.isEmpty()
-                    && resourcePrefixes.isEmpty()
-                    && resourceNames.isEmpty()
-                    && disallowedClassNames.isEmpty()
-                    && disallowedPackagePrefixes.isEmpty();
+                && packageNames.isEmpty()
+                && packagePrefixes.isEmpty()
+                && resourcePrefixes.isEmpty()
+                && resourceNames.isEmpty()
+                && disallowedClassNames.isEmpty()
+                && disallowedPackagePrefixes.isEmpty();
         }
 
         /**
@@ -375,17 +375,6 @@ public class FilteringClassLoader extends ClassLoader implements ClassLoaderHier
         @Override
         public Iterator<String> iterator() {
             return set.iterator();
-        }
-    }
-
-    private static class FilteredClassException extends ClassNotFoundException {
-        public FilteredClassException(String s) {
-            super(s);
-        }
-
-        @Override
-        public synchronized Throwable fillInStackTrace() {
-            return this;
         }
     }
 }

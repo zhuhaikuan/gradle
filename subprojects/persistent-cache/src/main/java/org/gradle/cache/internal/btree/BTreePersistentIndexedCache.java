@@ -28,12 +28,15 @@ import org.slf4j.LoggerFactory;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 // todo - stream serialised value to file
 // todo - handle hash collisions (properly, this time)
@@ -121,7 +124,16 @@ public class BTreePersistentIndexedCache<K, V> {
         header = store.readFirst(HeaderBlock.class);
     }
 
+    private final static UUID uuid = UUID.randomUUID();
+
     public V get(K key) {
+        try {
+            PrintWriter wrt = new PrintWriter(new FileWriter("index-cache-branch-" + uuid + ".txt", true));
+            wrt.println(key.toString());
+            wrt.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         try {
             try {
                 DataBlock block = header.getRoot().get(key);
@@ -223,7 +235,7 @@ public class BTreePersistentIndexedCache<K, V> {
             doVerify();
         } catch (Exception e) {
             throw new UncheckedIOException(String.format("Some problems were found when checking the integrity of %s.",
-                    this), e);
+                this), e);
         }
     }
 

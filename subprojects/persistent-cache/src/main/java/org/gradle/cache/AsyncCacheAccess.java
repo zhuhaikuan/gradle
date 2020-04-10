@@ -18,6 +18,8 @@ package org.gradle.cache;
 
 import org.gradle.internal.Factory;
 
+import java.util.concurrent.Callable;
+
 public interface AsyncCacheAccess {
     /**
      * Submits the given action for execution without waiting for the result.
@@ -31,7 +33,7 @@ public interface AsyncCacheAccess {
      *
      * All actions submitted using {@link #enqueue(Runnable)} must complete before the action is executed.
      */
-    <T> T read(Factory<T> task);
+    <T> T read(Callable<T> task);
 
     /**
      * Blocks until all submitted actions have completed. Rethrows any update failure.
