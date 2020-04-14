@@ -489,7 +489,7 @@ class PrecompiledGroovyPluginsIntegrationTest extends AbstractIntegrationSpec {
         outputContains('parent applied')
     }
 
-    def "fails the build with help message for plugin spec with version"() {
+    def "fails the build with help message when external plugin applied to precompiled script plugin is not found"() {
         given:
         enablePrecompiledPluginsInBuildSrc()
         file("buildSrc/src/main/groovy/plugins/foo.gradle") << """
@@ -508,7 +508,58 @@ class PrecompiledGroovyPluginsIntegrationTest extends AbstractIntegrationSpec {
         fails("help")
 
         then:
-        failureDescriptionContains("Invalid plugin request [id: 'some-plugin', version: '42.0']. Plugin requests from precompiled scripts must not include a version number. Please remove the version from the offending request and make sure the module containing the requested plugin 'some-plugin' is an implementation dependency")
+        failureDescriptionContains("Plugin [id: 'some-plugin', version: '42.0'] not found:")
+    }
+
+    @ToBeFixedForInstantExecution
+    def "allows using external plugin with version from a precompiled plugin"() {
+        given:
+        pluginWithSampleTask("plugin/src/main/groovy/plugins/foo.bar.my-plugin.gradle")
+        file("plugin/build.gradle") << """
+            plugins {
+                id 'groovy-gradle-plugin'
+                id 'maven-publish'
+            }
+            group = 'com.example'
+            version = '1.0'
+            publishing {
+                repositories {
+                    maven {
+                        url '${mavenRepo.uri}'
+                    }
+                }
+            }
+        """
+
+        executer.inDirectory(file("plugin")).withTasks("publish").run()
+        mavenRepo.module('com.example', 'plugin', '1.0').assertPublished()
+        file('plugin').forceDeleteDir()
+
+        when:
+        enablePrecompiledPluginsInBuildSrc()
+        file("buildSrc/src/main/groovy/plugins/foo.gradle") << """
+            plugins {
+                id 'foo.bar.my-plugin' version '1.0'
+            }
+        """
+        file('buildSrc/settings.gradle') << """
+            pluginManagement {
+                repositories {
+                    maven {
+                        url '${mavenRepo.uri}'
+                    }
+                }
+            }
+        """
+
+        buildFile << """
+            plugins {
+                id 'foo'
+            }
+        """
+
+        then:
+        succeeds(SAMPLE_TASK)
     }
 
     def "can use classes from project sources"() {

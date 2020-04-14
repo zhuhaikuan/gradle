@@ -17,10 +17,14 @@
 package org.gradle.plugin.devel.internal.precompiled;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.Project;
 import org.gradle.api.UncheckedIOException;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileSystemOperations;
+import org.gradle.api.internal.artifacts.DependencyResolutionServices;
 import org.gradle.api.internal.initialization.ClassLoaderScope;
+import org.gradle.api.internal.plugins.PluginImplementation;
+import org.gradle.api.plugins.UnknownPluginException;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.InputFiles;
@@ -31,6 +35,7 @@ import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.SkipWhenEmpty;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.configuration.CompileOperationFactory;
+import org.gradle.groovy.scripts.ScriptSource;
 import org.gradle.groovy.scripts.internal.CompileOperation;
 import org.gradle.groovy.scripts.internal.CompiledScript;
 import org.gradle.groovy.scripts.internal.ScriptCompilationHandler;
@@ -38,8 +43,16 @@ import org.gradle.initialization.ClassLoaderScopeRegistry;
 import org.gradle.internal.exceptions.LocationAwareException;
 import org.gradle.internal.service.ServiceRegistry;
 import org.gradle.plugin.management.PluginRequest;
+import org.gradle.plugin.management.internal.PluginRequestInternal;
 import org.gradle.plugin.management.internal.PluginRequests;
+import org.gradle.plugin.use.PluginId;
+import org.gradle.plugin.use.internal.PluginDependencyResolutionServices;
+import org.gradle.plugin.use.internal.PluginResolverFactory;
 import org.gradle.plugin.use.internal.PluginsAwareScript;
+import org.gradle.plugin.use.resolve.internal.PluginResolution;
+import org.gradle.plugin.use.resolve.internal.PluginResolutionResult;
+import org.gradle.plugin.use.resolve.internal.PluginResolveContext;
+import org.gradle.plugin.use.resolve.internal.PluginResolver;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -47,8 +60,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
 
 @CacheableTask
 abstract class GeneratePluginAdaptersTask extends DefaultTask {
@@ -57,17 +68,26 @@ abstract class GeneratePluginAdaptersTask extends DefaultTask {
     private final ServiceRegistry serviceRegistry;
     private final FileSystemOperations fileSystemOperations;
     private final ClassLoaderScope classLoaderScope;
+    private final PluginResolver pluginResolver;
+    private final DependencyResolutionServices dependencyResolutionServices;
+
+    private final Project project = getProject();
 
     @Inject
     public GeneratePluginAdaptersTask(ScriptCompilationHandler scriptCompilationHandler,
                                       ClassLoaderScopeRegistry classLoaderScopeRegistry,
                                       CompileOperationFactory compileOperationFactory,
-                                      ServiceRegistry serviceRegistry, FileSystemOperations fileSystemOperations) {
+                                      ServiceRegistry serviceRegistry,
+                                      FileSystemOperations fileSystemOperations,
+                                      PluginResolverFactory pluginResolverFactory,
+                                      PluginDependencyResolutionServices dependencyResolutionServices) {
         this.scriptCompilationHandler = scriptCompilationHandler;
         this.compileOperationFactory = compileOperationFactory;
         this.serviceRegistry = serviceRegistry;
         this.classLoaderScope = classLoaderScopeRegistry.getCoreAndPluginsScope();
         this.fileSystemOperations = fileSystemOperations;
+        this.pluginResolver = pluginResolverFactory.create();
+        this.dependencyResolutionServices = dependencyResolutionServices;
     }
 
     @PathSensitive(PathSensitivity.RELATIVE)
@@ -99,20 +119,12 @@ abstract class GeneratePluginAdaptersTask extends DefaultTask {
             return PluginRequests.EMPTY;
         }
         PluginRequests pluginRequests = extractPluginRequests(pluginsBlock, scriptPlugin);
-        Set<String> validationErrors = new HashSet<>();
-        for (PluginRequest pluginRequest : pluginRequests) {
+        for (PluginRequestInternal pluginRequest : pluginRequests) {
             if (pluginRequest.getVersion() != null) {
-                validationErrors.add(String.format("Invalid plugin request %s. " +
-                        "Plugin requests from precompiled scripts must not include a version number. " +
-                        "Please remove the version from the offending request and make sure the module containing the " +
-                        "requested plugin '%s' is an implementation dependency",
-                    pluginRequest, pluginRequest.getId()));
+                PluginConfigurer pluginConfigurer = new PluginConfigurer(pluginRequest, scriptPlugin.getSource());
+                pluginResolver.resolve(pluginRequest, pluginConfigurer);
+                pluginConfigurer.configurePluginDependencies();
             }
-        }
-        if (!validationErrors.isEmpty()) {
-            throw new LocationAwareException(new IllegalArgumentException(String.join("\n", validationErrors)),
-                scriptPlugin.getSource().getResource().getLocation().getDisplayName(),
-                pluginRequests.iterator().next().getLineNumber());
         }
         return pluginRequests;
     }
@@ -184,6 +196,71 @@ abstract class GeneratePluginAdaptersTask extends DefaultTask {
             writer.println("//CHECKSTYLE:ON");
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        }
+    }
+
+    private class PluginConfigurer implements PluginResolutionResult {
+        private final PluginRequestInternal pluginRequest;
+        private final ScriptSource scriptSource;
+
+        private final StringBuilder notFoundMessageBuilder = new StringBuilder();
+        private PluginResolution pluginResolution;
+
+        public PluginConfigurer(PluginRequestInternal pluginRequest, ScriptSource scriptSource) {
+            this.pluginRequest = pluginRequest;
+            this.scriptSource = scriptSource;
+        }
+
+        @Override
+        public void notFound(String sourceDescription, String notFoundMessage) {
+            notFoundMessageBuilder.append("- ").append(notFoundMessage).append(".\n");
+        }
+
+        @Override
+        public void notFound(String sourceDescription, String notFoundMessage, String notFoundDetail) {
+            notFoundMessageBuilder.append("- ").append(notFoundMessage).append(". ").append(notFoundDetail).append(".\n");
+        }
+
+        @Override
+        public void found(String sourceDescription, PluginResolution pluginResolution) {
+            this.pluginResolution = pluginResolution;
+        }
+
+        @Override
+        public boolean isFound() {
+            return pluginResolution != null;
+        }
+
+        void configurePluginDependencies() {
+            if (!isFound()) {
+                throw new LocationAwareException(new UnknownPluginException(String.format("Plugin %s not found:\n%s", pluginRequest, notFoundMessageBuilder)),
+                    scriptSource.getResource().getLocation().getDisplayName(),
+                    pluginRequest.getLineNumber());
+            }
+            pluginResolution.execute(new PluginResolveContext() {
+                @Override
+                public void addLegacy(PluginId pluginId, String m2RepoUrl, Object dependencyNotation) {
+                    throw new UnsupportedOperationException("External plugin should be resolved to an artifact");
+                }
+
+                @Override
+                public void addLegacy(PluginId pluginId, Object dependencyNotation) {
+                    dependencyResolutionServices.getResolveRepositoryHandler().forEach(r -> {
+                        project.getRepositories().add(r);
+                    });
+                    project.getDependencies().add("implementation", dependencyNotation);
+                }
+
+                @Override
+                public void add(PluginImplementation<?> plugin) {
+                    throw new UnsupportedOperationException("External plugin should be resolved to an artifact");
+                }
+
+                @Override
+                public void addFromDifferentLoader(PluginImplementation<?> plugin) {
+                    throw new UnsupportedOperationException("External plugin should be resolved to an artifact");
+                }
+            });
         }
     }
 }
