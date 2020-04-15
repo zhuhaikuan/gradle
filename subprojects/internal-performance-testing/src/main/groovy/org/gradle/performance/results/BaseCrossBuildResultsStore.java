@@ -25,11 +25,9 @@ import org.gradle.performance.measure.MeasuredOperation;
 import org.joda.time.LocalDate;
 
 import java.io.Closeable;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
