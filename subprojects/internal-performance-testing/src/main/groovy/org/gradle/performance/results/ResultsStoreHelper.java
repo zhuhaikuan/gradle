@@ -36,8 +36,11 @@ public class ResultsStoreHelper {
         return Collections.emptyList();
     }
 
-    public static String[] toArray(List<String> list) {
-        return list == null ? null : list.toArray(new String[0]);
+    /**
+     * MySQL doesn't support array type. So array in H2 `1,2,3` will be a string like '(1,2,3)'
+     */
+    public static String toArray(List<String> list) {
+        return list == null ? null : "(" + String.join(",", list) + ")";
     }
 
     public static List<String> toList(Object[] objects) {
