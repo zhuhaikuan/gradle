@@ -125,7 +125,7 @@ public class CrossVersionResultsStore implements DataReporter<CrossVersionPerfor
             "jvm", "vcsBranch", "vcsCommit", "channel", "host", "cleanTasks", "teamCityBuildId", "currentMedian", "baselineMedian", "diffConfidence");
 
 
-        try (PreparedStatement statement = connection.prepareStatement(insertStatement)) {
+        try (PreparedStatement statement = connection.prepareStatement(insertStatement, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, results.getTestId());
             statement.setTimestamp(2, new Timestamp(results.getStartTime()));
             statement.setTimestamp(3, new Timestamp(results.getEndTime()));

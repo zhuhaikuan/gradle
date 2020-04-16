@@ -28,6 +28,7 @@ import java.io.Closeable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Comparator;
 import java.util.List;
@@ -50,7 +51,7 @@ public class BaseCrossBuildResultsStore<R extends CrossBuildPerformanceResults> 
         try {
             db.withConnection((ConnectionAction<Void>) connection -> {
                 long executionId;
-                PreparedStatement statement = connection.prepareStatement("insert into testExecution(testId, startTime, endTime, versionUnderTest, operatingSystem, jvm, vcsBranch, vcsCommit, testGroup, resultType, channel, host, teamCityBuildId) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                PreparedStatement statement = connection.prepareStatement("insert into testExecution(testId, startTime, endTime, versionUnderTest, operatingSystem, jvm, vcsBranch, vcsCommit, testGroup, resultType, channel, host, teamCityBuildId) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
                 try {
                     statement.setString(1, results.getTestId());
                     statement.setTimestamp(2, new Timestamp(results.getStartTime()));
@@ -116,16 +117,16 @@ public class BaseCrossBuildResultsStore<R extends CrossBuildPerformanceResults> 
     public List<String> getTestNames() {
         try {
             return db.withConnection((ConnectionAction<List<String>>) connection -> {
-            Set<String> testNames = Sets.newLinkedHashSet();
-            PreparedStatement testIdsStatement = connection.prepareStatement("select distinct testId, testGroup from testExecution where resultType = ? order by testGroup, testId");
-            testIdsStatement.setString(1, resultType);
-            ResultSet testExecutions = testIdsStatement.executeQuery();
-            while (testExecutions.next()) {
-                testNames.add(testExecutions.getString(1));
-            }
-            testExecutions.close();
-            testIdsStatement.close();
-            return Lists.newArrayList(testNames);
+                Set<String> testNames = Sets.newLinkedHashSet();
+                PreparedStatement testIdsStatement = connection.prepareStatement("select distinct testId, testGroup from testExecution where resultType = ? order by testGroup, testId");
+                testIdsStatement.setString(1, resultType);
+                ResultSet testExecutions = testIdsStatement.executeQuery();
+                while (testExecutions.next()) {
+                    testNames.add(testExecutions.getString(1));
+                }
+                testExecutions.close();
+                testIdsStatement.close();
+                return Lists.newArrayList(testNames);
             });
         } catch (Exception e) {
             throw new RuntimeException(String.format("Could not load test history from datastore '%s'.", db.getUrl()), e);
