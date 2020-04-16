@@ -53,10 +53,13 @@ import static org.gradle.performance.results.ResultsStoreHelper.toArray;
  */
 public class CrossVersionResultsStore implements DataReporter<CrossVersionPerformanceResults>, ResultsStore {
     private static final String FLAKINESS_RATE_SQL =
-        "SELECT TESTID, AVG(CONVERT(CASEWHEN(DIFFCONFIDENCE > 0.97, 1, 0), DECIMAL)) AS FAILURE_RATE\n" +
-            "FROM testExecution\n" +
-            "WHERE (CHANNEL = 'flakiness-detection-master' OR CHANNEL = 'flakiness-detection-release') AND STARTTIME>?\n" +
-            "GROUP BY TESTID";
+        "SELECT TESTID, AVG(\n" +
+            "  CASE WHEN DIFFCONFIDENCE > 0.97 THEN 1.0\n" +
+            "    ELSE 0.0\n" +
+            "  END) AS FAILURE_RATE \n" +
+            "  FROM testExecution\n" +
+            " WHERE (CHANNEL = 'flakiness-detection-master' OR CHANNEL = 'flakiness-detection-release') AND STARTTIME> ?\n" +
+            "GROUP BY TESTID ORDER by FAILURE_RATE;";
     private static final String FAILURE_THRESOLD_SQL =
         "SELECT TESTID, MAX(ABS((BASELINEMEDIAN-CURRENTMEDIAN)/BASELINEMEDIAN)) as THRESHOLD\n" +
             "FROM testExecution\n" +
