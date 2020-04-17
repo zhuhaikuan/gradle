@@ -34,8 +34,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-import static org.gradle.performance.results.ResultsStoreHelper.*;
 import static org.gradle.performance.results.ResultsStoreHelper.split;
+import static org.gradle.performance.results.ResultsStoreHelper.toArray;
+import static org.gradle.performance.results.ResultsStoreHelper.toList;
 
 public class BaseCrossBuildResultsStore<R extends CrossBuildPerformanceResults> implements ResultsStore, DataReporter<R>, Closeable {
 
@@ -203,17 +204,5 @@ public class BaseCrossBuildResultsStore<R extends CrossBuildPerformanceResults> 
 
     protected boolean ignore(CrossBuildPerformanceResults performanceResults) {
         return false;
-    }
-
-    private List<String> toList(Object object) {
-        Object[] value = (Object[]) object;
-        if (value == null) {
-            return null;
-        }
-        List<String> list = Lists.newLinkedList();
-        for (Object aValue : value) {
-            list.add(aValue.toString());
-        }
-        return list;
     }
 }
