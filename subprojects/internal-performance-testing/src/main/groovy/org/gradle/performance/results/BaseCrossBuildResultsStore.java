@@ -97,7 +97,7 @@ public class BaseCrossBuildResultsStore<R extends CrossBuildPerformanceResults> 
             statement.setObject(4, toArray(displayInfo.getTasksToRun()));
             statement.setObject(5, toArray(displayInfo.getArgs()));
             statement.setObject(6, toArray(displayInfo.getGradleOpts()));
-            statement.setObject(7, displayInfo.getDaemon());
+            statement.setBoolean(7, displayInfo.getDaemon());
             statement.setBigDecimal(8, operation.getTotalTime().toUnits(Duration.MILLI_SECONDS).getValue());
             statement.setObject(9, toArray(displayInfo.getCleanTasks()));
             statement.addBatch();

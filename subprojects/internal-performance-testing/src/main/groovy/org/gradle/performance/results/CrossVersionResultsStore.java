@@ -137,7 +137,7 @@ public class CrossVersionResultsStore implements DataReporter<CrossVersionPerfor
             statement.setObject(6, toArray(results.getTasks()));
             statement.setObject(7, toArray(results.getArgs()));
             statement.setObject(8, toArray(results.getGradleOpts()));
-            statement.setObject(9, results.getDaemon());
+            statement.setBoolean(9, results.getDaemon());
             statement.setString(10, results.getOperatingSystem());
             statement.setString(11, results.getJvm());
             statement.setString(12, results.getVcsBranch());
