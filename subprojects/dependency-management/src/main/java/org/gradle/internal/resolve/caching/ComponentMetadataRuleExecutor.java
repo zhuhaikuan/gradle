@@ -30,6 +30,8 @@ import org.gradle.util.BuildCommencedTimeProvider;
 
 public class ComponentMetadataRuleExecutor extends CrossBuildCachingRuleExecutor<ModuleComponentResolveMetadata, ComponentMetadataContext, ModuleComponentResolveMetadata> {
 
+    public static final String CACHE_ID = "md-rule";
+
     private static Transformer<Object, ModuleComponentResolveMetadata> getKeyToSnapshotableTransformer() {
         return moduleMetadata -> moduleMetadata.getSources().withSource(ModuleDescriptorHashModuleSource.class, source -> {
             return source.map(metadataFileSource -> metadataFileSource.getDescriptorHash().toString())
@@ -44,7 +46,7 @@ public class ComponentMetadataRuleExecutor extends CrossBuildCachingRuleExecutor
                                          ValueSnapshotter snapshotter,
                                          BuildCommencedTimeProvider timeProvider,
                                          Serializer<ModuleComponentResolveMetadata> componentMetadataContextSerializer) {
-        super("md-rule", cacheRepository, cacheDecoratorFactory, snapshotter, timeProvider, createValidator(timeProvider), getKeyToSnapshotableTransformer(), componentMetadataContextSerializer);
+        super(CACHE_ID, cacheRepository, cacheDecoratorFactory, snapshotter, timeProvider, createValidator(timeProvider), getKeyToSnapshotableTransformer(), componentMetadataContextSerializer);
         this.componentMetadataContextSerializer = componentMetadataContextSerializer;
     }
 

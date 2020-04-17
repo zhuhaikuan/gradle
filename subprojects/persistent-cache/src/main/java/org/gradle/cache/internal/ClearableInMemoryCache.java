@@ -15,8 +15,7 @@
  */
 package org.gradle.cache.internal;
 
-import org.gradle.cache.CacheDecorator;
-
-public interface InMemoryCacheDecoratorFactory {
-    CacheDecorator decorator(int maxEntriesToKeepInMemory, boolean cacheInMemoryForShortLivedProcesses);
+public interface ClearableInMemoryCache {
+    String getId();
+    void clearInMemoryCache();
 }

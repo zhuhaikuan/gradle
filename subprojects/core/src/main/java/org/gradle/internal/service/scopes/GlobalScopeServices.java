@@ -43,6 +43,7 @@ import org.gradle.api.internal.provider.PropertyHost;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.tasks.util.internal.CachingPatternSpecFactory;
 import org.gradle.api.tasks.util.internal.PatternSpecFactory;
+import org.gradle.cache.internal.CleaningInMemoryCacheDecoratorFactory;
 import org.gradle.cache.internal.CrossBuildInMemoryCacheFactory;
 import org.gradle.cache.internal.InMemoryCacheDecoratorFactory;
 import org.gradle.cli.CommandLineConverter;
@@ -177,7 +178,7 @@ public class GlobalScopeServices extends WorkerSharedGlobalScopeServices {
     }
 
     InMemoryCacheDecoratorFactory createInMemoryTaskArtifactCache(CrossBuildInMemoryCacheFactory cacheFactory) {
-        return new InMemoryCacheDecoratorFactory(environment.isLongLivingProcess(), cacheFactory);
+        return new CleaningInMemoryCacheDecoratorFactory(environment.isLongLivingProcess(), cacheFactory);
     }
 
     ModelRuleExtractor createModelRuleInspector(List<MethodModelRuleExtractor> extractors, ModelSchemaStore modelSchemaStore, StructBindingsStore structBindingsStore, ManagedProxyFactory managedProxyFactory) {
