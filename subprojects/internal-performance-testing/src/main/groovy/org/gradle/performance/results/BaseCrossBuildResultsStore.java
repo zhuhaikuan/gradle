@@ -34,6 +34,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import static org.gradle.performance.results.ResultsStoreHelper.*;
 import static org.gradle.performance.results.ResultsStoreHelper.split;
 
 public class BaseCrossBuildResultsStore<R extends CrossBuildPerformanceResults> implements ResultsStore, DataReporter<R>, Closeable {
@@ -102,10 +103,6 @@ public class BaseCrossBuildResultsStore<R extends CrossBuildPerformanceResults> 
             statement.setObject(9, toArray(displayInfo.getCleanTasks()));
             statement.addBatch();
         }
-    }
-
-    private String[] toArray(List<String> list) {
-        return list == null ? null : list.toArray(new String[0]);
     }
 
     @Override
