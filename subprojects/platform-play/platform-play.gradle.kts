@@ -1,10 +1,8 @@
 import org.gradle.gradlebuild.BuildEnvironment
 import org.gradle.gradlebuild.test.integrationtests.IntegrationTest
-import org.gradle.gradlebuild.unittestandcompile.ModuleType
 
 plugins {
-    `java-library`
-    gradlebuild.classycle
+    gradlebuild.distribution.`plugins-api-java`
 }
 
 val integTestRuntimeResources by configurations.creating {
@@ -86,10 +84,6 @@ dependencies {
     testImplementation(testFixtures(project(":platformBase")))
 
     integTestRuntimeResources(testFixtures(project(":platformPlay")))
-}
-
-gradlebuildJava {
-    moduleType = ModuleType.CORE
 }
 
 tasks.named<Test>("integTest") {

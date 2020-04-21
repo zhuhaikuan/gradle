@@ -23,7 +23,7 @@ import org.gradle.api.internal.ClassPathRegistry;
 import org.gradle.api.internal.file.TemporaryFileProvider;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.internal.io.StreamByteBuffer;
-import org.gradle.internal.jpms.JavaModuleDetector;
+import org.gradle.internal.jvm.JavaModuleDetector;
 import org.gradle.internal.jvm.inspection.JvmVersionDetector;
 import org.gradle.internal.process.ArgWriter;
 import org.gradle.internal.remote.Address;
@@ -92,13 +92,12 @@ public class ApplicationClassesInSystemClassLoaderWorkerImplementationFactory im
     @Override
     public void prepareJavaCommand(long workerId, String displayName, WorkerProcessBuilder processBuilder, List<URL> implementationClassPath, List<URL> implementationModulePath, Address serverAddress, JavaExecHandleBuilder execSpec, boolean publishProcessInfo) {
         Collection<File> applicationClasspath = processBuilder.getApplicationClasspath();
-        boolean inferApplicationModulePath = processBuilder.isInferApplicationModulePath();
+        Set<File> applicationModulePath = processBuilder.getApplicationModulePath();
         LogLevel logLevel = processBuilder.getLogLevel();
         Set<String> sharedPackages = processBuilder.getSharedPackages();
         Object requestedSecurityManager = execSpec.getSystemProperties().get("java.security.manager");
         List<File> workerMainClassPath = classPathRegistry.getClassPath("WORKER_MAIN").getAsFiles();
 
-        execSpec.getModularClasspathHandling().getInferModulePath().set(inferApplicationModulePath);
         execSpec.getMainModule().set("gradle.worker");
         execSpec.getMainClass().set("worker." + GradleWorkerMain.class.getName());
 
@@ -106,7 +105,7 @@ public class ApplicationClassesInSystemClassLoaderWorkerImplementationFactory im
         if (useOptionsFile) {
             // Use an options file to pass across application classpath
             File optionsFile = temporaryFileProvider.createTemporaryFile("gradle-worker-classpath", "txt");
-            List<String> jvmArgs = writeOptionsFile(workerMainClassPath, implementationModulePath, applicationClasspath, inferApplicationModulePath, optionsFile);
+            List<String> jvmArgs = writeOptionsFile(execSpec.getModularity().getInferModulePath().get(), workerMainClassPath, implementationModulePath, applicationClasspath, applicationModulePath, optionsFile);
             execSpec.jvmArgs(jvmArgs);
         } else {
             // Use a dummy security manager, which hacks the application classpath into the system ClassLoader
@@ -136,7 +135,7 @@ public class ApplicationClassesInSystemClassLoaderWorkerImplementationFactory im
             }
 
             // Serialize the worker implementation classpath, this is consumed by GradleWorkerMain
-            if (execSpec.getModularClasspathHandling().getInferModulePath().get() || implementationModulePath == null) {
+            if (execSpec.getModularity().getInferModulePath().get() || implementationModulePath == null) {
                 outstr.writeInt(implementationClassPath.size());
                 for (URL entry : implementationClassPath) {
                     outstr.writeUTF(entry.toString());
@@ -178,17 +177,17 @@ public class ApplicationClassesInSystemClassLoaderWorkerImplementationFactory im
         return executableVersion != null && executableVersion.isJava9Compatible();
     }
 
-    private List<String> writeOptionsFile(Collection<File> workerMainClassPath, Collection<URL> implementationModulePath, Collection<File> applicationClasspath, boolean inferApplicationModulePath, File optionsFile) {
+    private List<String> writeOptionsFile(boolean runAsModule, Collection<File> workerMainClassPath, Collection<URL> implementationModulePath, Collection<File> applicationClasspath, Set<File> applicationModulePath, File optionsFile) {
         List<File> classpath = new ArrayList<>();
         List<File> modulePath = new ArrayList<>();
 
-        if (inferApplicationModulePath) {
+        if (runAsModule) {
             modulePath.addAll(workerMainClassPath);
         } else {
             classpath.addAll(workerMainClassPath);
         }
-        modulePath.addAll(javaModuleDetector.inferModulePath(inferApplicationModulePath, applicationClasspath).getFiles());
-        classpath.addAll(javaModuleDetector.inferClasspath(inferApplicationModulePath, applicationClasspath).getFiles());
+        modulePath.addAll(applicationModulePath);
+        classpath.addAll(applicationClasspath);
 
         if (!modulePath.isEmpty() && implementationModulePath != null && !implementationModulePath.isEmpty()) {
             // We add the implementation module path as well, as we do not load modules dynamically through a separate class loader in the worker.

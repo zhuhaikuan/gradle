@@ -1,5 +1,3 @@
-import org.gradle.gradlebuild.unittestandcompile.ModuleType
-
 /*
  * Copyright 2012 the original author or authors.
  *
@@ -16,9 +14,8 @@ import org.gradle.gradlebuild.unittestandcompile.ModuleType
  * limitations under the License.
  */
 plugins {
-    `java-library`
+    gradlebuild.distribution.`plugins-api-java`
     gradlebuild.`strict-compile`
-    gradlebuild.classycle
 }
 
 dependencies {
@@ -59,8 +56,3 @@ dependencies {
     integTestRuntimeOnly(project(":testKit"))
     integTestRuntimeOnly(project(":runtimeApiInfo"))
 }
-
-gradlebuildJava {
-    moduleType = ModuleType.CORE
-}
-

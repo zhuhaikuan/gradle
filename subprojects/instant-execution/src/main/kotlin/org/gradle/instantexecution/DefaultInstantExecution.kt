@@ -17,6 +17,7 @@
 package org.gradle.instantexecution
 
 import org.gradle.api.Project
+import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.project.ProjectStateRegistry
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.logging.LogLevel
@@ -30,6 +31,7 @@ import org.gradle.instantexecution.extensions.unsafeLazy
 import org.gradle.instantexecution.fingerprint.InstantExecutionCacheFingerprintController
 import org.gradle.instantexecution.fingerprint.InvalidationReason
 import org.gradle.instantexecution.initialization.InstantExecutionStartParameter
+import org.gradle.instantexecution.problems.InstantExecutionProblems
 import org.gradle.instantexecution.serialization.DefaultReadContext
 import org.gradle.instantexecution.serialization.DefaultWriteContext
 import org.gradle.instantexecution.serialization.IsolateOwner
@@ -47,6 +49,8 @@ import org.gradle.instantexecution.serialization.writeCollection
 import org.gradle.instantexecution.serialization.writeFile
 import org.gradle.internal.Factory
 import org.gradle.internal.build.event.BuildEventListenerRegistryInternal
+import org.gradle.internal.classpath.Instrumented
+import org.gradle.internal.cleanup.BuildOutputCleanupRegistry
 import org.gradle.internal.operations.BuildOperationExecutor
 import org.gradle.internal.serialize.Decoder
 import org.gradle.internal.serialize.Encoder
@@ -64,7 +68,7 @@ import java.util.ArrayList
 class DefaultInstantExecution internal constructor(
     private val host: Host,
     private val startParameter: InstantExecutionStartParameter,
-    private val report: InstantExecutionReport,
+    private val problems: InstantExecutionProblems,
     private val scopeRegistryListener: InstantExecutionClassLoaderScopeRegistryListener,
     private val cacheFingerprintController: InstantExecutionCacheFingerprintController,
     private val beanConstructors: BeanConstructors,
@@ -73,11 +77,11 @@ class DefaultInstantExecution internal constructor(
 
     interface Host {
 
-        val currentBuild: ClassicModeBuild
+        val currentBuild: VintageGradleBuild
 
         fun createBuild(rootProjectName: String): InstantExecutionBuild
 
-        fun <T> getService(serviceType: Class<T>): T
+        fun <T> service(serviceType: Class<T>): T
 
         fun <T> factory(serviceType: Class<T>): Factory<T>
     }
@@ -129,6 +133,7 @@ class DefaultInstantExecution internal constructor(
         if (!isInstantExecutionEnabled) return
 
         startCollectingCacheFingerprint()
+        Instrumented.setListener(SystemPropertyAccessListener(problems))
     }
 
     override fun saveScheduledWork() {
@@ -141,11 +146,11 @@ class DefaultInstantExecution internal constructor(
         }
 
         stopCollectingCacheFingerprint()
+        Instrumented.discardListener()
 
         buildOperationExecutor.withStoreOperation {
 
-            // Discard the state file on serialization errors
-            report.withExceptionHandling(::discardInstantExecutionState) {
+            try {
 
                 instantExecutionStateFile.createParentDirectories()
 
@@ -156,6 +161,16 @@ class DefaultInstantExecution internal constructor(
                 }
 
                 writeInstantExecutionCacheFingerprint()
+            } catch (error: InstantExecutionError) {
+                // Invalidate unusable state on errors
+                invalidateInstantExecutionState()
+                problems.requestConsoleSummary()
+                throw error
+            } finally {
+                if (startParameter.failOnProblems) {
+                    // Invalidate state on problems that fail the build
+                    problems.runIfProblems { invalidateInstantExecutionState() }
+                }
             }
         }
     }
@@ -258,7 +273,7 @@ class DefaultInstantExecution internal constructor(
     }
 
     private
-    fun discardInstantExecutionState() {
+    fun invalidateInstantExecutionState() {
         instantExecutionFingerprintFile.delete()
     }
 
@@ -292,7 +307,7 @@ class DefaultInstantExecution internal constructor(
         encoder,
         scopeRegistryListener,
         logger,
-        report::add
+        problems::onProblem
     )
 
     private
@@ -301,7 +316,8 @@ class DefaultInstantExecution internal constructor(
         decoder,
         service(),
         beanConstructors,
-        logger
+        logger,
+        problems::onProblem
     )
 
     private
@@ -331,6 +347,7 @@ class DefaultInstantExecution internal constructor(
             transformListener = service(),
             valueSourceProviderFactory = service(),
             patternSetFactory = factory(),
+            fileOperations = service(),
             fileSystem = service(),
             fileFactory = service()
         )
@@ -344,6 +361,8 @@ class DefaultInstantExecution internal constructor(
             }
             val eventListenerRegistry = service<BuildEventListenerRegistryInternal>()
             writeCollection(eventListenerRegistry.subscriptions)
+            val buildOutputCleanupRegistry = service<BuildOutputCleanupRegistry>()
+            writeCollection(buildOutputCleanupRegistry.registeredOutputs)
         }
     }
 
@@ -354,6 +373,11 @@ class DefaultInstantExecution internal constructor(
             readCollection {
                 val provider = readNonNull<Provider<OperationCompletionListener>>()
                 eventListenerRegistry.subscribe(provider)
+            }
+            val buildOutputCleanupRegistry = service<BuildOutputCleanupRegistry>()
+            readCollection {
+                val files = readNonNull<FileCollection>()
+                buildOutputCleanupRegistry.registerOutputs(files)
             }
         }
     }
@@ -459,7 +483,7 @@ class DefaultInstantExecution internal constructor(
 
 
 inline fun <reified T> DefaultInstantExecution.Host.service(): T =
-    getService(T::class.java)
+    service(T::class.java)
 
 
 internal

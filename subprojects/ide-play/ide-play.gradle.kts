@@ -1,6 +1,4 @@
 import org.gradle.gradlebuild.test.integrationtests.IntegrationTest
-import org.gradle.gradlebuild.unittestandcompile.ModuleType
-
 /*
  * Copyright 2014 the original author or authors.
  *
@@ -17,8 +15,7 @@ import org.gradle.gradlebuild.unittestandcompile.ModuleType
  * limitations under the License.
  */
 plugins {
-    `java-library`
-    gradlebuild.classycle
+    gradlebuild.distribution.`plugins-api-java`
 }
 
 val integTestRuntimeResources by configurations.creating {
@@ -61,10 +58,6 @@ dependencies {
     integTestRuntimeOnly(project(":runtimeApiInfo"))
 
     integTestRuntimeResources(testFixtures(project(":platformPlay")))
-}
-
-gradlebuildJava {
-    moduleType = ModuleType.CORE
 }
 
 tasks.withType<IntegrationTest>().configureEach {

@@ -15,11 +15,9 @@
  */
 
 import accessors.java
-import org.gradle.gradlebuild.unittestandcompile.ModuleType
 
 plugins {
-    `java-library`
-    gradlebuild.classycle
+    gradlebuild.distribution.`core-api-java`
     gradlebuild.`publish-public-libraries`
     gradlebuild.`strict-compile`
 }
@@ -58,10 +56,6 @@ dependencies {
     integTestRuntimeOnly(project(":kotlinDsl"))
     integTestRuntimeOnly(project(":kotlinDslProviderPlugins"))
     integTestRuntimeOnly(project(":kotlinDslToolingBuilders"))
-}
-
-gradlebuildJava {
-    moduleType = ModuleType.CORE
 }
 
 afterEvaluate {

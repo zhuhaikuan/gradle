@@ -19,6 +19,7 @@ package org.gradle.api.file
 import org.gradle.api.tasks.TasksWithInputsAndOutputs
 import org.gradle.integtests.fixtures.AbstractIntegrationSpec
 import org.gradle.integtests.fixtures.ToBeFixedForInstantExecution
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Unroll
 
@@ -141,5 +142,146 @@ class FileCollectionIntegrationTest extends AbstractIntegrationSpec implements T
         then:
         result.assertTasksExecuted(":produce1", ":produce2", ":merge")
         file("merge.txt").text == "one,two"
+    }
+
+    @Issue("https://github.com/gradle/gradle/issues/12832")
+    def "can use += convenience in Groovy DSL to add elements to file collection when property has legacy setter"() {
+        taskTypeWithInputFileCollection()
+        buildFile << """
+            class LegacyTask extends InputFilesTask {
+                void setInFiles(def c) {
+                    inFiles.from = c
+                }
+            }
+
+            def files1 = files('a.txt')
+            def files2 = files('b.txt')
+            task merge(type: LegacyTask) {
+                inFiles += files1
+                inFiles += files2
+                outFile = file("merge.txt")
+            }
+        """
+        file('a.txt').text = 'a'
+        file('b.txt').text = 'b'
+
+        when:
+        run("merge")
+
+        then:
+        file("merge.txt").text == 'a,b'
+    }
+
+    @Issue("https://github.com/gradle/gradle/issues/12832")
+    @Ignore // This currently causes a stack overflow error
+    def "can compose and filter a file collection that includes the collection it replaces"() {
+        taskTypeWithInputFileCollection()
+        buildFile << """
+            class LegacyTask extends InputFilesTask {
+                void setInFiles(def c) {
+                    inFiles.from = c
+                }
+            }
+
+            def files1 = files('a.txt')
+            def files2 = files('b.txt')
+            task merge(type: LegacyTask) {
+                inFiles = files1
+                inFiles = files(inFiles, files2).filter { f -> f.name.endsWith('.txt') }
+                outFile = file("merge.txt")
+            }
+        """
+        file('a.txt').text = 'a'
+        file('b.txt').text = 'b'
+
+        when:
+        run("merge")
+
+        then:
+        file("merge.txt").text == 'a,b'
+    }
+
+    def "can subtract the elements of another file collection"() {
+        given:
+        file('files/a/one.txt').createFile()
+        file('files/b/two.txt').createFile()
+        buildFile << """
+            def files = files('files/a', 'files/b').minus(files('files/b'))
+            task copy(type: Copy) {
+                from files
+                into 'dest'
+            }
+        """
+
+        when:
+        run 'copy'
+
+        then:
+        file('dest').assertHasDescendants(
+            'one.txt'
+        )
+
+        when:
+        file('files/b/ignore.txt').createFile()
+        run 'copy'
+
+        then:
+        result.assertTaskSkipped(':copy')
+        file('dest').assertHasDescendants(
+            'one.txt'
+        )
+
+        when:
+        file('files/a/three.txt').createFile()
+        run 'copy'
+
+        then:
+        result.assertTaskNotSkipped(':copy')
+        file('dest').assertHasDescendants(
+            'one.txt',
+            'three.txt'
+        )
+    }
+
+    def "can filter the elements of a file collection using a closure"() {
+        given:
+        file('files/a/one.txt').createFile()
+        file('files/b/two.txt').createFile()
+        buildFile << """
+            def files = files('files/a', 'files/b').filter { it.name != 'b' }
+            task copy(type: Copy) {
+                from files
+                into 'dest'
+            }
+        """
+
+        when:
+        run 'copy'
+
+        then:
+        file('dest').assertHasDescendants(
+            'one.txt'
+        )
+
+        when:
+        file('files/b/ignore.txt').createFile()
+        run 'copy'
+
+        then:
+        result.assertTaskSkipped(':copy')
+        file('dest').assertHasDescendants(
+            'one.txt'
+        )
+
+        when:
+        file('files/a/three.txt').createFile()
+        run 'copy'
+
+        then:
+        result.assertTaskNotSkipped(':copy')
+        file('dest').assertHasDescendants(
+            'one.txt',
+            'three.txt'
+        )
     }
 }

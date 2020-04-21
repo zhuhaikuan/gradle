@@ -15,10 +15,8 @@
  */
 
 import org.gradle.gradlebuild.testing.integrationtests.cleanup.WhenNotEmpty
-import org.gradle.gradlebuild.unittestandcompile.ModuleType
-
 plugins {
-    `java-library`
+    gradlebuild.distribution.`plugins-api-java`
 }
 
 dependencies {
@@ -77,8 +75,10 @@ dependencies {
     testFixturesImplementation(project(":dependencyManagement"))
 }
 
-gradlebuildJava {
-    moduleType = ModuleType.CORE
+classycle {
+    excludePatterns.set(listOf(
+        "org/gradle/api/publication/maven/internal/**",
+        "org/gradle/api/artifacts/maven/**"))
 }
 
 testFilesCleanup {

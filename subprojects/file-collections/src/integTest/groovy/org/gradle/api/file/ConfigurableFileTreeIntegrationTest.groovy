@@ -19,6 +19,117 @@ package org.gradle.api.file
 import org.gradle.integtests.fixtures.AbstractIntegrationSpec
 
 class ConfigurableFileTreeIntegrationTest extends AbstractIntegrationSpec {
+    def "include and exclude patterns are case sensitive by default"() {
+        given:
+        file('files/one.txt').createFile()
+        file('files/a/one.txt').createFile()
+        file('files/a/not ONE.txt').createFile()
+        file('files/b/ignore.txt').createFile()
+        file('files/b/not one to IGNORE.txt').createFile()
+        file('files/b/one.ignore').createFile()
+        buildFile << """
+            def files = fileTree(dir: 'files')
+            files.include('**/*one*')
+            files.exclude('**/*ignore*')
+            task copy(type: Copy) {
+                from files
+                into 'dest'
+                includeEmptyDirs = false
+            }
+        """
+
+        when:
+        run 'copy'
+
+        then:
+        file('dest').assertHasDescendants(
+            'one.txt',
+            'a/one.txt',
+            'b/not one to IGNORE.txt'
+        )
+
+        when:
+        file('files/a/more-ignore.txt').createFile() // not an input
+        run 'copy'
+
+        then:
+        result.assertTaskSkipped(':copy')
+        file('dest').assertHasDescendants(
+            'one.txt',
+            'a/one.txt',
+            'b/not one to IGNORE.txt'
+        )
+
+        when:
+        file('files/c/more-one.txt').createFile()
+        run 'copy'
+
+        then:
+        result.assertTaskNotSkipped(':copy')
+        file('dest').assertHasDescendants(
+            'one.txt',
+            'a/one.txt',
+            'b/not one to IGNORE.txt',
+            'c/more-one.txt'
+        )
+    }
+
+    def "include and exclude patterns is case insensitive when enabled"() {
+        given:
+        file('files/one.txt').createFile()
+        file('files/a/one.txt').createFile()
+        file('files/a/is ONE.txt').createFile()
+        file('files/b/ignore.txt').createFile()
+        file('files/b/IGNORE this.txt').createFile()
+        file('files/b/one.ignore').createFile()
+        buildFile << """
+            def files = fileTree(dir: 'files')
+            files.include('**/*one*')
+            files.exclude('**/*ignore*')
+            files.patterns.caseSensitive = false
+            task copy(type: Copy) {
+                from files
+                into 'dest'
+                includeEmptyDirs = false
+            }
+        """
+
+        when:
+        run 'copy'
+
+        then:
+        file('dest').assertHasDescendants(
+            'one.txt',
+            'a/one.txt',
+            'a/is ONE.txt'
+        )
+
+        when:
+        file('files/a/more-ignore.txt').createFile() // not an input
+        run 'copy'
+
+        then:
+        result.assertTaskSkipped(':copy')
+        file('dest').assertHasDescendants(
+            'one.txt',
+            'a/one.txt',
+            'a/is ONE.txt'
+        )
+
+        when:
+        file('files/c/more-one.txt').createFile()
+        run 'copy'
+
+        then:
+        result.assertTaskNotSkipped(':copy')
+        file('dest').assertHasDescendants(
+            'one.txt',
+            'a/one.txt',
+            'a/is ONE.txt',
+            'c/more-one.txt'
+        )
+    }
+
     def "can include the elements of a tree using a Groovy closure spec"() {
         buildFile << """
             class SomeTask extends DefaultTask {
@@ -76,7 +187,7 @@ class ConfigurableFileTreeIntegrationTest extends AbstractIntegrationSpec {
 
         then:
         result.assertTaskNotSkipped(":generate")
-        output.count("checking") == 22 // checked twice, once to snapshot and once when the task action runs
+        output.count("checking") == 22 // checked twice, once to snapshot and once when the task action runs. Should be memoized when snapshotting
         outputContains("checking a/a.txt")
         outputContains("checking d/d.txt")
         file("out.txt").text == "a.txt,c.txt,d.txt"
@@ -138,9 +249,62 @@ class ConfigurableFileTreeIntegrationTest extends AbstractIntegrationSpec {
 
         then:
         result.assertTaskNotSkipped(":generate")
-        output.count("checking") == 20 // checked twice, once for snapshots and once when the task action runs
+        output.count("checking") == 20 // checked twice, once for snapshots and once when the task action runs. Should be memoized when snapshotting
         outputContains("checking a.txt")
         outputContains("checking d/e/f.txt")
         file("out.txt").text == "a.txt,c.txt,f.txt"
+    }
+
+    def "can filter the elements of a tree using a closure that receives pattern set"() {
+        given:
+        file('files/one.txt').createFile()
+        file('files/a/one.txt').createFile()
+        file('files/b/ignore.txt').createFile()
+        file('files/b/one.ignore').createFile()
+        buildFile << """
+            def files = fileTree(dir: 'files')
+            files.include('**/*one*')
+            def filtered = files.matching {
+                include('**/*.txt')
+                exclude('**/*ignore*')
+            }
+            task copy(type: Copy) {
+                from filtered
+                into 'dest'
+                includeEmptyDirs = false
+            }
+        """
+
+        when:
+        run 'copy'
+
+        then:
+        file('dest').assertHasDescendants(
+            'one.txt',
+            'a/one.txt'
+        )
+
+        when:
+        file('files/a/more-ignore.txt').createFile() // not an input
+        run 'copy'
+
+        then:
+        result.assertTaskSkipped(':copy')
+        file('dest').assertHasDescendants(
+            'one.txt',
+            'a/one.txt'
+        )
+
+        when:
+        file('files/c/more-one.txt').createFile()
+        run 'copy'
+
+        then:
+        result.assertTaskNotSkipped(':copy')
+        file('dest').assertHasDescendants(
+            'one.txt',
+            'a/one.txt',
+            'c/more-one.txt'
+        )
     }
 }

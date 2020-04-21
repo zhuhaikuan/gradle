@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.gradle.gradlebuild.unittestandcompile.ModuleType
-
 plugins {
-    `java-library`
-    // TODO: re-enable if we are ready to do breaking changes, because this subproject includes classes migrated from the "plugins" subproject
+    gradlebuild.distribution.`plugins-api-java`
     // id "gradlebuild.strict-compile"
-    // id "gradlebuild.classycle"
 }
+
+gradlebuildJava.usedInWorkers()
 
 dependencies {
     implementation(project(":baseServices"))
@@ -68,12 +66,11 @@ dependencies {
     integTestRuntimeOnly(project(":testingJunitPlatform"))
 }
 
-gradlebuildJava {
-    moduleType = ModuleType.WORKER
+classycle {
+    excludePatterns.set(listOf("org/gradle/api/internal/tasks/testing/**"))
 }
 
 tasks.named<Test>("test").configure {
     exclude("org/gradle/api/internal/tasks/testing/junit/ATestClass*.*")
     exclude("org/gradle/api/internal/tasks/testing/junit/ABroken*TestClass*.*")
 }
-

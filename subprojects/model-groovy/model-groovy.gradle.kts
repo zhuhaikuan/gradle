@@ -1,5 +1,3 @@
-import org.gradle.gradlebuild.unittestandcompile.ModuleType
-
 /*
  * Copyright 2014 the original author or authors.
  *
@@ -20,9 +18,8 @@ import org.gradle.gradlebuild.unittestandcompile.ModuleType
  * Groovy specific adaptations to the model management.
  */
 plugins {
-    `java-library`
+    gradlebuild.distribution.`core-api-java`
     gradlebuild.`strict-compile`
-    gradlebuild.classycle
 }
 
 dependencies {
@@ -39,8 +36,3 @@ dependencies {
 
     testRuntimeOnly(project(":runtimeApiInfo"))
 }
-
-gradlebuildJava {
-    moduleType = ModuleType.CORE
-}
-

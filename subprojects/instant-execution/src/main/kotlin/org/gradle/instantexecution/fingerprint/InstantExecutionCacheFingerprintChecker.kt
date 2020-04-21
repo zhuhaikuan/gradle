@@ -17,11 +17,11 @@
 package org.gradle.instantexecution.fingerprint
 
 import org.gradle.api.Describable
+import org.gradle.api.internal.GeneratedSubclasses.unpackType
 import org.gradle.api.internal.file.FileCollectionInternal
 import org.gradle.api.provider.ValueSource
 import org.gradle.api.provider.ValueSourceParameters
 import org.gradle.instantexecution.serialization.ReadContext
-import org.gradle.internal.fingerprint.CurrentFileCollectionFingerprint
 import org.gradle.internal.hash.HashCode
 import java.io.File
 
@@ -34,7 +34,7 @@ internal
 class InstantExecutionCacheFingerprintChecker(private val host: Host) {
 
     interface Host {
-        fun fingerprintOf(fileCollection: FileCollectionInternal): CurrentFileCollectionFingerprint
+        fun fingerprintOf(fileCollection: FileCollectionInternal): HashCode
         fun hashCodeOf(file: File): HashCode?
         fun displayNameOf(fileOrDirectory: File): String
         fun instantiateValueSourceOf(obtainedValue: ObtainedValue): ValueSource<Any, ValueSourceParameters>
@@ -47,7 +47,7 @@ class InstantExecutionCacheFingerprintChecker(private val host: Host) {
                 null -> return null
                 is InstantExecutionCacheFingerprint.TaskInputs -> input.run {
                     val currentFingerprint = host.fingerprintOf(fileSystemInputs)
-                    if (currentFingerprint.hash != fileSystemInputsFingerprint.hash) {
+                    if (currentFingerprint != fileSystemInputsFingerprint) {
                         // TODO: summarize what has changed (see https://github.com/gradle/instant-execution/issues/282)
                         return "an input to task '$taskPath' has changed"
                     }
@@ -84,5 +84,5 @@ class InstantExecutionCacheFingerprintChecker(private val host: Host) {
     fun buildLogicInputHasChanged(valueSource: ValueSource<Any, ValueSourceParameters>): InvalidationReason =
         (valueSource as? Describable)?.let {
             it.displayName + " has changed"
-        } ?: "a build logic input of type '${valueSource.javaClass.simpleName}' has changed"
+        } ?: "a build logic input of type '${unpackType(valueSource).simpleName}' has changed"
 }

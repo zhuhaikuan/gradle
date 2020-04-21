@@ -1,12 +1,10 @@
-import org.gradle.gradlebuild.unittestandcompile.ModuleType
-
-/*
-    This project contains various native operating system integration utilities.
-*/
 plugins {
-    `java-library`
-    gradlebuild.classycle
+    gradlebuild.distribution.`core-api-java`
 }
+
+description = "This project contains various native operating system integration utilities"
+
+gradlebuildJava.usedInWorkers()
 
 dependencies {
     api(project(":files"))
@@ -23,10 +21,6 @@ dependencies {
     testImplementation(testFixtures(project(":logging")))
 
     jmhImplementation(project(":files"))
-}
-
-gradlebuildJava {
-    moduleType = ModuleType.WORKER
 }
 
 jmh {

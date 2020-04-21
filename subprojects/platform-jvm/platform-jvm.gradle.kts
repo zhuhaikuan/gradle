@@ -1,8 +1,5 @@
-import org.gradle.gradlebuild.unittestandcompile.ModuleType
-
 plugins {
-    `java-library`
-    gradlebuild.classycle
+    gradlebuild.distribution.`plugins-api-java`
 }
 
 dependencies {
@@ -39,8 +36,3 @@ dependencies {
 
     integTestImplementation(library("slf4j_api"))
 }
-
-gradlebuildJava {
-    moduleType = ModuleType.CORE
-}
-

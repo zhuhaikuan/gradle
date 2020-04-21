@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.gradle.gradlebuild.unittestandcompile.ModuleType
-
 plugins {
-    `java-library`
+    gradlebuild.distribution.`plugins-api-java`
     gradlebuild.`strict-compile`
-    gradlebuild.classycle
 }
 
 dependencies {
@@ -72,10 +69,6 @@ dependencies {
     testImplementation(testFixtures(project(":diagnostics")))
     testImplementation(testFixtures(project(":baseServices")))
     testImplementation(testFixtures(project(":snapshots")))
-}
-
-gradlebuildJava {
-    moduleType = ModuleType.CORE
 }
 
 classycle {

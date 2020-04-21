@@ -21,6 +21,8 @@ import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.logging.Logger
 import org.gradle.initialization.ClassLoaderScopeRegistry
 import org.gradle.instantexecution.ClassLoaderScopeSpec
+import org.gradle.instantexecution.problems.PropertyProblem
+import org.gradle.instantexecution.problems.PropertyTrace
 import org.gradle.instantexecution.serialization.beans.BeanConstructors
 import org.gradle.instantexecution.serialization.beans.BeanPropertyReader
 import org.gradle.instantexecution.serialization.beans.BeanPropertyWriter
@@ -170,7 +172,11 @@ class DefaultReadContext(
     private
     val constructors: BeanConstructors,
 
-    override val logger: Logger
+    override val logger: Logger,
+
+    private
+    val problemHandler: (PropertyProblem) -> Unit
+
 ) : AbstractIsolateContext<ReadIsolate>(codec), ReadContext, Decoder by decoder {
 
     override val sharedIdentities = ReadIdentities()
@@ -272,7 +278,7 @@ class DefaultReadContext(
         DefaultReadIsolate(owner)
 
     override fun onProblem(problem: PropertyProblem) {
-        // ignore problems
+        problemHandler(problem)
     }
 }
 

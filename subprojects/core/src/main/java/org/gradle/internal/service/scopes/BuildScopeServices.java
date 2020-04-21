@@ -50,7 +50,6 @@ import org.gradle.api.internal.plugins.DefaultPluginRegistry;
 import org.gradle.api.internal.plugins.PluginInspector;
 import org.gradle.api.internal.plugins.PluginRegistry;
 import org.gradle.api.internal.project.ConfigurationOnDemandProjectAccessListener;
-import org.gradle.api.internal.project.DefaultProjectAccessNotifier;
 import org.gradle.api.internal.project.DefaultProjectRegistry;
 import org.gradle.api.internal.project.DefaultProjectTaskLister;
 import org.gradle.api.internal.project.IProjectFactory;
@@ -85,6 +84,7 @@ import org.gradle.cache.CacheRepository;
 import org.gradle.cache.FileLockManager;
 import org.gradle.caching.internal.BuildCacheServices;
 import org.gradle.configuration.BuildOperatingFiringProjectsPreparer;
+import org.gradle.configuration.CompileOperationFactory;
 import org.gradle.configuration.DefaultInitScriptProcessor;
 import org.gradle.configuration.DefaultProjectsPreparer;
 import org.gradle.configuration.DefaultScriptPluginFactory;
@@ -95,6 +95,7 @@ import org.gradle.configuration.ScriptPluginFactorySelector;
 import org.gradle.configuration.internal.UserCodeApplicationContext;
 import org.gradle.configuration.project.BuildScriptProcessor;
 import org.gradle.configuration.project.ConfigureActionsProjectEvaluator;
+import org.gradle.configuration.project.DefaultCompileOperationFactory;
 import org.gradle.configuration.project.DelayedConfigurationActions;
 import org.gradle.configuration.project.LifecycleProjectEvaluator;
 import org.gradle.configuration.project.PluginsProjectConfigureActions;
@@ -103,13 +104,13 @@ import org.gradle.execution.ProjectConfigurer;
 import org.gradle.execution.TaskPathProjectEvaluator;
 import org.gradle.groovy.scripts.DefaultScriptCompilerFactory;
 import org.gradle.groovy.scripts.ScriptCompilerFactory;
-import org.gradle.groovy.scripts.ScriptExecutionListener;
 import org.gradle.groovy.scripts.internal.BuildOperationBackedScriptCompilationHandler;
 import org.gradle.groovy.scripts.internal.BuildScopeInMemoryCachingScriptClassCompiler;
 import org.gradle.groovy.scripts.internal.CrossBuildInMemoryCachingScriptClassCache;
 import org.gradle.groovy.scripts.internal.DefaultScriptCompilationHandler;
 import org.gradle.groovy.scripts.internal.DefaultScriptRunnerFactory;
 import org.gradle.groovy.scripts.internal.FileCacheBackedScriptClassCompiler;
+import org.gradle.groovy.scripts.internal.ScriptRunnerFactory;
 import org.gradle.initialization.BuildCancellationToken;
 import org.gradle.initialization.BuildLoader;
 import org.gradle.initialization.BuildOperatingFiringSettingsPreparer;
@@ -131,7 +132,6 @@ import org.gradle.initialization.InstantiatingBuildLoader;
 import org.gradle.initialization.ModelConfigurationListener;
 import org.gradle.initialization.NotifyingBuildLoader;
 import org.gradle.initialization.ProjectAccessListener;
-import org.gradle.initialization.ProjectAccessNotifier;
 import org.gradle.initialization.ProjectDescriptorRegistry;
 import org.gradle.initialization.ProjectPropertySettingBuildLoader;
 import org.gradle.initialization.RootBuildCacheControllerSettingsProcessor;
@@ -158,6 +158,7 @@ import org.gradle.internal.build.PublicBuildPath;
 import org.gradle.internal.buildevents.BuildStartedTime;
 import org.gradle.internal.classloader.ClassLoaderFactory;
 import org.gradle.internal.classpath.CachedClasspathTransformer;
+import org.gradle.internal.classpath.ClasspathWalker;
 import org.gradle.internal.concurrent.ExecutorFactory;
 import org.gradle.internal.event.ListenerManager;
 import org.gradle.internal.file.Deleter;
@@ -165,7 +166,7 @@ import org.gradle.internal.hash.ClassLoaderHierarchyHasher;
 import org.gradle.internal.instantiation.InstantiatorFactory;
 import org.gradle.internal.invocation.DefaultBuildInvocationDetails;
 import org.gradle.internal.isolation.IsolatableFactory;
-import org.gradle.internal.jpms.JavaModuleDetector;
+import org.gradle.internal.jvm.JavaModuleDetector;
 import org.gradle.internal.logging.LoggingManagerInternal;
 import org.gradle.internal.logging.progress.ProgressLoggerFactory;
 import org.gradle.internal.logging.sink.OutputEventListenerManager;
@@ -173,10 +174,10 @@ import org.gradle.internal.nativeintegration.filesystem.FileSystem;
 import org.gradle.internal.operations.BuildOperationExecutor;
 import org.gradle.internal.operations.logging.BuildOperationLoggerFactory;
 import org.gradle.internal.operations.logging.DefaultBuildOperationLoggerFactory;
-import org.gradle.internal.reflect.DirectInstantiator;
 import org.gradle.internal.reflect.Instantiator;
 import org.gradle.internal.resource.DefaultTextFileResourceLoader;
 import org.gradle.internal.resource.TextFileResourceLoader;
+import org.gradle.internal.scripts.ScriptExecutionListener;
 import org.gradle.internal.service.CachingServiceLocator;
 import org.gradle.internal.service.DefaultServiceRegistry;
 import org.gradle.internal.service.ServiceRegistry;
@@ -302,8 +303,11 @@ public class BuildScopeServices extends DefaultServiceRegistry {
         );
     }
 
-    protected ProviderFactory createProviderFactory(ValueSourceProviderFactory valueSourceProviderFactory) {
-        return new DefaultProviderFactory(valueSourceProviderFactory);
+    protected ProviderFactory createProviderFactory(
+        Instantiator instantiator,
+        ValueSourceProviderFactory valueSourceProviderFactory
+    ) {
+        return instantiator.newInstance(DefaultProviderFactory.class, valueSourceProviderFactory);
     }
 
     protected ActorFactory createActorFactory() {
@@ -338,36 +342,29 @@ public class BuildScopeServices extends DefaultServiceRegistry {
             new TaskFactory());
     }
 
-    protected ScriptCompilerFactory createScriptCompileFactory(ListenerManager listenerManager,
-                                                               FileCacheBackedScriptClassCompiler scriptCompiler,
-                                                               CrossBuildInMemoryCachingScriptClassCache cache) {
-        ScriptExecutionListener scriptExecutionListener = listenerManager.getBroadcaster(ScriptExecutionListener.class);
+    protected ScriptCompilerFactory createScriptCompileFactory(FileCacheBackedScriptClassCompiler scriptCompiler,
+                                                               CrossBuildInMemoryCachingScriptClassCache cache,
+                                                               ScriptRunnerFactory scriptRunnerFactory) {
         return new DefaultScriptCompilerFactory(
             new BuildScopeInMemoryCachingScriptClassCompiler(cache, scriptCompiler),
-            new DefaultScriptRunnerFactory(
-                scriptExecutionListener,
-                // Should use `InstantiatorFactory` instead to pick up some validation, but this is currently somewhat expensive
-                DirectInstantiator.INSTANCE
-            )
+            scriptRunnerFactory
         );
     }
 
     protected FileCacheBackedScriptClassCompiler createFileCacheBackedScriptClassCompiler(
         BuildOperationExecutor buildOperationExecutor,
         CacheRepository cacheRepository,
-        ClassLoaderCache classLoaderCache,
         ClassLoaderHierarchyHasher classLoaderHierarchyHasher,
-        Deleter deleter,
-        ImportsReader importsReader,
+        DefaultScriptCompilationHandler scriptCompilationHandler,
+        ClasspathWalker classpathWalker,
         ProgressLoggerFactory progressLoggerFactory
     ) {
         return new FileCacheBackedScriptClassCompiler(
             cacheRepository,
-            new BuildOperationBackedScriptCompilationHandler(
-                new DefaultScriptCompilationHandler(deleter, importsReader), buildOperationExecutor),
+            new BuildOperationBackedScriptCompilationHandler(scriptCompilationHandler, buildOperationExecutor),
             progressLoggerFactory,
-            classLoaderCache,
-            classLoaderHierarchyHasher);
+            classLoaderHierarchyHasher,
+            classpathWalker);
     }
 
     protected ScriptPluginFactory createScriptPluginFactory(InstantiatorFactory instantiatorFactory, BuildOperationExecutor buildOperationExecutor, UserCodeApplicationContext userCodeApplicationContext) {
@@ -383,9 +380,9 @@ public class BuildScopeServices extends DefaultServiceRegistry {
             this,
             get(ScriptCompilerFactory.class),
             getFactory(LoggingManagerInternal.class),
-            get(DocumentationRegistry.class),
             get(AutoAppliedPluginHandler.class),
-            get(PluginRequestApplicator.class));
+            get(PluginRequestApplicator.class),
+            get(CompileOperationFactory.class));
     }
 
     protected SettingsLoaderFactory createSettingsLoaderFactory(
@@ -503,10 +500,6 @@ public class BuildScopeServices extends DefaultServiceRegistry {
         return new ConfigurationOnDemandProjectAccessListener();
     }
 
-    protected ProjectAccessNotifier createProjectAccessNotifier(List<ProjectAccessListener> listeners) {
-        return new DefaultProjectAccessNotifier(listeners);
-    }
-
     protected PluginRegistry createPluginRegistry(ClassLoaderScopeRegistry scopeRegistry, PluginInspector pluginInspector) {
         return new DefaultPluginRegistry(pluginInspector, scopeRegistry.getCoreAndPluginsScope());
     }
@@ -584,5 +577,21 @@ public class BuildScopeServices extends DefaultServiceRegistry {
 
     protected BuildInvocationDetails createBuildInvocationDetails(BuildStartedTime buildStartedTime) {
         return new DefaultBuildInvocationDetails(buildStartedTime);
+    }
+
+    protected CompileOperationFactory createCompileOperationFactory(DocumentationRegistry documentationRegistry) {
+        return new DefaultCompileOperationFactory(documentationRegistry);
+    }
+
+    protected DefaultScriptCompilationHandler createScriptCompilationHandler(Deleter deleter, ImportsReader importsReader) {
+        return new DefaultScriptCompilationHandler(deleter, importsReader);
+    }
+
+    protected ScriptRunnerFactory createScriptRunnerFactory(ListenerManager listenerManager, InstantiatorFactory instantiatorFactory) {
+        ScriptExecutionListener scriptExecutionListener = listenerManager.getBroadcaster(ScriptExecutionListener.class);
+        return new DefaultScriptRunnerFactory(
+            scriptExecutionListener,
+            instantiatorFactory.inject()
+        );
     }
 }

@@ -1,6 +1,4 @@
 import org.gradle.gradlebuild.testing.integrationtests.cleanup.WhenNotEmpty
-import org.gradle.gradlebuild.unittestandcompile.ModuleType
-
 /*
  * Copyright 2017 the original author or authors.
  *
@@ -17,7 +15,7 @@ import org.gradle.gradlebuild.unittestandcompile.ModuleType
  * limitations under the License.
  */
 plugins {
-    `java-library`
+    gradlebuild.distribution.`core-api-java`
     // gradlebuild.`strict-compile`
 }
 
@@ -46,8 +44,8 @@ dependencies {
     testFixturesImplementation(project(":baseServices"))
 }
 
-gradlebuildJava {
-    moduleType = ModuleType.CORE
+classycle {
+    excludePatterns.set(listOf("org/gradle/**"))
 }
 
 testFilesCleanup {

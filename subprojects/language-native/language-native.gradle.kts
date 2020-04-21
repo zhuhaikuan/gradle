@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-import org.gradle.gradlebuild.unittestandcompile.ModuleType
-
 plugins {
-    `java-library`
+    gradlebuild.distribution.`plugins-api-java`
     gradlebuild.`strict-compile`
-    gradlebuild.classycle
 }
 
 dependencies {
@@ -80,10 +77,6 @@ dependencies {
     integTestImplementation(library("jgit"))
 
     integTestRuntimeOnly(project(":ideNative"))
-}
-
-gradlebuildJava {
-    moduleType = ModuleType.CORE
 }
 
 classycle {
