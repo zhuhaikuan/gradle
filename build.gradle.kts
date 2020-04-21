@@ -45,32 +45,34 @@ buildscript {
     }
 }
 
-// Nothing actually uses lombok, this is just to get the relevant events included in the scan
-// Any project which fails when these are
-if(project.hasProperty("lombok")){
-    val projectsIncompatibleWithLombok =
-        listOf("internalTesting", "internalIntegTesting", "codeQuality", "buildInit", "internalPerformanceTesting", "ideNative")
-    if(!projectsIncompatibleWithLombok.contains(name)) {
-        configurations.maybeCreate("compileOnly")
-        configurations.maybeCreate("annotationProcessor")
-        dependencies {
-            "compileOnly" ("org.projectlombok:lombok:1.18.10")
-            "annotationProcessor" ("org.projectlombok:lombok:1.18.10")
+allprojects {
+    // Nothing actually uses lombok, this is just to get the relevant events included in the scan
+    // Any project which fails when these are
+    if (project.hasProperty("lombok")) {
+        val projectsIncompatibleWithLombok =
+            listOf("internalTesting", "internalIntegTesting", "codeQuality", "buildInit", "internalPerformanceTesting", "ideNative")
+        if (!projectsIncompatibleWithLombok.contains(name)) {
+            configurations.maybeCreate("compileOnly")
+            configurations.maybeCreate("annotationProcessor")
+            dependencies {
+                "compileOnly"("org.projectlombok:lombok:1.18.10")
+                "annotationProcessor"("org.projectlombok:lombok:1.18.10")
+            }
         }
     }
-}
-val randomizeUpToDatePropName = "randomizeUpToDate"
-if(project.hasProperty(randomizeUpToDatePropName)) {
-    val upToDateProp = project.property(randomizeUpToDatePropName) as String?
-    val upToDateThreshold = if(upToDateProp.isNullOrBlank()) {
-        0.5
-    } else {
-        parseDouble(upToDateProp)
-    }
-    val random = kotlin.random.Random(42)
-    tasks.configureEach {
-        outputs.upToDateWhen{
-            random.nextDouble() < upToDateThreshold
+    val randomizeUpToDatePropName = "randomizeUpToDate"
+    if (project.hasProperty(randomizeUpToDatePropName)) {
+        val upToDateProp = project.property(randomizeUpToDatePropName) as String?
+        val upToDateThreshold = if (upToDateProp.isNullOrBlank()) {
+            0.5
+        } else {
+            parseDouble(upToDateProp)
+        }
+        val random = kotlin.random.Random(42)
+        tasks.configureEach {
+            outputs.upToDateWhen {
+                random.nextDouble() < upToDateThreshold
+            }
         }
     }
 }
