@@ -36,6 +36,8 @@ plugins.withId("java") {
     apply plugin: com.gradle.enterprise.testdistribution.gradle.plugin.TestDistributionPlugin
 
     tasks.withType(Test).configureEach {
+        outputs.cacheIf { false }
+        outputs.upToDateWhen { false }
         testLogging {
             events("PASSED", "FAILED", "SKIPPED")
             displayGranularity = 0
