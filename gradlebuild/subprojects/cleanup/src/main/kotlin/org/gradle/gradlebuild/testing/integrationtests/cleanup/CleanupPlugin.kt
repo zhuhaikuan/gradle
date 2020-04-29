@@ -17,6 +17,7 @@ package org.gradle.gradlebuild.testing.integrationtests.cleanup
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.BasePlugin
 import org.gradle.gradlebuild.BuildEnvironment
 import org.gradle.kotlin.dsl.*
 import org.gradle.util.GradleVersion
@@ -25,6 +26,7 @@ import org.gradle.util.GradleVersion
 class CleanupPlugin : Plugin<Project> {
 
     override fun apply(project: Project): Unit = project.run {
+        plugins.apply(BasePlugin::class)
         tasks.register<CleanUpCaches>("cleanUpCaches") {
             dependsOn(":createBuildReceipt")
             version.set(GradleVersion.version(project.version.toString()))
