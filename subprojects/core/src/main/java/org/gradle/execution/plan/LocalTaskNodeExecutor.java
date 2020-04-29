@@ -22,6 +22,7 @@ import org.gradle.api.internal.tasks.TaskExecuter;
 import org.gradle.api.internal.tasks.TaskExecutionContext;
 import org.gradle.api.internal.tasks.TaskStateInternal;
 import org.gradle.api.internal.tasks.execution.DefaultTaskExecutionContext;
+import org.gradle.internal.Thing;
 
 public class LocalTaskNodeExecutor implements NodeExecutor {
 
@@ -30,6 +31,7 @@ public class LocalTaskNodeExecutor implements NodeExecutor {
         if (node instanceof LocalTaskNode) {
             LocalTaskNode localTaskNode = (LocalTaskNode) node;
             TaskInternal task = localTaskNode.getTask();
+            Thing.log(String.format("start %s", task));
             TaskStateInternal state = task.getState();
             if (state.getExecuted()) {
                 // Task has already been run. This can happen when the owning build is used both at configuration time and execution time
@@ -40,6 +42,7 @@ public class LocalTaskNodeExecutor implements NodeExecutor {
             TaskExecuter taskExecuter = context.getService(TaskExecuter.class);
             taskExecuter.execute(task, state, ctx);
             localTaskNode.getPostAction().execute(task);
+            Thing.log(String.format("finish %s", task));
             return true;
         } else {
             return false;

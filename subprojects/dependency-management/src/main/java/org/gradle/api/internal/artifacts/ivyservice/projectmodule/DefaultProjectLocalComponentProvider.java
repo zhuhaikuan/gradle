@@ -31,6 +31,7 @@ import org.gradle.api.internal.project.ProjectRegistry;
 import org.gradle.api.internal.project.ProjectState;
 import org.gradle.api.internal.project.ProjectStateRegistry;
 import org.gradle.internal.Factory;
+import org.gradle.internal.Thing;
 import org.gradle.internal.UncheckedException;
 import org.gradle.internal.component.local.model.DefaultLocalComponentMetadata;
 import org.gradle.internal.component.local.model.LocalComponentMetadata;
@@ -92,6 +93,7 @@ public class DefaultProjectLocalComponentProvider implements LocalComponentProvi
             throw new IllegalArgumentException(projectIdentifier + " not found.");
         }
         final ProjectState projectState = projectStateRegistry.stateFor(project);
+        Thing.log("calculate metadata for " + project);
         return projectState.withMutableState(new Factory<LocalComponentMetadata>() {
             @Nullable
             @Override

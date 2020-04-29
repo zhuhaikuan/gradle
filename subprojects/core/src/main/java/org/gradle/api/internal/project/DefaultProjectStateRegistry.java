@@ -24,6 +24,7 @@ import org.gradle.initialization.DefaultProjectDescriptor;
 import org.gradle.internal.Factories;
 import org.gradle.internal.Factory;
 import org.gradle.internal.Pair;
+import org.gradle.internal.Thing;
 import org.gradle.internal.build.BuildState;
 import org.gradle.internal.resources.ResourceLock;
 import org.gradle.internal.work.WorkerLeaseService;
@@ -231,14 +232,20 @@ public class DefaultProjectStateRegistry implements ProjectStateRegistry {
             DefaultProjectStateRegistry.this.withLenientState(runnable);
         }
 
+        private void log(String message) {
+            Thing.log(String.format("[%s] %s", getIdentityPath(), message));
+        }
+
         @Override
         public <T> T withMutableState(final Factory<? extends T> factory) {
             if (LENIENT_MUTATION_STATE.get()) {
+                log("has lenient access");
                 return factory.create();
             }
 
             Collection<? extends ResourceLock> currentLocks = workerLeaseService.getCurrentProjectLocks();
             if (currentLocks.contains(projectLock)) {
+                log("project is already locked by thread");
                 // if we already hold the project lock for this project
                 if (currentLocks.size() == 1) {
                     // the lock for this project is the only lock we hold
@@ -250,6 +257,7 @@ public class DefaultProjectStateRegistry implements ProjectStateRegistry {
                     return workerLeaseService.withoutLocks(currentLocks, factory);
                 }
             } else {
+                log("project is not locked by thread");
                 // we don't currently hold the project lock
                 if (!currentLocks.isEmpty()) {
                     // we hold other project locks that we should release first

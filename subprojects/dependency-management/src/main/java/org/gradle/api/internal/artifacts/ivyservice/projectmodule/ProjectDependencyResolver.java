@@ -31,6 +31,7 @@ import org.gradle.api.internal.artifacts.type.ArtifactTypeRegistry;
 import org.gradle.api.internal.attributes.ImmutableAttributes;
 import org.gradle.api.internal.component.ArtifactType;
 import org.gradle.api.internal.project.ProjectStateRegistry;
+import org.gradle.internal.Thing;
 import org.gradle.internal.component.local.model.DefaultProjectComponentSelector;
 import org.gradle.internal.component.local.model.LocalComponentArtifactMetadata;
 import org.gradle.internal.component.local.model.LocalComponentMetadata;
@@ -144,6 +145,7 @@ public class ProjectDependencyResolver implements ComponentMetaDataResolver, Dep
         if (isProjectModule(artifact.getComponentId())) {
             final LocalComponentArtifactMetadata projectArtifact = (LocalComponentArtifactMetadata) artifact;
             ProjectComponentIdentifier projectId = (ProjectComponentIdentifier) artifact.getComponentId();
+            Thing.log("resolve artifact " + artifact.getId());
             projectStateRegistry.stateFor(projectId).withMutableState(() -> {
                 File localArtifactFile = projectArtifact.getFile();
                 if (localArtifactFile != null) {
