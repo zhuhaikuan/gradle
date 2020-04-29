@@ -2,7 +2,7 @@ import org.gradle.gradlebuild.BuildEnvironment
 import org.gradle.gradlebuild.test.integrationtests.IntegrationTest
 
 plugins {
-    gradlebuild.distribution.`plugins-api-java`
+    id("gradlebuild.distribution.plugins-api-java")
 }
 
 val integTestRuntimeResources by configurations.creating {

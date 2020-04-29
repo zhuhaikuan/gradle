@@ -15,7 +15,7 @@
  */
 
 plugins {
-    gradlebuild.distribution.`plugins-api-java`
+    id("gradlebuild.distribution.plugins-api-java")
 }
 
 dependencies {

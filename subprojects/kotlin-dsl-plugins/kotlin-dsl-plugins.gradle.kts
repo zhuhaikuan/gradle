@@ -22,7 +22,7 @@ import org.gradle.gradlebuild.testing.integrationtests.cleanup.WhenNotEmpty
 import plugins.bundledGradlePlugin
 
 plugins {
-    gradlebuild.portalplugin.kotlin
+    id("gradlebuild.portalplugin.kotlin")
 }
 
 description = "Kotlin DSL Gradle Plugins deployed to the Plugin Portal"

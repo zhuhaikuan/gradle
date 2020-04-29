@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 plugins {
-    gradlebuild.distribution.`plugins-api-java`
+    id("gradlebuild.distribution.plugins-api-java")
 }
 
 gradlebuildJava.usedInWorkers()

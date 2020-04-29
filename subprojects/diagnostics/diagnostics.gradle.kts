@@ -15,7 +15,7 @@ import org.gradle.gradlebuild.testing.integrationtests.cleanup.WhenNotEmpty
  * limitations under the License.
  */
 plugins {
-    gradlebuild.distribution.`plugins-api-java`
+    id("gradlebuild.distribution.plugins-api-java")
 }
 
 dependencies {

@@ -20,10 +20,10 @@ import org.gradle.gradlebuild.versioning.buildVersion
 import org.gradle.plugins.install.Install
 
 plugins {
-    gradlebuild.internal.java
-    gradlebuild.`add-verify-production-environment-task`
-    gradlebuild.install
-    gradlebuild.`binary-compatibility`
+    id("gradlebuild.internal.java")
+    id("gradlebuild.add-verify-production-environment-task")
+    id("gradlebuild.install")
+    id("gradlebuild.binary-compatibility")
 }
 
 tasks.withType<AbstractArchiveTask>().configureEach {

@@ -21,7 +21,7 @@ import org.gradle.gradlebuild.versioning.DetermineCommitId
 import org.gradle.testing.performance.generator.tasks.RemoteProject
 
 plugins {
-    gradlebuild.internal.java
+    id("gradlebuild.internal.java")
 }
 
 val smokeTest: SourceSet by sourceSets.creating {

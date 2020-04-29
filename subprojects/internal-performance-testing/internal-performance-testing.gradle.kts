@@ -15,7 +15,7 @@
  */
 import accessors.java
 plugins {
-    gradlebuild.internal.java
+    id("gradlebuild.internal.java")
 }
 
 val reports by configurations.creating

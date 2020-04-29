@@ -15,7 +15,7 @@ import org.gradle.gradlebuild.test.integrationtests.IntegrationTest
  * limitations under the License.
  */
 plugins {
-    gradlebuild.distribution.`plugins-api-java`
+    id("gradlebuild.distribution.plugins-api-java")
 }
 
 val integTestRuntimeResources by configurations.creating {

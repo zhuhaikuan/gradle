@@ -17,8 +17,8 @@
 import accessors.java
 
 plugins {
-    gradlebuild.distribution.`core-api-java`
-    gradlebuild.`publish-public-libraries`
+    id("gradlebuild.distribution.core-api-java")
+    id("gradlebuild.publish-public-libraries")
 }
 
 description = "Tools to take immutable, comparable snapshots of files and other things"

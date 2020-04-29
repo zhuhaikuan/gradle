@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 plugins {
-    gradlebuild.distribution.`core-api-java`
+    id("gradlebuild.distribution.core-api-java")
 }
 
 description = "Execution engine that takes a unit of work and makes it happen"

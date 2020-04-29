@@ -28,7 +28,10 @@ plugins {
 }
 
 apply(from = "gradle/build-cache-configuration.settings.gradle.kts")
-apply(from = "gradle/shared-with-buildSrc/mirrors.settings.gradle.kts")
+apply(from = "gradle/shared-with-gradlebuild/mirrors.settings.gradle.kts")
+
+includeBuild("gradle/shared-with-gradlebuild")
+includeBuild("gradlebuild")
 
 // If you include a new subproject here, you will need to execute the
 // ./gradlew generateSubprojectsInfo

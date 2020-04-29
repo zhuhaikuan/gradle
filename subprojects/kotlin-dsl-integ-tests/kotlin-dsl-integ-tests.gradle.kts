@@ -19,7 +19,7 @@ import plugins.futurePluginVersionsFile
 import org.gradle.gradlebuild.testing.integrationtests.cleanup.WhenNotEmpty
 
 plugins {
-    gradlebuild.internal.kotlin
+    id("gradlebuild.internal.kotlin")
 }
 
 description = "Kotlin DSL Integration Tests"

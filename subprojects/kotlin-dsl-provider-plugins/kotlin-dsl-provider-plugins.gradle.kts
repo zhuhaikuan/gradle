@@ -17,7 +17,7 @@
 import build.futureKotlin
 
 plugins {
-    gradlebuild.distribution.`plugins-implementation-kotlin`
+    id("gradlebuild.distribution.plugins-implementation-kotlin")
 }
 
 description = "Kotlin DSL Provider Plugins"

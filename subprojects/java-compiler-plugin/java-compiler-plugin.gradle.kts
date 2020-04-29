@@ -15,8 +15,8 @@
  */
 
 plugins {
-    gradlebuild.distribution.`core-api-java`
-    gradlebuild.classycle
+    id("gradlebuild.distribution.core-api-java")
+    id("gradlebuild.classycle")
 }
 
 description = "A Java compiler plugin used by Gradle's incremental compiler"

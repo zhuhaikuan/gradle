@@ -16,7 +16,7 @@
 import org.gradle.gradlebuild.testing.integrationtests.cleanup.WhenNotEmpty
 
 plugins {
-    gradlebuild.distribution.`core-api-java`
+    id("gradlebuild.distribution.core-api-java")
 }
 
 configurations {

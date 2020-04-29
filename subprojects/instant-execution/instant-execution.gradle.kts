@@ -2,7 +2,7 @@ import build.futureKotlin
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    gradlebuild.distribution.`plugins-implementation-kotlin`
+    id("gradlebuild.distribution.plugins-implementation-kotlin")
 }
 
 tasks {

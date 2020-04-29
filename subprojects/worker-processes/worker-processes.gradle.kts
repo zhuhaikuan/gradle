@@ -1,5 +1,5 @@
 plugins {
-    gradlebuild.distribution.`core-implementation-java`
+    id("gradlebuild.distribution.core-implementation-java")
 }
 
 gradlebuildJava.usedInWorkers()

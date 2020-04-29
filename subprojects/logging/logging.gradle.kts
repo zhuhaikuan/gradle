@@ -1,5 +1,5 @@
 plugins {
-    gradlebuild.distribution.`core-api-java`
+    id("gradlebuild.distribution.core-api-java")
 }
 
 description = "Logging infrastructure"

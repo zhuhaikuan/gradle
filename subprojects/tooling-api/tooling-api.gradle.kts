@@ -19,9 +19,9 @@ import org.gradle.build.BuildReceipt
 import org.gradle.gradlebuild.test.integrationtests.IntegrationTest
 
 plugins {
-    gradlebuild.distribution.`core-api-java`
-    gradlebuild.`publish-public-libraries`
-    gradlebuild.`shaded-jar`
+    id("gradlebuild.distribution.core-api-java")
+    id("gradlebuild.publish-public-libraries")
+    id("gradlebuild.shaded-jar")
 }
 
 val buildReceipt: Provider<RegularFile> = rootProject.tasks.named<BuildReceipt>("createBuildReceipt").map { layout.file(provider { it.receiptFile }).get() }

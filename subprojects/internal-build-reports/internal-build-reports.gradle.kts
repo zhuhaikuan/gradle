@@ -18,7 +18,7 @@ import org.gradle.gradlebuild.buildquality.incubation.IncubatingApiAggregateRepo
 import org.gradle.gradlebuild.buildquality.incubation.IncubatingApiReportTask
 
 plugins {
-    gradlebuild.internal.java
+    id("gradlebuild.internal.java")
 }
 
 val allIncubationReports = tasks.register<IncubatingApiAggregateReportTask>("allIncubationReports") {

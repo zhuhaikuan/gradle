@@ -1,7 +1,7 @@
 import org.gradle.gradlebuild.PublicApi
 plugins {
-    gradlebuild.distribution.`core-implementation-java`
-    gradlebuild.`api-metadata`
+    id("gradlebuild.distribution.core-implementation-java")
+    id("gradlebuild.api-metadata")
 }
 
 apiMetadata {

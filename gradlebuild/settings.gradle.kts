@@ -24,14 +24,14 @@ pluginManagement {
     }
 }
 
-apply(from = "../gradle/shared-with-buildSrc/mirrors.settings.gradle.kts")
+apply(from = "../gradle/shared-with-gradlebuild/mirrors.settings.gradle.kts")
 
 val upperCaseLetters = "\\p{Upper}".toRegex()
 
 fun String.toKebabCase() =
     replace(upperCaseLetters) { "-${it.value.toLowerCase()}" }
 
-rootProject.name = "buildSrc"
+rootProject.name = "gradlebuild"
 
 // Please preserve alphabetical order
 include("binaryCompatibility")

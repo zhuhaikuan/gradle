@@ -30,9 +30,8 @@ plugins {
     id("gradlebuild.task-properties-validation")
     id("gradlebuild.strict-compile")
     id("gradlebuild.classycle")
+    id("gradlebuild.code-quality-configuration")
 }
-
-apply(from = "$rootDir/gradle/shared-with-buildSrc/code-quality-configuration.gradle.kts")
 
 if (file("src/integTest").isDirectory) {
     apply(plugin = "gradlebuild.integration-tests")

@@ -17,7 +17,7 @@ import org.gradle.gradlebuild.test.integrationtests.IntegrationTest
 import java.util.jar.Attributes
 
 plugins {
-    gradlebuild.distribution.`core-api-java`
+    id("gradlebuild.distribution.core-api-java")
 }
 
 gradlebuildJava.usedInWorkers()

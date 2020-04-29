@@ -21,6 +21,7 @@ plugins {
     java
     `kotlin-dsl` apply false
     id("org.gradle.kotlin-dsl.ktlint-convention") version "0.5.0" apply false
+    id("gradlebuild.code-quality-configuration") apply false
 }
 
 subprojects {
@@ -65,7 +66,7 @@ subprojects {
             enableStricterValidation.set(true)
         }
 
-        apply(from = "../../../gradle/shared-with-buildSrc/code-quality-configuration.gradle.kts")
+        apply(plugin = "gradlebuild.code-quality-configuration")
     }
 }
 
