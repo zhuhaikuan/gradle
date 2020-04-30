@@ -17,7 +17,7 @@
 buildscript {
     repositories {
         maven {
-            url = uri("https://repo.gradle.org/gradle/enterprise-libs-snapshots-local")
+            url = uri("https://repo.gradle.org/gradle/enterprise-libs-release-candidates-local/")
             credentials {
                 username = project.findProperty("enterprise.snapshots.username")?.toString() ?: System.getenv("ARTIFACTORY_USERNAME")
                 password = project.findProperty("enterprise.snapshots.password")?.toString() ?: System.getenv("ARTIFACTORY_PASSWORD")
@@ -28,12 +28,12 @@ buildscript {
         }
     }
     dependencies {
-        classpath("com.gradle.enterprise:test-distribution-gradle-plugin:1.0-20200420113808-master")
+        classpath("com.gradle.enterprise:test-distribution-gradle-plugin:1.0-rc-2")
     }
 }
 
 plugins.withId("java") {
-    apply plugin: com.gradle.enterprise.testdistribution.gradle.plugin.TestDistributionPlugin
+    apply plugin: com.gradle.enterprise.gradleplugin.testdistribution.TestDistributionPlugin
 
     tasks.withType(Test).configureEach {
         outputs.cacheIf { false }
