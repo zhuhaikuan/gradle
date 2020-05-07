@@ -27,6 +27,29 @@ plugins {
     id("com.gradle.enterprise").version("3.3")
 }
 
+fun execute(vararg command: String): String {
+    val baos = java.io.ByteArrayOutputStream()
+    exec {
+        commandLine(*command)
+        standardOutput = baos
+        workingDir = rootDir
+    }
+    return baos.toString()
+}
+
+gradleEnterprise {
+    buildScan {
+        publishAlways()
+        server = "https://enterprise-training.gradle.com"
+        // Run expensive operations on a background thread to avoid slowing down configuration time unnecessarily
+        background {
+            val currentBranch = execute("git", "rev-parse", "--abbrev-ref", "HEAD").trim()
+            val diffWithMastter = execute("git", "diff", "master...$currentBranch")
+            value("Git Diff with 'master'", diffWithMastter)
+        }
+    }
+}
+
 apply(from = "gradle/build-cache-configuration.settings.gradle.kts")
 apply(from = "gradle/shared-with-buildSrc/mirrors.settings.gradle.kts")
 
