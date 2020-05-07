@@ -462,19 +462,20 @@ samples {
         }
 
         taskWithArguments {
-            sampleDirectory = samplesRoot.dir("build-organization/task-with-arguments")
+            sampleDirectory = samplesRoot.dir("tasks/task-with-arguments")
+            displayName = "Command-line arguments for a task"
             description = "Pass command-line arguments to a custom task."
-            category = "Build organization"
+            category = "Working with tasks"
             common {
                 from(sampleDirectory.dir("common"))
             }
         }
 
         credentialsForExternalToolViaStdin {
-            sampleDirectory = samplesRoot.dir("user-input/pass-credentials-to-external-tool-via-stdin")
-            displayName = "Supply credentials to external tool via stdin"
-            description = "Pass credentials to an external tool using project properties."
-            category = "User input"
+            sampleDirectory = samplesRoot.dir("tasks/pass-credentials-to-external-tool-via-stdin")
+            displayName = "Credentials for an external tool"
+            description = "Pass credentials to an external tool via stdin."
+            category = "Working with tasks"
             common {
                 from(sampleDirectory.dir("common"))
             }
