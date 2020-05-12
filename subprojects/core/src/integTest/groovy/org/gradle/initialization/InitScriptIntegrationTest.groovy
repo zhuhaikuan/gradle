@@ -172,15 +172,7 @@ class InitScriptIntegrationTest extends AbstractIntegrationSpec {
         output.contains("subprojects: :sub1 - :sub2")
     }
 
-    File buildDir = new File(System.getProperty("build.dir"))
 
-    void 'flakyTest'() {
-        expect:
-        run('help')
-        !new File(buildDir, 'test.txt').exists()
-        cleanup:
-        new File(buildDir, 'test.txt').delete()
-    }
 
     @Unroll
     def "shows deprecation warning when accessing #displayName from init script"() {
