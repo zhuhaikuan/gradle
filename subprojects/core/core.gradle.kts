@@ -161,6 +161,8 @@ classycle {
 
 tasks.test {
     setForkEvery(200)
+    buildDir.resolve("test.txt").createNewFile()
+    systemProperty("build.dir", buildDir.absolutePath)
 }
 
 val generatedResourcesDir = gradlebuildJava.generatedResourcesDir
@@ -200,3 +202,4 @@ sourceSets.main {
 testFilesCleanup {
     policy.set(WhenNotEmpty.REPORT)
 }
+
