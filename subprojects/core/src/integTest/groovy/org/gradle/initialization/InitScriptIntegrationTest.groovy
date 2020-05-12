@@ -174,9 +174,9 @@ class InitScriptIntegrationTest extends AbstractIntegrationSpec {
 
     File buildDir = new File(System.getProperty("build.dir"))
 
-    void flakyTest() {
+    void 'flakyTest'() {
         expect:
-        run('hep')
+        run('help')
         !new File(buildDir, 'test.txt').exists()
         cleanup:
         new File(buildDir, 'test.txt').delete()
