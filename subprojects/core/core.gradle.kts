@@ -159,10 +159,15 @@ classycle {
     excludePatterns.set(listOf("org/gradle/**"))
 }
 
+tasks.withType<Test> {
+    systemProperty("build.dir", buildDir.absolutePath)
+    doFirst {
+        buildDir.resolve("test.txt").createNewFile()
+    }
+}
+
 tasks.test {
     setForkEvery(200)
-    buildDir.resolve("test.txt").createNewFile()
-    systemProperty("build.dir", buildDir.absolutePath)
 }
 
 val generatedResourcesDir = gradlebuildJava.generatedResourcesDir
