@@ -30,7 +30,7 @@ class IntegrationTestsPlugin : Plugin<Project> {
 
         createTestTask("integMultiVersionTest", "forking", sourceSet, TestType.INTEGRATION, Action {
             // This test task runs only multi-version tests and is intended to be used in the late pipeline to sweep up versions not previously tested
-            (options as JUnitPlatformOptions).includeTags("org.gradle.integtests.fixtures.ContextualMultiVersionTest")
+            includeCategories("org.gradle.integtests.fixtures.ContextualMultiVersionTest")
         })
     }
 }

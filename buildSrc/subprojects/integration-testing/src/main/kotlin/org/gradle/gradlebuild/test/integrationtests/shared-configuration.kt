@@ -6,6 +6,9 @@ import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.junit.JUnitOptions
+import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
 import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.ide.idea.IdeaPlugin
 import java.io.File
@@ -89,6 +92,36 @@ fun Project.createTestTask(name: String, executer: String, sourceSet: SourceSet,
         libsRepository.required = testType.libRepoRequired
         extraConfig.execute(this)
     }
+
+
+fun Test.clearCategories() {
+    if (shouldFallbackToJUnit()) {
+        (options as JUnitOptions).includeCategories.clear()
+    } else {
+        (options as JUnitPlatformOptions).includeTags.clear()
+    }
+}
+
+
+fun Test.includeCategories(vararg categories: String) {
+    if (shouldFallbackToJUnit()) {
+        (options as JUnitOptions).includeCategories(*categories)
+    } else {
+        (options as JUnitPlatformOptions).includeTags(*categories)
+    }
+}
+
+
+fun Test.shouldFallbackToJUnit() = (project.extra["fallbackToJUnit"] as Boolean?) == true
+
+
+fun Test.excludeCategories(vararg categories: String) {
+    if (shouldFallbackToJUnit()) {
+        (options as JUnitOptions).excludeCategories(*categories)
+    } else {
+        (options as JUnitPlatformOptions).excludeTags(*categories)
+    }
+}
 
 
 fun splitIntoBuckets(sourceFiles: List<File>, numberOfSplits: Int): List<List<File>> =

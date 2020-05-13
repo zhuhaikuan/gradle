@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.gradle.gradlebuild.test.integrationtests.excludeCategories
 plugins {
     gradlebuild.internal.kotlin
 }
@@ -36,11 +37,9 @@ dependencies {
     integTestRuntimeOnly(project(":runtimeApiInfo"))
 }
 
+
 tasks.integTest {
-    options {
-        require(this is JUnitPlatformOptions)
-        excludeTags("org.gradle.soak.categories.SoakTest")
-    }
+    excludeCategories("org.gradle.soak.categories.SoakTest")
 }
 
 tasks.register("soakIntegTest", org.gradle.gradlebuild.test.integrationtests.SoakTest::class) {
@@ -48,10 +47,7 @@ tasks.register("soakIntegTest", org.gradle.gradlebuild.test.integrationtests.Soa
     testClassesDirs = integTestSourceSet.output.classesDirs
     classpath = integTestSourceSet.runtimeClasspath
     systemProperty("org.gradle.soaktest", "true")
-    options {
-        require(this is JUnitPlatformOptions)
-        includeTags("org.gradle.soak.categories.SoakTest")
-    }
+    excludeCategories("org.gradle.soak.categories.SoakTest")
 }
 
 classycle {

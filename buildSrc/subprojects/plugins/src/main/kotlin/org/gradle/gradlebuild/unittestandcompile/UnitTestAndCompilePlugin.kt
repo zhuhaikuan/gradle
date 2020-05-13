@@ -261,6 +261,11 @@ class UnitTestAndCompilePlugin : Plugin<Project> {
     }
 
     private
+    fun Project.hasIncludePatterns(): Boolean {
+        return gradle.startParameter.taskNames.contains("--tests")
+    }
+
+    private
     fun Project.configureTests() {
         normalization {
             runtimeClasspath {
@@ -271,7 +276,11 @@ class UnitTestAndCompilePlugin : Plugin<Project> {
         tasks.withType<Test>().configureEach {
             maxParallelForks = project.maxParallelForks
 
-            useJUnitPlatform()
+            if (hasIncludePatterns()) {
+                project.extra.set("fallbackToJUnit", true)
+            } else {
+                useJUnitPlatform()
+            }
             configureJvmForTest()
             addOsAsInputs()
 

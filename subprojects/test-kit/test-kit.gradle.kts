@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 import org.gradle.gradlebuild.testing.integrationtests.cleanup.WhenNotEmpty
+import org.gradle.gradlebuild.test.integrationtests.excludeCategories
 
 plugins {
     gradlebuild.distribution.`core-api-java`
@@ -51,7 +52,7 @@ classycle {
 tasks.integMultiVersionTest {
     systemProperty("org.gradle.integtest.testkit.compatibility", "all")
     // TestKit multi version tests are not using JUnit categories
-    (options as JUnitPlatformOptions).includeTags.clear()
+    excludeCategories()
 }
 
 testFilesCleanup {
