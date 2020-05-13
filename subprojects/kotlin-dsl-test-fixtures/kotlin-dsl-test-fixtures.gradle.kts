@@ -36,4 +36,5 @@ dependencies {
     implementation(testLibrary("mockito_kotlin"))
     implementation(testLibrary("jackson_kotlin"))
     implementation(library("asm"))
+    implementation(library("groovy"))
 }

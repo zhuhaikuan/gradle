@@ -1,5 +1,8 @@
 package org.gradle.kotlin.dsl.fixtures
 
+import org.gradle.integtests.fixtures.RepoScriptBlockUtil.gradlePluginRepositoryDefinition
+import org.gradle.integtests.fixtures.RepoScriptBlockUtil.kotlinEapRepositoryDefinition
+import org.gradle.test.fixtures.dsl.GradleDsl
 import org.gradle.util.TextUtil.normaliseFileSeparators
 
 import org.junit.Before
@@ -38,7 +41,8 @@ open class AbstractPluginTest : AbstractKotlinIntegrationTest() {
         """
             repositories {
                 $testRepositories
-                gradlePluginPortal()
+                ${gradlePluginRepositoryDefinition(GradleDsl.KOTLIN)}
+                ${kotlinEapRepositoryDefinition(GradleDsl.KOTLIN)}
             }
         """
     }
