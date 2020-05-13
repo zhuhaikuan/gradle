@@ -17,7 +17,6 @@
 package org.gradle.kotlin.dsl.tooling.builders
 
 import groovy.transform.CompileStatic
-import org.gradle.integtests.fixtures.RepoScriptBlockUtil
 import org.gradle.integtests.tooling.fixture.TextUtil
 import org.gradle.integtests.tooling.fixture.ToolingApiAdditionalClasspath
 import org.gradle.integtests.tooling.fixture.ToolingApiSpecification
@@ -37,6 +36,8 @@ import java.util.function.Predicate
 import java.util.regex.Pattern
 import java.util.zip.ZipOutputStream
 
+import static org.gradle.integtests.fixtures.RepoScriptBlockUtil.gradlePluginRepositoryDefinition
+import static org.gradle.integtests.fixtures.RepoScriptBlockUtil.kotlinEapRepositoryDefinition
 import static org.gradle.kotlin.dsl.resolver.KotlinBuildScriptModelRequestKt.fetchKotlinBuildScriptModelFor
 
 import static org.hamcrest.CoreMatchers.allOf
@@ -74,7 +75,8 @@ abstract class AbstractKotlinScriptModelCrossVersionTest extends ToolingApiSpeci
 
     protected String repositoriesBlock = """
         repositories {
-            ${RepoScriptBlockUtil.gradlePluginRepositoryDefinition(GradleDsl.KOTLIN)}
+            ${gradlePluginRepositoryDefinition(GradleDsl.KOTLIN)}
+            ${kotlinEapRepositoryDefinition(GradleDsl.KOTLIN)}
         }
     """.stripIndent()
 
