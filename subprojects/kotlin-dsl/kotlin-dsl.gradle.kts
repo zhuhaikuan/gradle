@@ -89,7 +89,7 @@ dependencies {
     testImplementation(testLibrary("jackson_kotlin"))
 
     testImplementation(testLibrary("archunit"))
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.5-1.4-M1")
     testImplementation("org.awaitility:awaitility-kotlin:3.1.6")
 
     testRuntimeOnly(project(":runtimeApiInfo"))

@@ -65,7 +65,7 @@ dependencies {
 
     testImplementation(testFixtures(project(":core")))
     testImplementation(testLibrary("mockito_kotlin2"))
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.3.3")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.3.5-1.4-M1")
 
     testRuntimeOnly(project(":runtimeApiInfo"))
 
