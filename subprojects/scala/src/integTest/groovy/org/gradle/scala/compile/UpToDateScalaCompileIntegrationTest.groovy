@@ -21,7 +21,6 @@ import org.gradle.integtests.fixtures.AvailableJavaHomes
 import org.gradle.integtests.fixtures.ToBeFixedForInstantExecution
 import org.gradle.language.scala.internal.toolchain.DefaultScalaToolProvider
 import org.gradle.util.Requires
-import org.gradle.util.TestPrecondition
 import spock.lang.Unroll
 
 import static org.gradle.api.JavaVersion.VERSION_1_8
@@ -34,7 +33,6 @@ class UpToDateScalaCompileIntegrationTest extends AbstractIntegrationSpec {
         file('src/main/scala/Person.scala') << "class Person(name: String)"
     }
 
-    @Requires(TestPrecondition.JDK8_OR_EARLIER)
     @ToBeFixedForInstantExecution
     def "compile is out of date when changing the #changedVersion version"() {
         buildScript(scalaProjectBuildScript(defaultZincVersion, defaultScalaVersion))
