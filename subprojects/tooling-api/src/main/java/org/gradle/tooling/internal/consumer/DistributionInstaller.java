@@ -97,7 +97,7 @@ public class DistributionInstaller {
 
         long endTime = clock.getCurrentTime();
         OperationResult result = failure == null ? new DefaultOperationSuccessResult(startTime, endTime) : new DefaultOperationFailureResult(startTime, endTime, Collections.singletonList(DefaultFailure.fromThrowable(failure)));
-        buildProgressListener.onEvent(new DefaultFinishEvent(endTime, displayName + " finished", descriptor, result));
+        buildProgressListener.onEvent(new DefaultFinishEvent(endTime, displayName, descriptor, result));
         if (failure != null) {
             if (failure instanceof Exception) {
                 throw (Exception) failure;
