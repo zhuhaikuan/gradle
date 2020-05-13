@@ -42,6 +42,7 @@ import org.gradle.api.tasks.compile.CompileOptions
 import org.gradle.api.tasks.compile.GroovyCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.junitplatform.JUnitPlatformOptions
 import org.gradle.build.ClasspathManifest
 import org.gradle.gradlebuild.BuildEnvironment
 import org.gradle.gradlebuild.BuildEnvironment.agentNum
@@ -83,6 +84,7 @@ class UnitTestAndCompilePlugin : Plugin<Project> {
         configureSourcesVariant()
         configureJarTasks()
         configureTests()
+        fallbackToJUnitIfIncludePatternsPresent()
     }
 
     private
@@ -258,6 +260,25 @@ class UnitTestAndCompilePlugin : Plugin<Project> {
         // Add OS as inputs since tests on different OS may behave differently https://github.com/gradle/gradle-private/issues/2831
         // the version currently differs between our dev infrastructure, so we only track the name and the architecture
         inputs.property("operatingSystem", "${OperatingSystem.current().name} ${System.getProperty("os.arch")}")
+    }
+
+    // JUnit 5 Vintage engine can't recognize Spock @Unroll test method correctly
+    // So we fallback to JUnit 4 runner if include pattern contains method name "SomeClass.methodName"
+    private
+    fun Project.fallbackToJUnitIfIncludePatternsPresent() {
+        afterEvaluate {
+            tasks.withType<Test>().configureEach {
+                if (filter.includePatterns.any { it.matches(".*[A-Z]\\w*\\.[a-z]\\w*.*".toRegex()) }) {
+                    println("Fallback to JUnit for task: $path")
+                    val junitPlatformOptions = options as JUnitPlatformOptions
+
+                    useJUnit {
+                        includeCategories.addAll(junitPlatformOptions.includeTags)
+                        excludeCategories.addAll(junitPlatformOptions.excludeTags)
+                    }
+                }
+            }
+        }
     }
 
     private
