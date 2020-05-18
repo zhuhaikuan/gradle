@@ -15,12 +15,12 @@
  */
 package org.gradle.internal.component.model;
 
-import com.google.common.collect.Lists;
 import org.gradle.api.Action;
 import org.gradle.api.capabilities.CapabilitiesMetadata;
 import org.gradle.api.capabilities.MutableCapabilitiesMetadata;
 import org.gradle.internal.component.external.model.VariantMetadataRules;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,7 +29,7 @@ import java.util.List;
  * that are applied on the capabilities defined in variant/configuration metadata.
  */
 public class CapabilitiesRules {
-    private final List<VariantMetadataRules.VariantAction<? super MutableCapabilitiesMetadata>> actions = Lists.newLinkedList();
+    private final List<VariantMetadataRules.VariantAction<? super MutableCapabilitiesMetadata>> actions = new ArrayList<>();
 
 
     public void addCapabilitiesAction(VariantMetadataRules.VariantAction<? super MutableCapabilitiesMetadata> action) {

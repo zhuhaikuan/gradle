@@ -540,7 +540,7 @@ public class ProtocolToModelAdapter implements ObjectGraphAdapter {
             }
             lock.writeLock().lock();
             try {
-                for (MethodInvocationKey key : new LinkedList<MethodInvocationKey>(store.keySet())) {
+                for (MethodInvocationKey key : new ArrayList<>(store.keySet())) {
                     if (key.isDirty()) {
                         evict++;
                         store.remove(key);

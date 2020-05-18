@@ -29,11 +29,11 @@ import org.gradle.internal.file.PathToFileResolver;
 import org.gradle.internal.nativeintegration.services.FileSystems;
 
 import java.io.File;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DefaultFileCollectionResolveContext implements ResolvableFileCollectionResolveContext {
-    private final List<Object> queue = new LinkedList<Object>();
+    private final List<Object> queue = new ArrayList<>();
     private final Converter<? extends FileCollectionInternal> fileCollectionConverter;
     private final Converter<? extends FileTreeInternal> fileTreeConverter;
 

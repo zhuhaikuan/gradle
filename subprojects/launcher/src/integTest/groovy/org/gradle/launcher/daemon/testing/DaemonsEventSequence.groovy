@@ -15,10 +15,10 @@
  */
 package org.gradle.launcher.daemon.testing
 
-import org.gradle.launcher.daemon.registry.DaemonRegistry
 import org.gradle.internal.concurrent.DefaultExecutorFactory
 import org.gradle.internal.concurrent.ManagedExecutor
 import org.gradle.internal.concurrent.Stoppable
+import org.gradle.launcher.daemon.registry.DaemonRegistry
 
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -57,6 +57,7 @@ class DaemonsEventSequence implements Stoppable, Runnable {
     // wrapper object for the queue, to enable a null sentinel
     private class Holder {
         final value
+
         Holder(value) {
             this.value = value
         }
@@ -67,7 +68,7 @@ class DaemonsEventSequence implements Stoppable, Runnable {
         this.timeoutBetweenStateChangeMs = timeoutBetweenStateChangeMs
         this.registry = registry
         this.allCheckpoints = Arrays.asList(checkpoints).asImmutable()
-        this.remainingCheckpoints = new LinkedList(allCheckpoints)
+        this.remainingCheckpoints = new ArrayList<>(allCheckpoints)
 
         this.executor = new DefaultExecutorFactory().create("DaemonsEventSequence Consumer")
     }
@@ -122,7 +123,9 @@ class DaemonsEventSequence implements Stoppable, Runnable {
                 throw timeoutError
             }
 
-            if (daemonsState == null) { return }
+            if (daemonsState == null) {
+                return
+            }
 
             Long timeSinceStart = lastStateChangeAt == null ? 0 : lastStateChangeAt.time - runStartedAt.time
             pastStateChanges[timeSinceStart] = daemonsState

@@ -31,14 +31,13 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 @NonNullApi
 public class RhinoShellExec extends JavaExec {
 
-    private List<Object> rhinoOptions = new LinkedList<Object>();
-    private List<Object> scriptArgs = new LinkedList<Object>();
+    private List<Object> rhinoOptions = new ArrayList<>();
+    private List<Object> scriptArgs = new ArrayList<>();
     private Object script;
 
     public RhinoShellExec() {
@@ -58,14 +57,14 @@ public class RhinoShellExec extends JavaExec {
      * @since 4.0
      */
     public void setRhinoOptions(List<String> rhinoOptions) {
-        this.rhinoOptions = new LinkedList<Object>(rhinoOptions);
+        this.rhinoOptions = new ArrayList<>(rhinoOptions);
     }
 
     /**
      * Sets Rhino options.
      */
     public void setRhinoOptions(Object... rhinoOptions) {
-        this.rhinoOptions = new LinkedList<Object>(Arrays.asList(rhinoOptions));
+        this.rhinoOptions = new ArrayList<>(Arrays.asList(rhinoOptions));
     }
 
     /**
@@ -89,14 +88,14 @@ public class RhinoShellExec extends JavaExec {
      * @since 4.0
      */
     public void setScriptArgs(List<String> scriptArgs) {
-        this.scriptArgs = new LinkedList<Object>(scriptArgs);
+        this.scriptArgs = new ArrayList<>(scriptArgs);
     }
 
     /**
      * Sets script arguments.
      */
     public void setScriptArgs(Object... scriptArgs) {
-        this.scriptArgs = new LinkedList<Object>(Arrays.asList(scriptArgs));
+        this.scriptArgs = new ArrayList<>(Arrays.asList(scriptArgs));
     }
 
     /**

@@ -59,8 +59,8 @@ import org.gradle.language.base.internal.resolve.LibraryResolveException;
 import org.gradle.platform.base.internal.BinarySpecInternal;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -172,7 +172,7 @@ public class DependencyResolvingClasspath extends AbstractFileCollection {
     }
 
     class ResolveResult implements DependencyGraphVisitor, DependencyArtifactsVisitor {
-        public final List<Throwable> notFound = new LinkedList<Throwable>();
+        public final List<Throwable> notFound = new ArrayList<>();
         public DefaultResolvedArtifactsBuilder artifactsBuilder = new DefaultResolvedArtifactsBuilder(thisBuild, true, ResolutionStrategy.SortOrder.DEFAULT);
         public SelectedArtifactResults artifactsResults;
 

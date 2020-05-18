@@ -103,8 +103,8 @@ import org.gradle.internal.service.ServiceRegistry;
 import org.gradle.internal.vfs.AdditiveCacheLocations;
 import org.gradle.internal.vfs.VirtualFileSystem;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -162,7 +162,7 @@ public class GradleScopeServices extends DefaultServiceRegistry {
     }
 
     BuildConfigurationActionExecuter createBuildConfigurationActionExecuter(CommandLineTaskParser commandLineTaskParser, TaskSelector taskSelector, ProjectConfigurer projectConfigurer, ProjectStateRegistry projectStateRegistry) {
-        List<BuildConfigurationAction> taskSelectionActions = new LinkedList<BuildConfigurationAction>();
+        List<BuildConfigurationAction> taskSelectionActions = new ArrayList<>();
         taskSelectionActions.add(new DefaultTasksBuildExecutionAction(projectConfigurer));
         taskSelectionActions.add(new TaskNameResolvingBuildConfigurationAction(commandLineTaskParser));
         return new DefaultBuildConfigurationActionExecuter(Arrays.asList(new ExcludedTaskFilteringBuildConfigurationAction(taskSelector)), taskSelectionActions, projectStateRegistry);

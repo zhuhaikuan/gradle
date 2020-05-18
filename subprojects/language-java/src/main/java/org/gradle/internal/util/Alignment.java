@@ -16,8 +16,7 @@
 
 package org.gradle.internal.util;
 
-import com.google.common.collect.Lists;
-
+import java.util.ArrayList;
 import java.util.List;
 
 public class Alignment<T> {
@@ -95,7 +94,7 @@ public class Alignment<T> {
             }
         }
 
-        List<Alignment<T>> result = Lists.newLinkedList();
+        List<Alignment<T>> result = new ArrayList<>();
         for (int i = currentLen, j = previousLen; i > 0 || j > 0;) {
             int cost = costs[i][j];
             if (i > 0 && j > 0 && cost == (current[i - 1].equals(previous[j - 1]) ? costs[i - 1][j - 1] : costs[i - 1][j - 1] + 1)) {

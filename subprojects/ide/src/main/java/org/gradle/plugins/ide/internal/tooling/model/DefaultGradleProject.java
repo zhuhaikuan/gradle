@@ -21,20 +21,20 @@ import org.gradle.tooling.internal.gradle.GradleProjectIdentity;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 public class DefaultGradleProject implements Serializable, GradleProjectIdentity {
-    private DefaultGradleScript buildScript = new DefaultGradleScript();
+    private final DefaultGradleScript buildScript = new DefaultGradleScript();
     private File buildDirectory;
     private File projectDirectory;
-    private List<LaunchableGradleTask> tasks = new LinkedList<LaunchableGradleTask>();
+    private List<LaunchableGradleTask> tasks = new ArrayList<>();
     private String name;
     private String description;
     private DefaultProjectIdentifier projectIdentifier;
     private DefaultGradleProject parent;
-    private List<? extends DefaultGradleProject> children = new LinkedList<DefaultGradleProject>();
+    private List<? extends DefaultGradleProject> children = new ArrayList<>();
 
     public String getName() {
         return name;

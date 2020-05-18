@@ -43,9 +43,9 @@ import org.gradle.plugin.use.resolve.internal.PluginResolver;
 import org.gradle.util.TextUtil;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Formatter;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -249,7 +249,7 @@ public class DefaultPluginRequestApplicator implements PluginRequestApplicator {
     }
 
     private static class Result implements PluginResolutionResult {
-        private final List<NotFound> notFoundList = new LinkedList<>();
+        private final List<NotFound> notFoundList = new ArrayList<>();
         private final PluginRequestInternal request;
         private PluginResolution found;
 

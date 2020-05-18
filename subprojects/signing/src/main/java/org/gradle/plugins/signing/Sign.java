@@ -259,7 +259,7 @@ public class Sign extends DefaultTask implements SignatureSpec {
     @Internal
     public FileCollection getFilesToSign() {
         return getFileCollectionFactory().fixed("Task \'" + getPath() + "\' files to sign",
-            Lists.newLinkedList(Iterables.filter(Iterables.transform(signatures, Signature::getToSign), Predicates.notNull())));
+            Lists.newArrayList(Iterables.filter(Iterables.transform(signatures, Signature::getToSign), Predicates.notNull())));
     }
 
     /**
@@ -268,7 +268,7 @@ public class Sign extends DefaultTask implements SignatureSpec {
     @Internal
     public FileCollection getSignatureFiles() {
         return getFileCollectionFactory().fixed("Task \'" + getPath() + "\' signature files",
-            Lists.newLinkedList(Iterables.filter(Iterables.transform(signatures, Signature::getFile), Predicates.notNull())));
+            Lists.newArrayList(Iterables.filter(Iterables.transform(signatures, Signature::getFile), Predicates.notNull())));
     }
 
     @Override

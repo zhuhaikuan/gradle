@@ -42,6 +42,7 @@ import org.gradle.util.GUtil;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.stream.Collectors;
 
@@ -116,7 +117,7 @@ public class CreateStartScripts extends ConventionTask {
     private String executableDir = "bin";
     private final Property<String> mainModule;
     private final Property<String> mainClass;
-    private Iterable<String> defaultJvmOpts = Lists.newLinkedList();
+    private Iterable<String> defaultJvmOpts = new ArrayList<>();
     private String applicationName;
     private String optsEnvironmentVar;
     private String exitEnvironmentVar;
@@ -208,6 +209,7 @@ public class CreateStartScripts extends ConventionTask {
 
     /**
      * The directory to write the scripts into in the distribution.
+     *
      * @since 4.5
      */
     @Input
@@ -217,6 +219,7 @@ public class CreateStartScripts extends ConventionTask {
 
     /**
      * The directory to write the scripts into in the distribution.
+     *
      * @since 4.5
      */
     public void setExecutableDir(String executableDir) {

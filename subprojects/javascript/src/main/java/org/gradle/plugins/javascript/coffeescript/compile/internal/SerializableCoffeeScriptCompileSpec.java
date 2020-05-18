@@ -26,7 +26,7 @@ import org.gradle.plugins.javascript.coffeescript.CoffeeScriptCompileSpec;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SerializableCoffeeScriptCompileSpec implements Serializable {
@@ -42,7 +42,7 @@ public class SerializableCoffeeScriptCompileSpec implements Serializable {
     public SerializableCoffeeScriptCompileSpec(File coffeeScriptJs, File destinationDir, FileCollection source, CoffeeScriptCompileOptions options) {
         this.coffeeScriptJs = coffeeScriptJs;
         this.destinationDir = destinationDir;
-        this.source = new LinkedList<RelativeFile>();
+        this.source = new ArrayList<>();
         this.options = options;
 
         toRelativeFiles(source, this.source);

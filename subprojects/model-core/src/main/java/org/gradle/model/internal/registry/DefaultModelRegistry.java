@@ -57,7 +57,6 @@ import java.util.Deque;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -82,7 +81,7 @@ public class DefaultModelRegistry implements ModelRegistryInternal {
     private final ModelRuleExtractor ruleExtractor;
     // Use of a LinkedList for 2 reasons: `Set` proved to have a significant negative impact on performance
     // And list will see a lot of removals, which ArrayList isn't very well suited for.
-    private final List<RuleBinder> unboundRules = new LinkedList<RuleBinder>();
+    private final List<RuleBinder> unboundRules = new ArrayList<>();
 
     public DefaultModelRegistry(ModelRuleExtractor ruleExtractor, String projectPath) {
         this(ruleExtractor, projectPath, BoringProjectState.IDENTITY);
@@ -301,7 +300,7 @@ public class DefaultModelRegistry implements ModelRegistryInternal {
             }
         }
         if (!Iterables.isEmpty(node.getDependents())) {
-            throw new IllegalStateException(String.format("Tried to remove model '%s' but it is depended on by: '%s'",  node.getPath(), Joiner.on(", ").join(node.getDependents())));
+            throw new IllegalStateException(String.format("Tried to remove model '%s' but it is depended on by: '%s'", node.getPath(), Joiner.on(", ").join(node.getDependents())));
         }
         nodesToRemove.add(node);
     }

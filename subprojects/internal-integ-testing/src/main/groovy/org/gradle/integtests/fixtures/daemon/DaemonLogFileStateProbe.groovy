@@ -22,8 +22,11 @@ import org.gradle.launcher.daemon.logging.DaemonMessages
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
-import static org.gradle.launcher.daemon.server.api.DaemonStateControl.*
-import static org.gradle.launcher.daemon.server.api.DaemonStateControl.State.*
+import static org.gradle.launcher.daemon.server.api.DaemonStateControl.State
+import static org.gradle.launcher.daemon.server.api.DaemonStateControl.State.Busy
+import static org.gradle.launcher.daemon.server.api.DaemonStateControl.State.Canceled
+import static org.gradle.launcher.daemon.server.api.DaemonStateControl.State.Idle
+import static org.gradle.launcher.daemon.server.api.DaemonStateControl.State.Stopped
 
 class DaemonLogFileStateProbe implements DaemonStateProbe {
     private final DaemonContext context
@@ -52,7 +55,7 @@ class DaemonLogFileStateProbe implements DaemonStateProbe {
     }
 
     List<State> getStates() {
-        def states = new LinkedList<State>()
+        def states = new ArrayList<State>()
         states << Idle
         log.eachLine {
             if (it.contains(startBuildMessage)) {

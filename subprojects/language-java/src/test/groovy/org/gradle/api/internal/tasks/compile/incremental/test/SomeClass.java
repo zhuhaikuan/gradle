@@ -16,11 +16,15 @@
 
 package org.gradle.api.internal.tasks.compile.incremental.test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class SomeClass {
 
-    List<Integer> field = new LinkedList<Integer>();
+    List<Integer> field = new ArrayList<>();
 
     private AccessedFromPrivateField accessedFromPrivateField;
 

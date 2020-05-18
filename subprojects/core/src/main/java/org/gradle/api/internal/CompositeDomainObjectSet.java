@@ -15,7 +15,6 @@
  */
 package org.gradle.api.internal;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.gradle.api.Action;
 import org.gradle.api.DomainObjectCollection;
@@ -25,6 +24,7 @@ import org.gradle.api.internal.provider.ProviderInternal;
 import org.gradle.api.specs.Spec;
 import org.gradle.internal.Actions;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -161,7 +161,7 @@ public class CompositeDomainObjectSet<T> extends DelegatingDomainObjectSet<T> im
     // TODO Make this work with pending elements
     private final static class DomainObjectCompositeCollection<T> implements ElementSource<T> {
 
-        private final List<DomainObjectCollection<? extends T>> store = Lists.newLinkedList();
+        private final List<DomainObjectCollection<? extends T>> store = new ArrayList<>();
 
         public boolean containsCollection(DomainObjectCollection<? extends T> collection) {
             for (DomainObjectCollection<? extends T> ts : store) {

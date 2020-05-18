@@ -32,7 +32,6 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -91,7 +90,7 @@ public class JvmOptions {
      * @return all jvm args including system properties
      */
     public List<String> getAllJvmArgs() {
-        List<String> args = new LinkedList<String>();
+        List<String> args = new ArrayList<>();
         formatSystemProperties(getMutableSystemProperties(), args);
 
         // We have to add these after the system properties so they can override any system properties

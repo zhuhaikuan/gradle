@@ -20,7 +20,7 @@ import org.gradle.plugins.ide.eclipse.model.EclipseClasspath;
 import org.gradle.plugins.ide.eclipse.model.Library;
 
 import java.io.File;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class ClassFoldersCreator {
     public List<Library> create(EclipseClasspath classpath) {
-        List<Library> out = new LinkedList<Library>();
+        List<Library> out = new ArrayList<>();
         FileReferenceFactory fileReferenceFactory = classpath.getFileReferenceFactory();
 
         if(classpath.getClassFolders() != null) {

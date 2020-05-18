@@ -33,10 +33,10 @@ import org.gradle.model.internal.manage.schema.ScalarValueSchema;
 import org.gradle.model.internal.type.ModelType;
 import org.gradle.model.internal.type.ModelTypes;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
@@ -120,7 +120,7 @@ public class ScalarCollectionNodeInitializerExtractionStrategy extends Collectio
 
         @Override
         protected List<T> initialValue() {
-            return new LinkedList<T>();
+            return new ArrayList<>();
         }
 
         @Override
@@ -294,44 +294,44 @@ public class ScalarCollectionNodeInitializerExtractionStrategy extends Collectio
         @Override
         public void add(int index, T element) {
             validateElementType(element);
-            ((List<T>)getDelegate(true)).add(index, element);
+            ((List<T>) getDelegate(true)).add(index, element);
         }
 
 
         @Override
         public boolean addAll(int index, Collection<? extends T> c) {
             validateCollection(c);
-            return ((List<T>)getDelegate(true)).addAll(index, c);
+            return ((List<T>) getDelegate(true)).addAll(index, c);
         }
 
         @Override
         public T get(int index) {
-            return ((List<T>)getDelegate(false)).get(index);
+            return ((List<T>) getDelegate(false)).get(index);
         }
 
         @Override
         public int indexOf(Object o) {
-            return ((List<T>)getDelegate(false)).indexOf(o);
+            return ((List<T>) getDelegate(false)).indexOf(o);
         }
 
         @Override
         public int lastIndexOf(Object o) {
-            return ((List<T>)getDelegate(false)).lastIndexOf(o);
+            return ((List<T>) getDelegate(false)).lastIndexOf(o);
         }
 
         @Override
         public ListIterator<T> listIterator() {
-            return ((List<T>)getDelegate(false)).listIterator();
+            return ((List<T>) getDelegate(false)).listIterator();
         }
 
         @Override
         public ListIterator<T> listIterator(int index) {
-            return ((List<T>)getDelegate(false)).listIterator(index);
+            return ((List<T>) getDelegate(false)).listIterator(index);
         }
 
         @Override
         public T remove(int index) {
-            return ((List<T>)getDelegate(true)).remove(index);
+            return ((List<T>) getDelegate(true)).remove(index);
         }
 
         @Override
@@ -342,7 +342,7 @@ public class ScalarCollectionNodeInitializerExtractionStrategy extends Collectio
         @Override
         public T set(int index, T element) {
             validateElementType(element);
-            return ((List<T>)getDelegate(true)).set(index, element);
+            return ((List<T>) getDelegate(true)).set(index, element);
         }
     }
 

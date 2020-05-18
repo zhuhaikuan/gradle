@@ -40,8 +40,8 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -126,7 +126,7 @@ class WatchServiceRegistrar implements FileWatcherListener {
     }
 
     private Iterable<File> getCurrentWatchPoints() {
-        List<File> currentWatchPoints = new LinkedList<File>();
+        List<File> currentWatchPoints = new ArrayList<>();
         for (Map.Entry<Path, WatchKey> entry : watchKeys.entrySet()) {
             if (entry.getValue().isValid()) {
                 currentWatchPoints.add(entry.getKey().toFile());

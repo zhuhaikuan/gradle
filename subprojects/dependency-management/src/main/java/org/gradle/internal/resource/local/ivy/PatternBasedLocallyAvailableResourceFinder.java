@@ -18,16 +18,16 @@ package org.gradle.internal.resource.local.ivy;
 import org.gradle.api.Transformer;
 import org.gradle.api.file.EmptyFileVisitor;
 import org.gradle.api.file.FileVisitDetails;
-import org.gradle.internal.component.external.model.ModuleComponentArtifactMetadata;
 import org.gradle.api.internal.artifacts.repositories.resolver.ResourcePattern;
-import org.gradle.internal.hash.ChecksumService;
-import org.gradle.internal.resource.local.AbstractLocallyAvailableResourceFinder;
 import org.gradle.api.internal.file.collections.MinimalFileTree;
 import org.gradle.api.internal.file.collections.SingleIncludePatternFileTree;
 import org.gradle.internal.Factory;
+import org.gradle.internal.component.external.model.ModuleComponentArtifactMetadata;
+import org.gradle.internal.hash.ChecksumService;
+import org.gradle.internal.resource.local.AbstractLocallyAvailableResourceFinder;
 
 import java.io.File;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PatternBasedLocallyAvailableResourceFinder extends AbstractLocallyAvailableResourceFinder<ModuleComponentArtifactMetadata> {
@@ -41,7 +41,7 @@ public class PatternBasedLocallyAvailableResourceFinder extends AbstractLocallyA
             @Override
             public Factory<List<File>> transform(final ModuleComponentArtifactMetadata artifact) {
                 return () -> {
-                    final List<File> files = new LinkedList<>();
+                    final List<File> files = new ArrayList<>();
                     if (artifact != null) {
                         getMatchingFiles(artifact).visit(new EmptyFileVisitor() {
                             @Override

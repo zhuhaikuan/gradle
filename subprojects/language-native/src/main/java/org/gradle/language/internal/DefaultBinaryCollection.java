@@ -29,8 +29,8 @@ import org.gradle.util.ConfigureUtil;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -43,7 +43,7 @@ public class DefaultBinaryCollection<T extends SoftwareComponent> implements Bin
 
     private final Class<T> elementType;
     private final Set<T> elements = new LinkedHashSet<>();
-    private List<SingleElementProvider<?>> pending = new LinkedList<>();
+    private List<SingleElementProvider<?>> pending = new ArrayList<>();
     private State state = State.Collecting;
     private ImmutableActionSet<T> knownActions = ImmutableActionSet.empty();
     private ImmutableActionSet<T> configureActions = ImmutableActionSet.empty();

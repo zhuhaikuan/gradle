@@ -69,7 +69,7 @@ public class DefaultExecutionPlan implements ExecutionPlan {
 
     private final Set<Node> entryNodes = new LinkedHashSet<>();
     private final NodeMapping nodeMapping = new NodeMapping();
-    private final List<Node> executionQueue = Lists.newLinkedList();
+    private final List<Node> executionQueue = new ArrayList<>();
     private final Map<Project, ResourceLock> projectLocks = Maps.newHashMap();
     private final FailureCollector failureCollector = new FailureCollector();
     private final TaskNodeFactory taskNodeFactory;

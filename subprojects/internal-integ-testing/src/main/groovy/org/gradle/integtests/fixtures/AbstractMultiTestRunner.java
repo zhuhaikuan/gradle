@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -222,7 +221,7 @@ public abstract class AbstractMultiTestRunner extends Runner implements Filterab
         private final Map<Description, Description> descriptionTranslations = new HashMap<Description, Description>();
         private final Set<Description> enabledTests = new LinkedHashSet<Description>();
         private final Set<Description> disabledTests = new LinkedHashSet<Description>();
-        private final List<Filter> filters = new LinkedList<Filter>();
+        private final List<Filter> filters = new ArrayList<>();
 
         final boolean hasAnyEnabledTests() {
             return !enabledTests.isEmpty();

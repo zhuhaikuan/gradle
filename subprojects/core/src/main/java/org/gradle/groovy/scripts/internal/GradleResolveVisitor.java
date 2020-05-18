@@ -948,7 +948,7 @@ public class GradleResolveVisitor extends ResolveVisitor {
     // a PropertyExpression with the ClassExpression of Integer as objectExpression
     // and class as property
     private Expression correctClassClassChain(PropertyExpression pe) {
-        LinkedList<Expression> stack = new LinkedList<Expression>();
+        LinkedList<Expression> stack = new LinkedList<>();
         ClassExpression found = null;
         for (Expression it = pe; it != null; it = ((PropertyExpression) it).getObjectExpression()) {
             if (it instanceof ClassExpression) {

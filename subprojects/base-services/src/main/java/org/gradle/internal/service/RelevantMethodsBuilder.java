@@ -16,25 +16,25 @@
 package org.gradle.internal.service;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 class RelevantMethodsBuilder {
     final List<Method> remainingMethods;
     final Class<?> type;
-    final LinkedList<Method> decorators = new LinkedList<Method>();
-    final LinkedList<Method> factories = new LinkedList<Method>();
-    final LinkedList<Method> configurers = new LinkedList<Method>();
+    final List<Method> decorators = new ArrayList<Method>();
+    final List<Method> factories = new ArrayList<Method>();
+    final List<Method> configurers = new ArrayList<Method>();
 
     private final Set<String> seen = new HashSet<String>();
 
     RelevantMethodsBuilder(Class<?> type) {
         this.type = type;
-        this.remainingMethods = new LinkedList<Method>();
+        this.remainingMethods = new ArrayList<Method>();
 
         for (Class<?> clazz = type; clazz != Object.class && clazz != DefaultServiceRegistry.class; clazz = clazz.getSuperclass()) {
             remainingMethods.addAll(Arrays.asList(clazz.getDeclaredMethods()));

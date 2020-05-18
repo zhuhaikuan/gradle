@@ -20,13 +20,13 @@ import org.gradle.api.internal.artifacts.ivyservice.resolveengine.ConflictResolv
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.ModuleConflictResolver;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 class CompositeConflictResolver<T> implements ModuleConflictResolver<T> {
 
-    private final List<ModuleConflictResolver<T>> resolvers = new LinkedList<>();
+    private final List<ModuleConflictResolver<T>> resolvers = new ArrayList<>();
 
     @Override
     public void select(ConflictResolverDetails<T> details) {
@@ -38,7 +38,7 @@ class CompositeConflictResolver<T> implements ModuleConflictResolver<T> {
             }
         }
         throw new IllegalStateException(this.getClass().getSimpleName()
-                + " was unable to select a candidate using resolvers: " + resolvers + ". Candidates: " + details.getCandidates());
+            + " was unable to select a candidate using resolvers: " + resolvers + ". Candidates: " + details.getCandidates());
     }
 
     void addFirst(ModuleConflictResolver<T> conflictResolver) {

@@ -18,7 +18,6 @@ package org.gradle.api.internal.file.copy;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import groovy.lang.Closure;
 import org.gradle.api.Action;
 import org.gradle.api.InvalidUserDataException;
@@ -53,7 +52,6 @@ import java.io.FilterReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,9 +66,9 @@ public class DefaultCopySpec implements CopySpecInternal {
     private final ConfigurableFileCollection sourcePaths;
     private Object destDir;
     private final PatternSet patternSet;
-    private final List<CopySpecInternal> childSpecs = new LinkedList<>();
-    private final List<CopySpecInternal> childSpecsInAdditionOrder = new LinkedList<>();
-    private final List<Action<? super FileCopyDetails>> copyActions = new LinkedList<>();
+    private final List<CopySpecInternal> childSpecs = new ArrayList<>();
+    private final List<CopySpecInternal> childSpecsInAdditionOrder = new ArrayList<>();
+    private final List<Action<? super FileCopyDetails>> copyActions = new ArrayList<>();
     private boolean hasCustomActions;
     private Integer dirMode;
     private Integer fileMode;
@@ -78,7 +76,7 @@ public class DefaultCopySpec implements CopySpecInternal {
     private Boolean includeEmptyDirs;
     private DuplicatesStrategy duplicatesStrategy = DuplicatesStrategy.INHERIT;
     private String filteringCharset;
-    private final List<CopySpecListener> listeners = Lists.newLinkedList();
+    private final List<CopySpecListener> listeners = new ArrayList<>();
 
     @Inject
     public DefaultCopySpec(FileCollectionFactory fileCollectionFactory, Instantiator instantiator, Factory<PatternSet> patternSetFactory) {

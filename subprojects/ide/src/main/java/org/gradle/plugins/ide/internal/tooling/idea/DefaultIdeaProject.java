@@ -19,13 +19,13 @@ package org.gradle.plugins.ide.internal.tooling.idea;
 import org.gradle.tooling.model.idea.IdeaLanguageLevel;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 
 public class DefaultIdeaProject implements Serializable {
     private String name;
     private String description;
-    private Collection<DefaultIdeaModule> children = new LinkedList<DefaultIdeaModule>();
+    private final Collection<DefaultIdeaModule> children = new ArrayList<>();
     private IdeaLanguageLevel languageLevel;
     private String jdkName;
     private DefaultIdeaJavaLanguageSettings javaLanguageSettings;

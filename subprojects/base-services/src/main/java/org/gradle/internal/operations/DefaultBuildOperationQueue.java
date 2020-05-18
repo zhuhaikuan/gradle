@@ -21,10 +21,12 @@ import org.gradle.internal.UncheckedException;
 import org.gradle.internal.work.WorkerLeaseRegistry;
 import org.gradle.internal.work.WorkerLeaseService;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -48,7 +50,7 @@ class DefaultBuildOperationQueue<T extends BuildOperation> implements BuildOpera
     private int workerCount;
     private int pendingOperations;
     private final Deque<T> workQueue = new LinkedList<T>();
-    private final LinkedList<Throwable> failures = new LinkedList<Throwable>();
+    private final List<Throwable> failures = new ArrayList<Throwable>();
 
     DefaultBuildOperationQueue(WorkerLeaseService workerLeases, Executor executor, QueueWorker<T> queueWorker) {
         this.workerLeases = workerLeases;

@@ -16,7 +16,6 @@
 
 package org.gradle.api.internal.project;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingPropertyException;
@@ -25,7 +24,12 @@ import org.apache.tools.ant.MagicNames;
 import org.apache.tools.ant.ProjectHelper;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Target;
-import org.gradle.api.*;
+import org.gradle.api.Action;
+import org.gradle.api.GradleException;
+import org.gradle.api.Project;
+import org.gradle.api.Task;
+import org.gradle.api.Transformer;
+import org.gradle.api.UnknownTaskException;
 import org.gradle.api.internal.project.ant.AntLoggingAdapter;
 import org.gradle.api.internal.project.ant.BasicAntBuilder;
 import org.gradle.api.tasks.TaskContainer;
@@ -36,7 +40,12 @@ import org.gradle.internal.Transformers;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class DefaultAntBuilder extends BasicAntBuilder implements GroovyObject {
 
@@ -140,7 +149,7 @@ public class DefaultAntBuilder extends BasicAntBuilder implements GroovyObject {
 
     private static List<String> getTaskDependencyNames(Target target, Transformer<? extends String, ? super String> taskNamer) {
         Enumeration<String> dependencies = target.getDependencies();
-        List<String> taskDependencyNames = Lists.newLinkedList();
+        List<String> taskDependencyNames = new ArrayList<>();
         while (dependencies.hasMoreElements()) {
             String targetName = dependencies.nextElement();
             String taskName = taskNamer.transform(targetName);

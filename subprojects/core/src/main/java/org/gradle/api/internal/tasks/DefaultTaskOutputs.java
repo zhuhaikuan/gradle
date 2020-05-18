@@ -41,7 +41,7 @@ import org.gradle.api.tasks.TaskOutputFilePropertyBuilder;
 
 import javax.annotation.Nullable;
 import java.io.File;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -52,8 +52,8 @@ public class DefaultTaskOutputs implements TaskOutputsInternal {
     private final PropertyWalker propertyWalker;
     private final FileCollectionFactory fileCollectionFactory;
     private AndSpec<TaskInternal> upToDateSpec = AndSpec.empty();
-    private List<SelfDescribingSpec<TaskInternal>> cacheIfSpecs = new LinkedList<SelfDescribingSpec<TaskInternal>>();
-    private List<SelfDescribingSpec<TaskInternal>> doNotCacheIfSpecs = new LinkedList<SelfDescribingSpec<TaskInternal>>();
+    private List<SelfDescribingSpec<TaskInternal>> cacheIfSpecs = new ArrayList<>();
+    private List<SelfDescribingSpec<TaskInternal>> doNotCacheIfSpecs = new ArrayList<>();
     private FileCollection previousOutputFiles;
     private final FilePropertyContainer<TaskOutputFilePropertyRegistration> registeredFileProperties = FilePropertyContainer.create();
     private final TaskInternal task;

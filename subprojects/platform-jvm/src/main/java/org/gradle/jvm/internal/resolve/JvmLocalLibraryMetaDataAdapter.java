@@ -25,8 +25,8 @@ import org.gradle.api.internal.artifacts.publish.DefaultPublishArtifact;
 import org.gradle.api.internal.attributes.AttributeContainerInternal;
 import org.gradle.api.internal.attributes.ImmutableAttributes;
 import org.gradle.api.internal.resolve.LocalLibraryMetaDataAdapter;
-import org.gradle.internal.DisplayName;
 import org.gradle.internal.Describables;
+import org.gradle.internal.DisplayName;
 import org.gradle.jvm.JvmLibrarySpec;
 import org.gradle.jvm.internal.JarBinarySpecInternal;
 import org.gradle.jvm.internal.JarFile;
@@ -38,12 +38,12 @@ import org.gradle.platform.base.DependencySpec;
 import org.gradle.platform.base.internal.BinarySpecInternal;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -115,7 +115,7 @@ public class JvmLocalLibraryMetaDataAdapter implements LocalLibraryMetaDataAdapt
     private void initializeUsages(EnumMap<UsageKind, Iterable<DependencySpec>> dependenciesPerUsage, EnumMap<UsageKind, List<PublishArtifact>> artifacts) {
         for (UsageKind usageKind : UsageKind.values()) {
             dependenciesPerUsage.put(usageKind, Collections.<DependencySpec>emptyList());
-            artifacts.put(usageKind, new LinkedList<PublishArtifact>());
+            artifacts.put(usageKind, new ArrayList<>());
         }
     }
 

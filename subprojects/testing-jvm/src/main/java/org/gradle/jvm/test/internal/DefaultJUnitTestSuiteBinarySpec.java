@@ -16,7 +16,6 @@
 
 package org.gradle.jvm.test.internal;
 
-import com.google.common.collect.Lists;
 import org.gradle.api.tasks.testing.Test;
 import org.gradle.jvm.JvmBinarySpec;
 import org.gradle.jvm.internal.DefaultJvmBinarySpec;
@@ -29,11 +28,12 @@ import org.gradle.platform.base.BinaryTasksCollection;
 import org.gradle.platform.base.DependencySpec;
 import org.gradle.platform.base.internal.BinaryTasksCollectionWrapper;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class DefaultJUnitTestSuiteBinarySpec extends DefaultJvmBinarySpec implements JUnitTestSuiteBinarySpecInternal, WithJvmAssembly, WithDependencies {
     private String junitVersion;
-    private Collection<DependencySpec> binaryLevelDependencies = Lists.newLinkedList();
+    private Collection<DependencySpec> binaryLevelDependencies = new ArrayList<DependencySpec>();
     private JvmBinarySpec testedBinary;
     private final DefaultTasksCollection tasks = new DefaultTasksCollection(super.getTasks());
     private DependencyResolvingClasspath runtimeClasspath;

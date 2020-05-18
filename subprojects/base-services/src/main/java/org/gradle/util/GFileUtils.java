@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.Checksum;
 
@@ -291,7 +290,7 @@ public class GFileUtils {
             throw new UncheckedIOException(String.format("Cannot create directory '%s' as it already exists, but is not a directory", dir));
         }
 
-        List<File> toCreate = new LinkedList<File>();
+        List<File> toCreate = new ArrayList<File>();
         File parent = dir.getParentFile();
         while (!parent.exists()) {
             toCreate.add(parent);

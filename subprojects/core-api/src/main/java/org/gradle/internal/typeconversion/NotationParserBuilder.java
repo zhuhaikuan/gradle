@@ -19,8 +19,8 @@ package org.gradle.internal.typeconversion;
 import org.gradle.api.Describable;
 import org.gradle.internal.Cast;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -31,7 +31,7 @@ public class NotationParserBuilder<N, T> {
     private Object typeDisplayName;
     private boolean implicitConverters = true;
     private boolean allowNullInput;
-    private final Collection<NotationConverter<? super N, ? extends T>> notationParsers = new LinkedList<NotationConverter<? super N, ? extends T>>();
+    private final Collection<NotationConverter<? super N, ? extends T>> notationParsers = new ArrayList<>();
 
     public static <T> NotationParserBuilder<Object, T> toType(Class<T> resultingType) {
         return new NotationParserBuilder<Object, T>(Object.class, new TypeInfo<T>(resultingType));
@@ -141,7 +141,7 @@ public class NotationParserBuilder<N, T> {
     }
 
     private NotationParser<N, T> create() {
-        List<NotationConverter<? super N, ? extends T>> composites = new LinkedList<NotationConverter<? super N, ? extends T>>();
+        List<NotationConverter<? super N, ? extends T>> composites = new ArrayList<>();
         if (notationType.isAssignableFrom(resultingType.getTargetType()) && implicitConverters) {
             composites.add(new JustReturningConverter<N, T>(resultingType.getTargetType()));
         }

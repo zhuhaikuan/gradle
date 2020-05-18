@@ -19,7 +19,6 @@ package org.gradle.configuration;
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.io.LineProcessor;
 import com.google.common.io.Resources;
 import org.apache.commons.lang.StringUtils;
@@ -27,6 +26,7 @@ import org.gradle.api.UncheckedIOException;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -44,10 +44,10 @@ public class DefaultImportsReader implements ImportsReader {
                 throw new IllegalStateException("Could not load default imports resource: " + RESOURCE);
             }
             this.importPackages = Resources.asCharSource(url, Charsets.UTF_8).readLines(new LineProcessor<String[]>() {
-                private final List<String> packages = Lists.newLinkedList();
+                private final List<String> packages = new ArrayList<>();
 
                 @Override
-                public boolean processLine(@SuppressWarnings("NullableProblems") String line) throws IOException {
+                public boolean processLine(@SuppressWarnings("NullableProblems") String line) {
                     packages.add(line.substring(7, line.length() - 2));
                     return true;
                 }
@@ -65,11 +65,11 @@ public class DefaultImportsReader implements ImportsReader {
                 private final ImmutableMap.Builder<String, List<String>> builder = ImmutableMap.builder();
 
                 @Override
-                public boolean processLine(String line) throws IOException {
+                public boolean processLine(String line) {
                     boolean process = !StringUtils.isEmpty(line);
                     if (process) {
                         String[] split = line.split(":");
-                        if (split.length==2) {
+                        if (split.length == 2) {
                             String simpleName = split[0];
                             List<String> fqcns = Splitter.on(';').omitEmptyStrings().splitToList(split[1]);
                             builder.put(simpleName, fqcns);

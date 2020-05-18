@@ -16,7 +16,6 @@
 
 package org.gradle.plugins.ide.idea.model.internal;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.gradle.api.Project;
@@ -45,6 +44,7 @@ import org.gradle.plugins.ide.internal.resolver.UnresolvedIdeDependencyHandler;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -149,9 +149,9 @@ public class IdeaDependenciesProvider {
         private final UnresolvedIdeDependencyHandler unresolvedIdeDependencyHandler = new UnresolvedIdeDependencyHandler();
         private final String scope;
 
-        private final List<Dependency> projectDependencies = Lists.newLinkedList();
-        private final List<Dependency> moduleDependencies = Lists.newLinkedList();
-        private final List<Dependency> fileDependencies = Lists.newLinkedList();
+        private final List<Dependency> projectDependencies = new ArrayList<>();
+        private final List<Dependency> moduleDependencies = new ArrayList<>();
+        private final List<Dependency> fileDependencies = new ArrayList<>();
         private final Map<ComponentSelector, UnresolvedDependencyResult> unresolvedDependencies = Maps.newLinkedHashMap();
 
         private IdeaDependenciesVisitor(IdeaModule ideaModule, String scope) {

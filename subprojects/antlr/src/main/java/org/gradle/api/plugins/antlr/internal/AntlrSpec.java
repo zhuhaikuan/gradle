@@ -16,10 +16,9 @@
 
 package org.gradle.api.plugins.antlr.internal;
 
-import com.google.common.collect.Lists;
-
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -56,7 +55,7 @@ public class AntlrSpec implements Serializable {
     }
 
     public List<String> asArgumentsWithFiles() {
-        List<String> commandLine = Lists.newLinkedList(arguments);
+        List<String> commandLine = new ArrayList<>(arguments);
         commandLine.add("-o");
         commandLine.add(getOutputDirectory().getAbsolutePath());
         for (File file : getGrammarFiles()) {

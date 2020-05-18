@@ -36,7 +36,6 @@ import org.gradle.internal.operations.BuildOperationExecutor;
 import javax.inject.Inject;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import static org.gradle.internal.concurrent.CompositeStoppable.stoppable;
@@ -153,7 +152,7 @@ public class TestReport extends DefaultTask {
     }
 
     private TestResultsProvider createAggregateProvider() {
-        List<TestResultsProvider> resultsProviders = new LinkedList<TestResultsProvider>();
+        List<TestResultsProvider> resultsProviders = new ArrayList<TestResultsProvider>();
         try {
             FileCollection resultDirs = getTestResultDirs();
             if (resultDirs.getFiles().size() == 1) {

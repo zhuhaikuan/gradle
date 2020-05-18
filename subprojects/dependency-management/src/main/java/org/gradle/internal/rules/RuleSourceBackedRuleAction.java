@@ -30,7 +30,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 public class RuleSourceBackedRuleAction<R, T> implements RuleAction<T> {
@@ -89,8 +88,8 @@ public class RuleSourceBackedRuleAction<R, T> implements RuleAction<T> {
         Object[] args = new Object[inputs.size() + 1];
         args[0] = subject;
         for (int i = 0; i < inputs.size(); i++) {
-            Object input =  inputs.get(i);
-            args[i+1] = input;
+            Object input = inputs.get(i);
+            args[i + 1] = input;
         }
         ruleMethod.invoke(instance, args);
     }
@@ -104,7 +103,7 @@ public class RuleSourceBackedRuleAction<R, T> implements RuleAction<T> {
         public List<V> get(Object key) {
             if (!containsKey(key)) {
                 @SuppressWarnings("unchecked") K keyCast = (K) key;
-                put(keyCast, new LinkedList<>());
+                put(keyCast, new ArrayList<>());
             }
 
             return super.get(key);

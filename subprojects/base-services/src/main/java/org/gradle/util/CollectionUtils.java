@@ -42,7 +42,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -198,7 +197,7 @@ public abstract class CollectionUtils {
             Collection<? extends I> collection = uncheckedNonnullCast(source);
             return collect(source, new ArrayList<R>(collection.size()), transformer);
         } else {
-            return collect(source, new LinkedList<R>(), transformer);
+            return collect(source, new ArrayList<R>(), transformer);
         }
     }
 
@@ -210,7 +209,7 @@ public abstract class CollectionUtils {
     }
 
     public static List<String> toStringList(Iterable<?> iterable) {
-        return collect(iterable, new LinkedList<String>(), Transformers.asString());
+        return collect(iterable, new ArrayList<String>(), Transformers.asString());
     }
 
     /**
@@ -581,8 +580,8 @@ public abstract class CollectionUtils {
         Preconditions.checkNotNull(items, "Cannot partition null Collection");
         Preconditions.checkNotNull(predicate, "Cannot apply null Spec when partitioning");
 
-        Collection<T> left = new LinkedList<T>();
-        Collection<T> right = new LinkedList<T>();
+        Collection<T> left = new ArrayList<T>();
+        Collection<T> right = new ArrayList<T>();
 
         for (T item : items) {
             if (predicate.isSatisfiedBy(item)) {

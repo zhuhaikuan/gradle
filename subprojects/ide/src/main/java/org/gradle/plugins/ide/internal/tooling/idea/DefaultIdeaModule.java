@@ -23,17 +23,17 @@ import org.gradle.tooling.model.idea.IdeaCompilerOutput;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 public class DefaultIdeaModule implements Serializable, GradleProjectIdentity {
     private String name;
-    private List<DefaultIdeaContentRoot> contentRoots = new LinkedList<DefaultIdeaContentRoot>();
+    private List<DefaultIdeaContentRoot> contentRoots = new ArrayList<>();
     private DefaultIdeaProject parent;
 
-    private List<DefaultIdeaDependency> dependencies = new LinkedList<DefaultIdeaDependency>();
+    private List<DefaultIdeaDependency> dependencies = new ArrayList<>();
     private DefaultGradleProject gradleProject;
 
     private IdeaCompilerOutput compilerOutput;

@@ -48,9 +48,9 @@ import org.gradle.plugins.ide.internal.tooling.model.DefaultGradleProject;
 import org.gradle.tooling.provider.model.ToolingModelBuilder;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -106,7 +106,7 @@ public class IdeaModelBuilder implements ToolingModelBuilder {
         for (IdeaModule module : projectModel.getModules()) {
             ideaModules.add(createModule(module, out, rootGradleProject));
         }
-        out.setChildren(new LinkedList<DefaultIdeaModule>(ideaModules));
+        out.setChildren(new ArrayList<>(ideaModules));
         return out;
     }
 
@@ -117,7 +117,7 @@ public class IdeaModelBuilder implements ToolingModelBuilder {
     private void buildDependencies(DefaultIdeaModule tapiModule, IdeaModule ideaModule) {
         ideaModule.setOffline(offlineDependencyResolution);
         Set<Dependency> resolved = ideaModule.resolveDependencies();
-        List<DefaultIdeaDependency> dependencies = new LinkedList<DefaultIdeaDependency>();
+        List<DefaultIdeaDependency> dependencies = new ArrayList<>();
         for (Dependency dependency : resolved) {
             if (dependency instanceof SingleEntryModuleLibrary) {
                 SingleEntryModuleLibrary d = (SingleEntryModuleLibrary) dependency;

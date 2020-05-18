@@ -92,7 +92,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -118,10 +117,10 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 public class InProcessGradleExecuter extends DaemonGradleExecuter {
@@ -238,7 +237,7 @@ public class InProcessGradleExecuter extends DaemonGradleExecuter {
     }
 
     private Collection<File> cleanup(List<File> files) {
-        List<File> result = new LinkedList<>();
+        List<File> result = new ArrayList<>();
         String prefix = Jvm.current().getJavaHome().getPath() + File.separator;
         for (File file : files) {
             if (file.getPath().startsWith(prefix)) {

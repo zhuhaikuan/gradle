@@ -29,7 +29,7 @@ import org.gradle.plugin.use.resolve.internal.PluginResolver;
 import org.gradle.plugin.use.resolve.internal.PluginResolverContributor;
 import org.gradle.plugin.use.resolve.service.internal.InjectedClasspathPluginResolver;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PluginResolverFactory implements Factory<PluginResolver> {
@@ -42,12 +42,12 @@ public class PluginResolverFactory implements Factory<PluginResolver> {
     private final VersionSelectorScheme versionSelectorScheme;
 
     public PluginResolverFactory(
-            PluginRegistry pluginRegistry,
-            DocumentationRegistry documentationRegistry,
-            InjectedClasspathPluginResolver injectedClasspathPluginResolver,
-            DependencyResolutionServices dependencyResolutionServices,
-            List<PluginResolverContributor> pluginResolverContributors,
-            VersionSelectorScheme versionSelectorScheme) {
+        PluginRegistry pluginRegistry,
+        DocumentationRegistry documentationRegistry,
+        InjectedClasspathPluginResolver injectedClasspathPluginResolver,
+        DependencyResolutionServices dependencyResolutionServices,
+        List<PluginResolverContributor> pluginResolverContributors,
+        VersionSelectorScheme versionSelectorScheme) {
         this.pluginRegistry = pluginRegistry;
         this.documentationRegistry = documentationRegistry;
         this.injectedClasspathPluginResolver = injectedClasspathPluginResolver;
@@ -62,7 +62,7 @@ public class PluginResolverFactory implements Factory<PluginResolver> {
     }
 
     private List<PluginResolver> createDefaultResolvers() {
-        List<PluginResolver> resolvers = new LinkedList<PluginResolver>();
+        List<PluginResolver> resolvers = new ArrayList<>();
         addDefaultResolvers(resolvers);
         return resolvers;
     }
