@@ -24,8 +24,10 @@ import org.gradle.api.invocation.Gradle
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.UnsupportedWithConfigurationCache
 import org.gradle.caching.configuration.BuildCache
 import org.gradle.execution.plan.Node
+import org.gradle.execution.plan.TaskNode
 import org.gradle.initialization.GradlePropertiesController
 import org.gradle.initialization.InstantExecution
 import org.gradle.instantexecution.coroutines.runToCompletion
@@ -149,6 +151,15 @@ class DefaultInstantExecution internal constructor(
         Instrumented.discardListener()
         stopCollectingCacheFingerprint()
 
+        checkUnsupportedTasks().takeIf { it.isNotEmpty() }?.let { unsupportedTasks ->
+            log(
+                "Disabling the configuration cache as unsupported tasks were found in the task graph: {}.",
+                unsupportedTasks.joinToString(", ")
+            )
+            problems.close()
+            return
+        }
+
         buildOperationExecutor.withStoreOperation {
             try {
                 writeInstantExecutionFiles()
@@ -178,6 +189,14 @@ class DefaultInstantExecution internal constructor(
             readInstantExecutionState()
         }
     }
+
+    private
+    fun checkUnsupportedTasks(): List<String> =
+        host.currentBuild.scheduledWork.asSequence()
+            .mapNotNull { (it as? TaskNode)?.task }
+            .filter { it::class.java.getAnnotation(UnsupportedWithConfigurationCache::class.java) != null }
+            .map { it.path }
+            .toList()
 
     private
     fun writeInstantExecutionFiles() {
