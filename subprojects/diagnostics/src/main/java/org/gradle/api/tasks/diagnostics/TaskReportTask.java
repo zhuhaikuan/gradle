@@ -23,6 +23,7 @@ import org.gradle.api.internal.project.ProjectState;
 import org.gradle.api.internal.project.ProjectStateRegistry;
 import org.gradle.api.internal.project.ProjectTaskLister;
 import org.gradle.api.tasks.Console;
+import org.gradle.api.tasks.UnsupportedWithConfigurationCache;
 import org.gradle.api.tasks.diagnostics.internal.AggregateMultiProjectTaskReportModel;
 import org.gradle.api.tasks.diagnostics.internal.DefaultGroupTaskReportModel;
 import org.gradle.api.tasks.diagnostics.internal.ReportRenderer;
@@ -42,6 +43,7 @@ import javax.inject.Inject;
  * tasks. Tasks which have not been assigned to a task group, so-called <i>hidden</i> tasks, can be included in the report
  * by enabling the command line option {@code --all}.
  */
+@UnsupportedWithConfigurationCache
 public class TaskReportTask extends AbstractReportTask {
     private TaskReportRenderer renderer = new TaskReportRenderer();
 
