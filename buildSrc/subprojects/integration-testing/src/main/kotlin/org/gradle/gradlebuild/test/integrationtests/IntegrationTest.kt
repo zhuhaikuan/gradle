@@ -44,7 +44,7 @@ abstract class IntegrationTest : DistributionTest() {
     }
 
     private
-    fun printStacktracesAfterTimeout(work: () -> Unit) = if (BuildEnvironment.isCiServer) {
+    fun printStacktracesAfterTimeout(work: () -> Unit) {
         val timer = Timer(true).apply {
             schedule(timerTask {
                 project.javaexec {
@@ -58,15 +58,13 @@ abstract class IntegrationTest : DistributionTest() {
         } finally {
             timer.cancel()
         }
-    } else {
-        work()
     }
 
     private
     fun determineTimeoutMillis() =
         when (systemProperties["org.gradle.integtest.executer"]) {
             "embedded" -> TimeUnit.MINUTES.toMillis(30)
-            else -> TimeUnit.MINUTES.toMillis(165) // 2h45m
+            else -> TimeUnit.MINUTES.toMillis(System.getProperty("stacktrace.monitor.timeout").toLong()) // 2h45m
         }
 
     override fun setClasspath(classpath: FileCollection) {
