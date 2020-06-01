@@ -107,6 +107,7 @@ import org.gradle.api.internal.file.FileResolver;
 import org.gradle.api.internal.model.NamedObjectInstantiator;
 import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.internal.project.ProjectStateRegistry;
+import org.gradle.api.internal.credentials.CredentialsProviderFactory;
 import org.gradle.api.internal.provider.PropertyFactory;
 import org.gradle.api.internal.tasks.TaskResolver;
 import org.gradle.api.model.ObjectFactory;
@@ -454,7 +455,8 @@ public class DefaultDependencyManagementServices implements DependencyManagement
                                                           CollectionCallbackActionDecorator callbackDecorator,
                                                           NamedObjectInstantiator instantiator,
                                                           DefaultUrlArtifactRepository.Factory urlArtifactRepositoryFactory,
-                                                          ChecksumService checksumService) {
+                                                          ChecksumService checksumService,
+                                                          CredentialsProviderFactory credentialsProviderFactory) {
             return new DefaultBaseRepositoryFactory(
                 localMavenRepositoryLocator,
                 fileResolver,
@@ -476,8 +478,8 @@ public class DefaultDependencyManagementServices implements DependencyManagement
                 objectFactory,
                 callbackDecorator,
                 urlArtifactRepositoryFactory,
-                checksumService
-            );
+                checksumService,
+                credentialsProviderFactory);
         }
 
         RepositoryHandler createRepositoryHandler(Instantiator instantiator, BaseRepositoryFactory baseRepositoryFactory, CollectionCallbackActionDecorator callbackDecorator) {

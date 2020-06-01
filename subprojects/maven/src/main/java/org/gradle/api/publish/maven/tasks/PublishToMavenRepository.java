@@ -18,12 +18,16 @@ package org.gradle.api.publish.maven.tasks;
 
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
+import org.gradle.api.credentials.Credentials;
+import org.gradle.api.provider.Property;
 import org.gradle.api.publish.internal.PublishOperation;
 import org.gradle.api.publish.maven.internal.publication.MavenPublicationInternal;
 import org.gradle.api.publish.maven.internal.publisher.MavenPublisher;
 import org.gradle.api.publish.maven.internal.publisher.ValidatingMavenPublisher;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.internal.artifacts.repositories.AuthenticationSupportedInternal;
 
 /**
  * Publishes a {@link org.gradle.api.publish.maven.MavenPublication} to a {@link MavenArtifactRepository}.
@@ -31,7 +35,12 @@ import org.gradle.api.tasks.TaskAction;
  * @since 1.4
  */
 public class PublishToMavenRepository extends AbstractPublishToMaven {
+
+    private static final Credentials NO_CREDENTIALS = new Credentials() {
+    };
+
     private MavenArtifactRepository repository;
+    private final Property<Credentials> credentials = getProject().getObjects().property(Credentials.class).convention(NO_CREDENTIALS);
 
     /**
      * The repository to publish to.
@@ -43,6 +52,11 @@ public class PublishToMavenRepository extends AbstractPublishToMaven {
         return repository;
     }
 
+    @Input
+    Property<Credentials> getCredentials() {
+        return credentials;
+    }
+
     /**
      * Sets the repository to publish to.
      *
@@ -50,6 +64,7 @@ public class PublishToMavenRepository extends AbstractPublishToMaven {
      */
     public void setRepository(MavenArtifactRepository repository) {
         this.repository = repository;
+        this.credentials.set(((AuthenticationSupportedInternal) repository).getConfiguredCredentials().orElse(NO_CREDENTIALS));
     }
 
     @TaskAction
