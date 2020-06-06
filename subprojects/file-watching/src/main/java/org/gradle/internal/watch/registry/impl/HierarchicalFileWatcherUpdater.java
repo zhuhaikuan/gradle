@@ -135,6 +135,7 @@ public class HierarchicalFileWatcherUpdater implements FileWatcherUpdater {
         if (hierarchiesToStartWatching.isEmpty() && hierarchiesToStopWatching.isEmpty()) {
             return;
         }
+        LOGGER.warn("Current watched hierarchies {}, start watching {}, stop watching {}", watchedHierarchies, hierarchiesToStartWatching, hierarchiesToStopWatching);
         if (!hierarchiesToStopWatching.isEmpty()) {
             watcher.stopWatching(hierarchiesToStopWatching.stream()
                 .map(Path::toFile)
