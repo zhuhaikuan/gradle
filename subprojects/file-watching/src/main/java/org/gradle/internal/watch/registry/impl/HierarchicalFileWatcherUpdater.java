@@ -118,6 +118,6 @@ public class HierarchicalFileWatcherUpdater implements FileWatcherUpdater {
             );
             watchedRoots.addAll(newWatchRoots);
         }
-        LOGGER.info("Watching {} directory hierarchies to track changes", watchedRoots.size());
+        LOGGER.warn("Watching {} directory hierarchies to track changes", watchedRoots.size());
     }
 }
