@@ -15,6 +15,7 @@
  */
 package org.gradle.internal.service.scopes;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.gradle.api.execution.TaskExecutionGraphListener;
 import org.gradle.api.execution.TaskExecutionListener;
 import org.gradle.api.internal.BuildScopeListenerRegistrationListener;
@@ -32,6 +33,8 @@ import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.internal.project.ProjectStateRegistry;
 import org.gradle.api.internal.tasks.options.OptionReader;
 import org.gradle.api.invocation.Gradle;
+import org.gradle.api.logging.Logger;
+import org.gradle.api.logging.Logging;
 import org.gradle.api.services.internal.BuildServiceRegistryInternal;
 import org.gradle.api.services.internal.DefaultBuildServicesRegistry;
 import org.gradle.cache.CacheRepository;
@@ -77,13 +80,14 @@ import org.gradle.initialization.BuildOperatingFiringTaskExecutionPreparer;
 import org.gradle.initialization.DefaultTaskExecutionPreparer;
 import org.gradle.initialization.TaskExecutionPreparer;
 import org.gradle.internal.Factory;
+import org.gradle.internal.InternalBuildAdapter;
 import org.gradle.internal.build.BuildStateRegistry;
 import org.gradle.internal.cleanup.BuildOutputCleanupRegistry;
 import org.gradle.internal.cleanup.DefaultBuildOutputCleanupRegistry;
 import org.gradle.internal.concurrent.CompositeStoppable;
+import org.gradle.internal.enterprise.core.GradleEnterprisePluginPresence;
 import org.gradle.internal.event.ListenerBroadcast;
 import org.gradle.internal.event.ListenerManager;
-import org.gradle.internal.id.UniqueId;
 import org.gradle.internal.instantiation.InstantiatorFactory;
 import org.gradle.internal.isolation.IsolatableFactory;
 import org.gradle.internal.logging.LoggingManagerInternal;
@@ -92,18 +96,12 @@ import org.gradle.internal.operations.BuildOperationExecutor;
 import org.gradle.internal.reflect.Instantiator;
 import org.gradle.internal.resources.ResourceLockCoordinationService;
 import org.gradle.internal.resources.SharedResourceLeaseRegistry;
-import org.gradle.internal.scan.BuildScanServices;
-import org.gradle.internal.scan.config.BuildScanPluginApplied;
-import org.gradle.internal.scan.scopeids.BuildScanScopeIds;
-import org.gradle.internal.scan.scopeids.DefaultBuildScanScopeIds;
-import org.gradle.internal.scopeids.id.BuildInvocationScopeId;
-import org.gradle.internal.scopeids.id.UserScopeId;
-import org.gradle.internal.scopeids.id.WorkspaceScopeId;
 import org.gradle.internal.service.DefaultServiceRegistry;
 import org.gradle.internal.service.ServiceRegistry;
 import org.gradle.internal.vfs.AdditiveCacheLocations;
 import org.gradle.internal.vfs.VirtualFileSystem;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -115,6 +113,12 @@ import static java.util.Arrays.asList;
  * Contains the services for a given {@link GradleInternal} instance.
  */
 public class GradleScopeServices extends DefaultServiceRegistry {
+
+    private static final Logger LOGGER = Logging.getLogger(GradleScopeServices.class);
+
+    @VisibleForTesting
+    public static final String NO_SCAN_PLUGIN_MSG = "An internal error occurred that prevented a build scan from being created.\n" +
+        "Please report this via https://github.com/gradle/gradle/issues";
 
     private final CompositeStoppable registries = new CompositeStoppable();
 
@@ -128,14 +132,18 @@ public class GradleScopeServices extends DefaultServiceRegistry {
         });
 
         if (gradle.getParent() == null) {
-            addProvider(new BuildScanServices());
-        } else {
-            // Task execution services at all levels needs this
-            addProvider(new Object() {
-                BuildScanPluginApplied createBuildScanPluginApplied() {
-                    return gradle.getRoot().getServices().get(BuildScanPluginApplied.class);
-                }
-            });
+            boolean requested = !gradle.getStartParameter().isNoBuildScan() && gradle.getStartParameter().isBuildScan();
+            if (requested) {
+                gradle.addListener(new InternalBuildAdapter() {
+                    @Override
+                    public void projectsEvaluated(@Nonnull Gradle ignored) {
+                        boolean present = gradle.getServices().get(GradleEnterprisePluginPresence.class).isPresent();
+                        if (!present) {
+                            LOGGER.warn(NO_SCAN_PLUGIN_MSG);
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -323,19 +331,6 @@ public class GradleScopeServices extends DefaultServiceRegistry {
         return ConfigurationTargetIdentifier.of(gradle);
     }
 
-    // Note: This would be better housed in a scope that encapsulated the tree of Gradle objects.
-    // as we don't have this right now we simulate it by reaching up the tree.
-    protected BuildInvocationScopeId createBuildScopeId(GradleInternal gradle) {
-        if (gradle.getParent() == null) {
-            return new BuildInvocationScopeId(UniqueId.generate());
-        } else {
-            return gradle.getRoot().getServices().get(BuildInvocationScopeId.class);
-        }
-    }
-
-    protected BuildScanScopeIds createBuildScanScopeIds(BuildInvocationScopeId buildInvocationScopeId, WorkspaceScopeId workspaceScopeId, UserScopeId userScopeId) {
-        return new DefaultBuildScanScopeIds(buildInvocationScopeId, workspaceScopeId, userScopeId);
-    }
 
     @Override
     public void close() {

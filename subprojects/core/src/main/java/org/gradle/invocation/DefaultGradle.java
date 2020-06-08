@@ -58,7 +58,6 @@ import org.gradle.internal.event.ListenerManager;
 import org.gradle.internal.installation.CurrentGradleInstallation;
 import org.gradle.internal.installation.GradleInstallation;
 import org.gradle.internal.resource.TextUriResourceLoader;
-import org.gradle.internal.scan.config.BuildScanConfigInit;
 import org.gradle.internal.service.ServiceRegistry;
 import org.gradle.internal.service.scopes.ServiceRegistryFactory;
 import org.gradle.listener.ClosureBackedMethodInvocationDispatch;
@@ -104,10 +103,6 @@ public abstract class DefaultGradle extends AbstractPluginAware implements Gradl
                 projectsLoaded = true;
             }
         });
-
-        if (parent == null) {
-            services.get(BuildScanConfigInit.class).init();
-        }
     }
 
     @Override
