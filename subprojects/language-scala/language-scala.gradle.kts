@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":modelCore"))
     implementation(project(":core"))
     implementation(project(":workers"))
+    implementation(project(":snapshots"))
     implementation(project(":platformBase"))
     implementation(project(":platformJvm"))
     implementation(project(":languageJava"))

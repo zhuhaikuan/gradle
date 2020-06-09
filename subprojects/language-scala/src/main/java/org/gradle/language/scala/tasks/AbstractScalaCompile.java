@@ -46,6 +46,7 @@ import org.gradle.api.tasks.compile.CompileOptions;
 import org.gradle.api.tasks.scala.IncrementalCompileOptions;
 import org.gradle.internal.buildevents.BuildStartedTime;
 import org.gradle.internal.file.Deleter;
+import org.gradle.internal.isolation.IsolatableFactory;
 import org.gradle.language.base.internal.compile.Compiler;
 import org.gradle.util.GFileUtils;
 
@@ -103,7 +104,8 @@ public abstract class AbstractScalaCompile extends AbstractCompile {
         if (isNonIncrementalCompilation()) {
             compiler = new CleaningJavaCompiler<>(compiler, getOutputs(), getDeleter());
         }
-        compiler.execute(spec);
+        ScalaJavaJointCompileSpec isolatedSpec = getServices().get(IsolatableFactory.class).isolate(spec).isolate();
+        compiler.execute(isolatedSpec);
     }
 
     private boolean isNonIncrementalCompilation() {
