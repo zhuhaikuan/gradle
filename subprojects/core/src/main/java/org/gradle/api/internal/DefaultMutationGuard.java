@@ -28,7 +28,11 @@ public class DefaultMutationGuard extends AbstractMutationGuard {
 
     @Override
     public boolean isMutationAllowed() {
-        return mutationGuardState.get();
+        boolean mutationAllowed = mutationGuardState.get();
+        if (mutationAllowed) {
+            mutationGuardState.remove();
+        }
+        return mutationAllowed;
     }
 
     @Override
@@ -36,12 +40,16 @@ public class DefaultMutationGuard extends AbstractMutationGuard {
         return new Action<T>() {
             @Override
             public void execute(T t) {
-                boolean oldIsMutationAllowed = isMutationAllowed();
+                boolean oldIsMutationAllowed = mutationGuardState.get();
                 mutationGuardState.set(allowMutationMethods);
                 try {
                     action.execute(t);
                 } finally {
-                    mutationGuardState.set(oldIsMutationAllowed);
+                    if (oldIsMutationAllowed) {
+                        mutationGuardState.remove();
+                    } else {
+                        mutationGuardState.set(false);
+                    }
                 }
             }
         };
