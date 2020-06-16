@@ -149,7 +149,7 @@ public class HierarchicalFileWatcherUpdater implements FileWatcherUpdater {
             );
             watchedHierarchies.addAll(hierarchiesToStartWatching);
         }
-        LOGGER.info("Watching {} directory hierarchies to track changes", watchedHierarchies.size());
+        LOGGER.warn("Watching {} directory hierarchies to track changes: {}", watchedHierarchies.size(), watchedHierarchies);
     }
 
     /**

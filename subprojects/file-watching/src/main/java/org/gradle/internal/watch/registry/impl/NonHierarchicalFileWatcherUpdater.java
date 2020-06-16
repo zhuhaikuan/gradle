@@ -100,9 +100,12 @@ public class NonHierarchicalFileWatcherUpdater implements FileWatcherUpdater {
             }
         });
         if (watchedRoots.isEmpty()) {
-            LOGGER.info("Not watching anything anymore");
+            LOGGER.warn("Not watching anything anymore");
         }
-        LOGGER.info("Watching {} directories to track changes", watchedRoots.entrySet().size());
+        LOGGER.warn("Watching {} directories to track changes", watchedRoots.entrySet().size());
+        watchedRootsForSnapshot.values().stream()
+            .map(list -> list.get(list.size() - 1))
+            .forEach(path -> LOGGER.warn("Currently watching path {}", path));
         try {
             if (!watchRootsToRemove.isEmpty()) {
                 fileWatcher.stopWatching(watchRootsToRemove);
