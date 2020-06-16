@@ -32,6 +32,7 @@ import org.gradle.api.internal.changedetection.state.ResourceFilter;
 import org.gradle.api.internal.changedetection.state.ResourceSnapshotterCacheService;
 import org.gradle.api.internal.changedetection.state.SplitFileHasher;
 import org.gradle.api.internal.changedetection.state.SplitResourceSnapshotterCacheService;
+import org.gradle.api.internal.classpath.ModuleRegistry;
 import org.gradle.api.internal.file.FileCollectionFactory;
 import org.gradle.api.internal.initialization.loadercache.DefaultClasspathHasher;
 import org.gradle.cache.CacheRepository;
@@ -46,6 +47,8 @@ import org.gradle.internal.build.BuildAddedListener;
 import org.gradle.internal.classloader.ClasspathHasher;
 import org.gradle.internal.event.ListenerManager;
 import org.gradle.internal.execution.OutputChangeListener;
+import org.gradle.internal.file.DefaultFileHierarchySet;
+import org.gradle.internal.file.FileHierarchySet;
 import org.gradle.internal.file.Stat;
 import org.gradle.internal.fingerprint.FileCollectionFingerprinter;
 import org.gradle.internal.fingerprint.FileCollectionFingerprinterRegistry;
@@ -67,6 +70,7 @@ import org.gradle.internal.hash.DefaultFileHasher;
 import org.gradle.internal.hash.FileHasher;
 import org.gradle.internal.hash.HashCode;
 import org.gradle.internal.hash.StreamHasher;
+import org.gradle.internal.installation.CurrentGradleInstallation;
 import org.gradle.internal.nativeintegration.filesystem.FileSystem;
 import org.gradle.internal.os.OperatingSystem;
 import org.gradle.internal.serialize.HashCodeSerializer;
@@ -163,19 +167,19 @@ public class VirtualFileSystemServices extends AbstractPluginServiceRegistry {
         }
 
         WatchingAwareVirtualFileSystem createVirtualFileSystem(
-            AdditiveCacheLocations additiveCacheLocations,
             FileHasher hasher,
             FileSystem fileSystem,
             Stat stat,
             StringInterner stringInterner,
             ListenerManager listenerManager,
-            CacheScopeMapping cacheScopeMapping
+            CacheScopeMapping cacheScopeMapping,
+            ModuleRegistry moduleRegistry,
+            CurrentGradleInstallation gradleInstallation
         ) {
             File globalCacheDirectory = cacheScopeMapping.getRootDirectory(null);
-            String globalCacheDirectoryPrefix = globalCacheDirectory.getAbsolutePath() + File.separator;
-            Predicate<String> watchFilter = path ->
-                !path.startsWith(globalCacheDirectoryPrefix) &&
-                    !additiveCacheLocations.isInsideAdditiveCache(path);
+            FileHierarchySet cacheLocations = buildCacheLocations(globalCacheDirectory, moduleRegistry, gradleInstallation);
+
+            Predicate<String> watchFilter = path -> !cacheLocations.contains(path);
             DelegatingDiffCapturingUpdateFunctionDecorator updateFunctionDecorator = new DelegatingDiffCapturingUpdateFunctionDecorator(watchFilter);
             DefaultVirtualFileSystem delegate = new DefaultVirtualFileSystem(
                 hasher,
@@ -200,6 +204,17 @@ public class VirtualFileSystemServices extends AbstractPluginServiceRegistry {
                 watchingAwareVirtualFileSystem.buildRootDirectoryAdded(buildState.getBuildRootDir())
             );
             return watchingAwareVirtualFileSystem;
+        }
+
+        private FileHierarchySet buildCacheLocations(File globalCacheDirectory, ModuleRegistry moduleRegistry, CurrentGradleInstallation gradleInstallation) {
+            FileHierarchySet cacheLocations = DefaultFileHierarchySet.of(globalCacheDirectory);
+            if (gradleInstallation.getInstallation() != null) {
+                cacheLocations = cacheLocations.plus(gradleInstallation.getInstallation().getGradleHome());
+            }
+            for (File additionalClasspathEntry : moduleRegistry.getAdditionalClassPath().getAsFiles()) {
+                cacheLocations = cacheLocations.plus(additionalClasspathEntry);
+            }
+            return cacheLocations;
         }
 
         private Optional<FileWatcherRegistryFactory> determineWatcherRegistryFactory(OperatingSystem operatingSystem) {
