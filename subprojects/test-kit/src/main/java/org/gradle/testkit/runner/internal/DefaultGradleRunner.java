@@ -248,6 +248,9 @@ public class DefaultGradleRunner extends GradleRunner {
 
     @Override
     public BuildResult build() {
+        if (testKitDirProvider instanceof TempTestKitDirProvider) {
+            throw new RuntimeException("TestKit dir not set!");
+        }
         return run(new Action<GradleExecutionResult>() {
             @Override
             public void execute(GradleExecutionResult gradleExecutionResult) {
