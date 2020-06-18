@@ -19,6 +19,7 @@ import org.gradle.test.fixtures.file.TestFile
 import org.gradle.test.fixtures.file.TestNameTestDirectoryProvider
 import org.gradle.util.Requires
 import org.gradle.util.TestPrecondition
+import org.gradle.util.UsesNativeServices
 import org.junit.Rule
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -29,6 +30,7 @@ import java.util.function.Function
 import static org.gradle.util.TextUtil.normaliseLineSeparators
 import static org.junit.Assume.assumeTrue
 
+@UsesNativeServices
 class DefaultDeleterTest extends Specification {
     @Rule
     TestNameTestDirectoryProvider tmpDir = new TestNameTestDirectoryProvider(getClass())
@@ -332,6 +334,34 @@ class DefaultDeleterTest extends Specification {
         """.stripIndent(12).trim())
         normalizedMessage.endsWith("-aaa.txt\n  - and more ...")
         normalizedMessage.readLines().size() == DefaultDeleter.MAX_REPORTED_PATHS * 2 + 5
+    }
+
+    @Requires(TestPrecondition.SYMLINKS)
+    def "can delete directory with symlink cycle inside"() {
+        def rootDir = tmpDir.createDir("root")
+        def first = rootDir.file("first")
+        def second = rootDir.file("second")
+        def third = rootDir.file("third")
+        first.createLink(second)
+        second.createLink(third)
+        third.createLink(first)
+
+        when:
+        deleter.deleteRecursively(rootDir)
+        then:
+        !rootDir.exists()
+    }
+
+    @Requires(TestPrecondition.SYMLINKS)
+    def "can delete directory with cycle introduced by symlinks"() {
+        def rootDir = tmpDir.createDir("root")
+        def dir = rootDir.file("dir").createDir()
+        dir.file('subdir').createLink(dir)
+
+        when:
+        deleter.deleteRecursively(rootDir)
+        then:
+        !rootDir.exists()
     }
 
     class FileTime {

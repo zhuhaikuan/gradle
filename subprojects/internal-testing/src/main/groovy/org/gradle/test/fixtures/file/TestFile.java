@@ -63,10 +63,10 @@ import java.util.jar.Manifest;
 
 import static java.nio.file.StandardCopyOption.COPY_ATTRIBUTES;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -121,11 +121,7 @@ public class TestFile extends File {
         for (Object p : path) {
             current = new File(current, p.toString());
         }
-        try {
-            return current.getCanonicalFile();
-        } catch (IOException e) {
-            throw new RuntimeException(String.format("Could not canonicalise '%s'.", current), e);
-        }
+        return current.toPath().normalize().toFile();
     }
 
     public TestFile file(Object... path) {
