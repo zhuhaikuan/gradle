@@ -18,12 +18,15 @@ package org.gradle.test.fixtures.file;
 
 import groovy.lang.Closure;
 import org.gradle.api.GradleException;
+import org.gradle.internal.file.impl.DefaultDeleter;
+import org.gradle.internal.os.OperatingSystem;
 import org.gradle.test.fixtures.ConcurrentTestUtil;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Random;
 import java.util.regex.Pattern;
 
@@ -66,10 +69,11 @@ abstract class AbstractTestDirectoryProvider implements TestRule, TestDirectoryP
 
     public void cleanup() {
         if (cleanup && dir != null && dir.exists()) {
-            ConcurrentTestUtil.poll(new Closure(null, null) {
+            DefaultDeleter deleter = new DefaultDeleter(System::currentTimeMillis, file -> Files.isSymbolicLink(file.toPath()), OperatingSystem.current().isWindows());
+            ConcurrentTestUtil.poll(20, new Closure(null, null) {
                 @SuppressWarnings("UnusedDeclaration")
                 void doCall() throws IOException {
-                    dir.forceDeleteDir();
+                    deleter.deleteRecursively(dir);
                 }
             });
         }
