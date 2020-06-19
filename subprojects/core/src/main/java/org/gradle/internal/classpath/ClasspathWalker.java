@@ -17,9 +17,9 @@
 package org.gradle.internal.classpath;
 
 import org.gradle.api.file.RelativePath;
-import org.gradle.api.internal.file.archive.impl.FileZipInput;
 import org.gradle.api.internal.file.archive.ZipEntry;
 import org.gradle.api.internal.file.archive.ZipInput;
+import org.gradle.api.internal.file.archive.impl.FileZipInput;
 import org.gradle.internal.file.FileMetadata;
 import org.gradle.internal.file.FileType;
 import org.gradle.internal.file.Stat;
@@ -38,9 +38,19 @@ import java.util.Comparator;
 @ServiceScope(Scopes.UserHome)
 public class ClasspathWalker {
     private final Stat stat;
+    private final Comparator<File> fileComparator;
 
     public ClasspathWalker(Stat stat) {
+        this(stat, Comparator.comparing(File::getName));
+    }
+
+    private ClasspathWalker(Stat stat, Comparator<File> comparator) {
         this.stat = stat;
+        this.fileComparator = comparator;
+    }
+
+    public ClasspathWalker withFileOrder(Comparator<File> comparator) {
+        return new ClasspathWalker(stat, comparator);
     }
 
     /**
@@ -63,7 +73,7 @@ public class ClasspathWalker {
         File[] files = dir.listFiles();
 
         // Apply a consistent order, regardless of file system ordering
-        Arrays.sort(files, Comparator.comparing(File::getName));
+        Arrays.sort(files, fileComparator);
 
         for (File file : files) {
             FileMetadata fileMetadata = stat.stat(file);

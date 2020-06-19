@@ -17,6 +17,7 @@
 package org.gradle.api.internal.artifacts.ivyservice.dependencysubstitution;
 
 import org.gradle.api.Action;
+import org.gradle.api.InternalApi;
 import org.gradle.api.artifacts.ArtifactSelectionDetails;
 import org.gradle.api.artifacts.DependencyResolveDetails;
 import org.gradle.api.artifacts.DependencySubstitution;
@@ -517,6 +518,7 @@ public class DefaultDependencySubstitutions implements DependencySubstitutionsIn
         }
     }
 
+    @InternalApi
     public static class DefaultVariantSelectionDetails implements VariantSelectionDetails {
         private final ImmutableAttributesFactory attributesFactory;
         private final ObjectFactory objectFactory;
