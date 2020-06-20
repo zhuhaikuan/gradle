@@ -13,51 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target.GLOBAL
 import java.util.Base64
 
 plugins {
     gradlebuild.internal.`kotlin-js`
 }
 
-dependencies {
-    compileOnly(kotlin("stdlib-js"))
+kotlin {
+    js {
+        browser {
+            webpackTask {
+                output.libraryTarget = GLOBAL
+            }
+        }
+    }
+    sourceSets {
+        named("jsMain") {
+            dependencies {
+                compileOnly(kotlin("stdlib-js"))
+            }
+        }
+    }
 }
 
 tasks {
 
-    compileKotlin2Js {
-        kotlinOptions {
-            outputFile = "$buildDir/js/configuration-cache-report.js"
-            metaInfo = false
-            sourceMap = false
-        }
-    }
-
-    val unpackKotlinJsStdlib by registering(Copy::class) {
-        group = "build"
-        description = "Unpacks the Kotlin JavaScript standard library"
-
-        val kotlinStdLibJsJar = configurations.compileClasspath.map { compileClasspath ->
-            val kotlinStdlibJsJarRegex = Regex("kotlin-stdlib-js-.+\\.jar")
-            compileClasspath.single { file -> file.name.matches(kotlinStdlibJsJarRegex) }
-        }
-
-        from(kotlinStdLibJsJar.map(::zipTree)) {
-            include("**/*.js")
-            exclude("META-INF/**")
-        }
-
-        into("$buildDir/$name")
-
-        includeEmptyDirs = false
-    }
+    val jsBrowserProductionWebpack by existing(KotlinWebpack::class)
 
     val assembleReport by registering(MergeReportAssets::class) {
-        htmlFile.set(layout.projectDirectory.file("src/main/resources/configuration-cache-report.html"))
-        logoFile.set(layout.projectDirectory.file("src/main/resources/configuration-cache-report-logo.png"))
-        cssFile.set(layout.projectDirectory.file("src/main/resources/configuration-cache-report.css"))
-        jsFile.set(compileKotlin2Js.map { layout.projectDirectory.file(it.outputFile.absolutePath) })
-        kotlinJs.set(unpackKotlinJsStdlib.map { layout.projectDirectory.file(it.destinationDir.resolve("kotlin.js").absolutePath) })
+        htmlFile.set(layout.projectDirectory.file("src/jsMain/assets/configuration-cache-report.html"))
+        logoFile.set(layout.projectDirectory.file("src/jsMain/assets/configuration-cache-report-logo.png"))
+        cssFile.set(layout.projectDirectory.file("src/jsMain/assets/configuration-cache-report.css"))
+        jsFile.set(jsBrowserProductionWebpack.map { layout.projectDirectory.file(it.outputFile.absolutePath) })
         outputFile.set(layout.buildDirectory.file("$name/configuration-cache-report.html"))
     }
 
@@ -95,10 +84,6 @@ abstract class MergeReportAssets : DefaultTask() {
     @get:PathSensitive(PathSensitivity.NONE)
     abstract val jsFile: RegularFileProperty
 
-    @get:InputFile
-    @get:PathSensitive(PathSensitivity.NONE)
-    abstract val kotlinJs: RegularFileProperty
-
     @get:OutputFile
     abstract val outputFile: RegularFileProperty
 
@@ -107,7 +92,6 @@ abstract class MergeReportAssets : DefaultTask() {
         outputFile.get().asFile.writeText(
             htmlFile.get().asFile.readText().also {
                 require(it.contains(cssTag))
-                require(it.contains(kotlinJsTag))
                 require(it.contains(jsTag))
             }.replace(
                 cssTag,
@@ -120,12 +104,6 @@ abstract class MergeReportAssets : DefaultTask() {
                     """background-image: url("data:image/png;base64,${logoFile.get().asFile.base64Encode()}");"""
                 )}
                 </style>
-                """.trimIndent()
-            ).replace(
-                kotlinJsTag, """
-                <script type="text/javascript">
-                ${kotlinJs.get().asFile.readText()}
-                </script>
                 """.trimIndent()
             ).replace(
                 jsTag, """

@@ -20,7 +20,7 @@ import org.jlleitschuh.gradle.ktlint.KtlintCheckTask
 import org.jlleitschuh.gradle.ktlint.KtlintFormatTask
 
 plugins {
-    id("kotlin2js")
+    kotlin("multiplatform")
     id("gradlebuild.repositories")
     id("gradlebuild.unittest-and-compile")
     id("org.gradle.kotlin-dsl.ktlint-convention")
