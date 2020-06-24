@@ -49,6 +49,7 @@ class KotlinEapRepoUtil {
         assert buildSrcBuildScript.isFile()
         buildSrcBuildScript.text = buildSrcBuildScript.text + """
             repositories {
+                ${RepoScriptBlockUtil.kotlinDevRepositoryDefinition()}
                 ${RepoScriptBlockUtil.kotlinEapRepositoryDefinition()}
             }
         """
@@ -67,12 +68,14 @@ class KotlinEapRepoUtil {
                 it.pluginManagement {
                     it.repositories {
                         gradlePluginPortal()
+                        ${RepoScriptBlockUtil.kotlinDevRepositoryDefinition()}
                         ${RepoScriptBlockUtil.kotlinEapRepositoryDefinition()}
                     }
                 }
             }
             allprojects {
                 repositories {
+                    ${RepoScriptBlockUtil.kotlinDevRepositoryDefinition()}
                     ${RepoScriptBlockUtil.kotlinEapRepositoryDefinition()}
                 }
             }

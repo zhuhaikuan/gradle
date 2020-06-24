@@ -19,6 +19,7 @@ package org.gradle.kotlin.dsl.fixtures
 import org.gradle.api.JavaVersion
 import org.gradle.integtests.fixtures.AbstractIntegrationTest
 import org.gradle.integtests.fixtures.RepoScriptBlockUtil.gradlePluginRepositoryDefinition
+import org.gradle.integtests.fixtures.RepoScriptBlockUtil.kotlinDevRepositoryDefinition
 import org.gradle.integtests.fixtures.RepoScriptBlockUtil.kotlinEapRepositoryDefinition
 import org.gradle.integtests.fixtures.executer.ExecutionFailure
 import org.gradle.integtests.fixtures.executer.ExecutionResult
@@ -49,6 +50,7 @@ abstract class AbstractKotlinIntegrationTest : AbstractIntegrationTest() {
         get() = """
             repositories {
                 ${gradlePluginRepositoryDefinition(GradleDsl.KOTLIN)}
+                ${kotlinDevRepositoryDefinition(GradleDsl.KOTLIN)}
                 ${kotlinEapRepositoryDefinition(GradleDsl.KOTLIN)}
             }
         """
