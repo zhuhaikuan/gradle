@@ -31,13 +31,14 @@ import org.jetbrains.kotlin.utils.Jsr305State
 fun KotlinCompile.configureKotlinCompilerForGradleBuild() {
 
     kotlinOptions {
-        apiVersion = "1.3"
-        languageVersion = "1.3"
+        apiVersion = "1.4"
+        languageVersion = "1.4"
         freeCompilerArgs += listOf(
             "-Xjsr305=strict",
             "-java-parameters",
             "-Xskip-runtime-version-check",
             "-Xskip-metadata-version-check",
+            "-Xskip-prerelease-version-check",
             "-progressive"
         )
         jvmTarget = "1.8"
@@ -49,8 +50,8 @@ internal
 fun CompilerConfiguration.configureKotlinCompilerForGradleBuild() {
 
     put(CommonConfigurationKeys.LANGUAGE_VERSION_SETTINGS, LanguageVersionSettingsImpl(
-        languageVersion = LanguageVersion.KOTLIN_1_3,
-        apiVersion = ApiVersion.KOTLIN_1_3,
+        languageVersion = LanguageVersion.KOTLIN_1_4,
+        apiVersion = ApiVersion.KOTLIN_1_4,
         analysisFlags = mapOf(JvmAnalysisFlags.jsr305 to Jsr305State.STRICT)
     ))
 
