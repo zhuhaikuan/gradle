@@ -337,8 +337,8 @@ fun compilerConfigurationFor(messageCollector: MessageCollector): CompilerConfig
 
 private
 val gradleKotlinDslLanguageVersionSettings = LanguageVersionSettingsImpl(
-    languageVersion = LanguageVersion.KOTLIN_1_3,
-    apiVersion = ApiVersion.KOTLIN_1_3,
+    languageVersion = LanguageVersion.KOTLIN_1_4,
+    apiVersion = ApiVersion.KOTLIN_1_4,
     specificFeatures = mapOf(
         LanguageFeature.NewInference to LanguageFeature.State.ENABLED,
         LanguageFeature.SamConversionForKotlinFunctions to LanguageFeature.State.ENABLED,
@@ -346,7 +346,8 @@ val gradleKotlinDslLanguageVersionSettings = LanguageVersionSettingsImpl(
         LanguageFeature.ReferencesToSyntheticJavaProperties to LanguageFeature.State.ENABLED
     ),
     analysisFlags = mapOf(
-        AnalysisFlags.skipMetadataVersionCheck to true
+        AnalysisFlags.skipMetadataVersionCheck to true,
+        AnalysisFlags.skipPrereleaseCheck to true,
     )
 )
 
