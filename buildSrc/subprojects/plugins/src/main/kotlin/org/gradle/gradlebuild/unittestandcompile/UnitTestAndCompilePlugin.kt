@@ -16,8 +16,8 @@
 package org.gradle.gradlebuild.unittestandcompile
 
 import accessors.base
-import accessors.java
 import accessors.groovy
+import accessors.java
 import buildJvms
 import libraries
 import library
@@ -49,11 +49,11 @@ import org.gradle.gradlebuild.versioning.buildVersion
 import org.gradle.internal.os.OperatingSystem
 import org.gradle.kotlin.dsl.*
 import org.gradle.process.CommandLineArgumentProvider
+import org.gradle.testing.PerformanceTest
 import org.gradle.testretry.TestRetryPlugin
 import testLibrary
 import java.util.concurrent.Callable
 import java.util.jar.Attributes
-import org.gradle.testing.PerformanceTest
 
 
 @Suppress("unused")
@@ -165,6 +165,7 @@ class UnitTestAndCompilePlugin : Plugin<Project> {
             testImplementation(testLibrary("spock"))
             testRuntimeOnly(testLibrary("bytebuddy"))
             testRuntimeOnly(library("objenesis"))
+            testRuntimeOnly(testLibrary("spock_unroll"))
 
             compileOnly(platform(project(platformProject)))
 

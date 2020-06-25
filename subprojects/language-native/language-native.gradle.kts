@@ -73,6 +73,7 @@ dependencies {
     integTestImplementation(library("nativePlatform"))
     integTestImplementation(library("ant"))
     integTestImplementation(library("jgit"))
+    integTestRuntimeOnly(testLibrary("spock_unroll"))
 
     testRuntimeOnly(project(":distributionsCore")) {
         because("ProjectBuilder tests load services from a Gradle distribution.")

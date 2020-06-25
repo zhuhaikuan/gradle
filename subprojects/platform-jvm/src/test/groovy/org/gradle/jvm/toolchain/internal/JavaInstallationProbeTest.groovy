@@ -24,16 +24,17 @@ import org.gradle.process.internal.JavaExecAction
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
-import spock.lang.Unroll
 
-import static org.gradle.jvm.toolchain.internal.JavaInstallationProbe.InstallType.*
+import static org.gradle.jvm.toolchain.internal.JavaInstallationProbe.InstallType.INVALID_JDK
+import static org.gradle.jvm.toolchain.internal.JavaInstallationProbe.InstallType.IS_JDK
+import static org.gradle.jvm.toolchain.internal.JavaInstallationProbe.InstallType.IS_JRE
+import static org.gradle.jvm.toolchain.internal.JavaInstallationProbe.InstallType.NO_SUCH_DIRECTORY
 
 class JavaInstallationProbeTest extends Specification {
     @Rule
     TemporaryFolder temporaryFolder
 
-    @Unroll("Can probe version of #jdk is #displayName")
-    def "probes java installation"() {
+    def "probes java installation to determine #jdk is #displayName "() {
         given:
         def execFactory = Mock(ExecActionFactory)
         def javaExec = Mock(JavaExecAction)

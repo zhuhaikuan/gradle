@@ -19,7 +19,6 @@ package org.gradle.jvm.internal.resolve
 import org.gradle.api.internal.artifacts.ImmutableModuleIdentifierFactory
 import org.gradle.internal.component.local.model.DefaultLibraryBinaryIdentifier
 import spock.lang.Specification
-import spock.lang.Unroll
 
 class JvmLibraryResolveContextTest extends Specification {
     private final static String COMPONENT_NAME = 'lib'
@@ -27,7 +26,6 @@ class JvmLibraryResolveContextTest extends Specification {
 
     final ImmutableModuleIdentifierFactory moduleIdentifierFactory = Mock()
 
-    @Unroll
     def "context name for project #path and library #library is #contextName"() {
         given:
         def id = new DefaultLibraryBinaryIdentifier(path, COMPONENT_NAME, VARIANT)

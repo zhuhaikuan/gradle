@@ -38,3 +38,4 @@ testLibraries.jackson_kotlin = 'com.fasterxml.jackson.module:jackson-module-kotl
 testLibraries.archunit = "com.tngtech.archunit:archunit:0.11.0"
 testLibraries.archunit_junit4 = "com.tngtech.archunit:archunit-junit4:0.11.0"
 testLibraries.testcontainers_spock = "org.testcontainers:spock:1.12.5"
+testLibraries.spock_unroll = "info.solidsoft.spock:spock-global-unroll:0.5.1"
