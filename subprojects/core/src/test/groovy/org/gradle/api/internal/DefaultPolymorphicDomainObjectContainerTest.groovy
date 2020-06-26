@@ -22,7 +22,6 @@ import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Named
 import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.PolymorphicDomainObjectContainer
-import org.gradle.api.internal.collections.DomainObjectCollectionFactory
 import org.gradle.util.TestUtil
 
 class DefaultPolymorphicDomainObjectContainerTest extends AbstractPolymorphicDomainObjectContainerSpec<Person> {
