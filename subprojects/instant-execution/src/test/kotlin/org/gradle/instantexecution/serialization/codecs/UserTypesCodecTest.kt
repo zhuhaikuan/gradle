@@ -30,7 +30,7 @@ class UserTypesCodecTest : AbstractUserTypeCodecTest() {
 
         val deepGraph = Peano.fromInt(1024)
 
-        val read = roundtrip(deepGraph)
+        val read = configurationCacheRoundtrip(deepGraph)
 
         assertThat(
             read.toInt(),
@@ -57,7 +57,7 @@ class UserTypesCodecTest : AbstractUserTypeCodecTest() {
     fun `can handle anonymous enum subtypes`() {
         EnumSuperType.values().forEach {
             assertThat(
-                roundtrip(it),
+                configurationCacheRoundtrip(it),
                 sameInstance(it)
             )
         }

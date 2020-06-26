@@ -40,6 +40,7 @@ import java.io.OutputStream
 import java.io.Serializable
 
 import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 
 
 /**
@@ -49,7 +50,7 @@ import java.lang.reflect.Method
 class SerializableWriteObjectCodec : EncodingProducer, Decoding {
 
     override fun encodingForType(type: Class<*>): Encoding? =
-        writeObjectMethodOf(type)?.let(::WriteObjectEncoding)
+        writeObjectMethodOf(type).takeIf { it.isNotEmpty() }?.let(::WriteObjectEncoding)
 
     override suspend fun ReadContext.decode(): Any? =
         decodePreservingIdentity { id ->
@@ -65,7 +66,7 @@ class SerializableWriteObjectCodec : EncodingProducer, Decoding {
                         )
                         val readObject = readObjectMethodOf(beanType)
                         when {
-                            readObject != null -> readObject.invoke(bean, objectInputStream)
+                            readObject.isNotEmpty() -> readObject.forEach { it.invoke(bean, objectInputStream) }
                             else -> objectInputStream.defaultReadObject()
                         }
                     }
@@ -74,14 +75,16 @@ class SerializableWriteObjectCodec : EncodingProducer, Decoding {
         }
 
     private
-    class WriteObjectEncoding(private val writeObject: Method) : EncodingProvider<Any> {
+    class WriteObjectEncoding(private val writeObject: List<Method>) : EncodingProvider<Any> {
         override suspend fun WriteContext.encode(value: Any) {
             encodePreservingIdentityOf(value) {
 
                 val beanType = value.javaClass
 
                 val recordingObjectOutputStream = RecordingObjectOutputStream(beanType, value)
-                writeObject.invoke(value, recordingObjectOutputStream)
+                writeObject.forEach {
+                    it.invoke(value, recordingObjectOutputStream)
+                }
 
                 writeClass(beanType)
                 recordingObjectOutputStream.run {
@@ -94,22 +97,30 @@ class SerializableWriteObjectCodec : EncodingProducer, Decoding {
     private
     fun writeObjectMethodOf(type: Class<*>) = type
         .takeIf { type.isSerializable() }
-        ?.firstAccessibleMatchingMethodOrNull {
-            parameterCount == 1
-                && name == "writeObject"
-                && parameterTypes[0].isAssignableFrom(ObjectOutputStream::class.java)
-        }
+        ?.allMethods()
+        ?.filter {
+            it.run {
+                Modifier.isPrivate(modifiers)
+                    && parameterCount == 1
+                    && name == "writeObject"
+                    && returnType == Void.TYPE
+                    && parameterTypes[0].isAssignableFrom(ObjectOutputStream::class.java)
+            }
+        }?.onEach { it.isAccessible = true } ?: emptyList()
 
     private
-    fun readObjectMethodOf(type: Class<*>) = readObjectCache.forClass(type)
+    fun readObjectMethodOf(type: Class<*>) = type
+        .allMethods().filter {
+            it.run {
+                Modifier.isPrivate(modifiers)
+                    && parameterCount == 1
+                    && name == "readObject"
+                    && returnType == Void.TYPE
+                    && parameterTypes[0].isAssignableFrom(ObjectInputStream::class.java)
+            }
+        }.onEach { it.isAccessible = true }
 
     // TODO:instant-execution readObjectNoData
-    private
-    val readObjectCache = MethodCache {
-        parameterCount == 1
-            && name == "readObject"
-            && parameterTypes[0].isAssignableFrom(ObjectInputStream::class.java)
-    }
 }
 
 

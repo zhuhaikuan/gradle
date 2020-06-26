@@ -25,10 +25,14 @@ import org.gradle.kotlin.dsl.support.useToRun
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.CoreMatchers.sameInstance
 import org.hamcrest.MatcherAssert.assertThat
+import org.junit.Ignore
 import org.junit.Test
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.Externalizable
+import java.io.ObjectInput
 import java.io.ObjectInputStream
+import java.io.ObjectOutput
 import java.io.ObjectOutputStream
 import java.io.Serializable
 
@@ -36,7 +40,7 @@ import java.io.Serializable
 class SerializableBeanCodecTest : AbstractUserTypeCodecTest() {
 
     @Test
-    fun `can handle mix of Serializable and plain beans`() {
+    fun `can handle mix of Serializable and plain beans`() = verifyRoundtripOf<Pair<SerializableWriteObjectBean, Pair<Int, String>>> {
 
         val bean = Pair(42, "42")
 
@@ -51,7 +55,7 @@ class SerializableBeanCodecTest : AbstractUserTypeCodecTest() {
          **/
         val beanGraph = Pair(serializable, bean)
 
-        val decodedGraph = roundtrip(beanGraph)
+        val decodedGraph = it(beanGraph)
 
         val (decodedSerializable, decodedBean) = decodedGraph
 
@@ -107,35 +111,104 @@ class SerializableBeanCodecTest : AbstractUserTypeCodecTest() {
 
     @Test
     fun `can handle writeReplace readResolve`() {
-        assertThat(
-            roundtrip(SerializableWriteReplaceBean()).value,
-            equalTo<Any>("42")
-        )
+        verifyRoundtripOf<SerializableWriteReplaceBean> {
+            assertThat(
+                it(SerializableWriteReplaceBean()).value,
+                equalTo<Any>("42")
+            )
+        }
+    }
+
+    @Ignore("wip")
+    @Test
+    fun `can handle Externalizable beans`() {
+        verifyRoundtripOf<ExternalizableBean> {
+            assertThat(
+                it(ExternalizableBean()).value,
+                equalTo<Any>(42)
+            )
+        }
+    }
+
+    @Test
+    fun `emits warning about multiple writeObject implementations in the hierarchy`() {
+        verifyRoundtripOf<MultiWriteObjectBean> {
+            val bean = it(MultiWriteObjectBean())
+            assertThat(
+                bean.stringValue,
+                equalTo("42")
+            )
+            assertThat(
+                bean.intValue,
+                equalTo(42)
+            )
+        }
+    }
+
+    class ExternalizableBean(var value: Int? = null) : Externalizable {
+
+        override fun writeExternal(out: ObjectOutput) {
+            out.writeInt(42)
+        }
+
+        override fun readExternal(`in`: ObjectInput) {
+            value = `in`.readInt()
+        }
+    }
+
+    open class BaseWriteObjectBean(var intValue: Int? = null) : Serializable {
+
+        private
+        fun writeObject(objectOutputStream: ObjectOutputStream) {
+            objectOutputStream.writeInt(42)
+        }
+
+        private
+        fun readObject(objectInputStream: ObjectInputStream) {
+            intValue = objectInputStream.readInt()
+        }
+    }
+
+    class MultiWriteObjectBean(var stringValue: String? = null) : BaseWriteObjectBean() {
+
+        private
+        fun writeObject(objectOutputStream: ObjectOutputStream) {
+            objectOutputStream.writeUTF("42")
+        }
+
+        private
+        fun readObject(objectInputStream: ObjectInputStream) {
+            stringValue = objectInputStream.readUTF()
+        }
     }
 
     @Test
     fun `can handle writeObject without readObject`() {
-        assertThat(
-            roundtrip(SerializableWriteObjectOnlyBean()).value,
-            equalTo<Any>("42")
-        )
+        verifyRoundtripOf<SerializableWriteObjectOnlyBean> {
+            assertThat(
+                it(SerializableWriteObjectOnlyBean()).value,
+                equalTo<Any>("42")
+            )
+        }
     }
 
     @Test
     fun `preserves identity of Serializable objects`() {
-        val writeReplaceBean = SerializableWriteReplaceBean()
-        val writeObjectBean = SerializableWriteObjectBean(Pair(writeReplaceBean, writeReplaceBean))
-        val graph = Pair(writeObjectBean, writeObjectBean)
-        val decodedGraph = roundtrip(graph)
-        assertThat(
-            decodedGraph.first,
-            sameInstance(decodedGraph.second)
-        )
-        val decodedPair = decodedGraph.first.value as Pair<*, *>
-        assertThat(
-            decodedPair.first,
-            sameInstance(decodedPair.second)
-        )
+        verifyRoundtripOf<Pair<SerializableWriteObjectBean, SerializableWriteObjectBean>> {
+            val writeReplaceBean = SerializableWriteReplaceBean()
+            val writeObjectBean = SerializableWriteObjectBean(Pair(writeReplaceBean, writeReplaceBean))
+            val graph = pairOf(writeObjectBean)
+            val decodedGraph = it(graph)
+            assertThat(
+                decodedGraph.first,
+                sameInstance(decodedGraph.second)
+            )
+            val decodedPair = decodedGraph.first.value as Pair<*, *>
+            assertThat(
+                decodedPair.first,
+                sameInstance(decodedPair.second)
+            )
+        }
     }
 
     @Test
@@ -164,52 +237,51 @@ class SerializableBeanCodecTest : AbstractUserTypeCodecTest() {
 
     @Test
     fun `can handle readResolve without writeReplace`() {
-        // ensure we got the java serialization behaviour right
-        verifyReadResolveBehaviourOf(::javaSerializationRoundtrip)
-        verifyReadResolveBehaviourOf(::roundtrip)
-    }
-
-    private
-    fun verifyReadResolveBehaviourOf(roundtrip: (Any) -> Any) {
-        val (first, second) = roundtrip(pairOf(SerializableReadResolveBean()))
-            .uncheckedCast<Pair<SerializableReadResolveBean, SerializableReadResolveBean>>()
-        assertThat(
-            "it preserves identity",
-            first,
-            sameInstance(second)
-        )
-        assertThat(
-            "it returns readResolve result",
-            first.value,
-            equalTo<Any>("42")
-        )
+        verifyRoundtripOf<Pair<SerializableReadResolveBean, SerializableReadResolveBean>> {
+            val (first, second) = it(pairOf(SerializableReadResolveBean()))
+            assertThat(
+                "it preserves identity",
+                first,
+                sameInstance(second)
+            )
+            assertThat(
+                "it returns readResolve result",
+                first.value,
+                equalTo("42")
+            )
+        }
     }
 
     @Test
     fun `can handle recursive writeReplace`() {
-        // ensure we got the java serialization behaviour right
-        verifyRecursiveWriteReplaceBehaviourOf(::javaSerializationRoundtrip)
-        verifyRecursiveWriteReplaceBehaviourOf(::roundtrip)
-    }
-
-    private
-    fun verifyRecursiveWriteReplaceBehaviourOf(roundtrip: (Any) -> Any) {
-        val (first, second) = roundtrip(pairOf(SerializableRecursiveWriteReplaceBean()))
-            .uncheckedCast<Pair<SerializableRecursiveWriteReplaceBean, SerializableRecursiveWriteReplaceBean>>()
-        assertThat(
-            "it preserves identity",
-            first,
-            sameInstance(second)
-        )
-        assertThat(
-            "it allows writeReplace to initialize the object",
-            first.value,
-            equalTo<Any>("42")
-        )
+        verifyRoundtripOf<Pair<SerializableRecursiveWriteReplaceBean, SerializableRecursiveWriteReplaceBean>> {
+            val (first, second) = it(pairOf(SerializableRecursiveWriteReplaceBean()))
+            assertThat(
+                "it preserves identity",
+                first,
+                sameInstance(second)
+            )
+            assertThat(
+                "it allows writeReplace to initialize the object",
+                first.value,
+                equalTo("42")
+            )
+        }
     }
 
     private
     fun <T> pairOf(bean: T) = bean.let { it to it }
+
+    private
+    fun <T : Any> verifyRoundtripOf(verify: ((T) -> T) -> Unit) {
+        verifyRoundtrip(verify.uncheckedCast())
+    }
+
+    private
+    fun verifyRoundtrip(verify: ((Any) -> Any) -> Unit) {
+        verify(::javaSerializationRoundtrip)
+        verify(::configurationCacheRoundtrip)
+    }
 
     private
     fun <T : Any> javaSerializationRoundtrip(bean: T): T =
@@ -253,10 +325,10 @@ class SerializableBeanCodecTest : AbstractUserTypeCodecTest() {
 
         @Suppress("unused")
         private
-        fun writeReplace() = Memento()
+        fun writeReplace(): Any? = Memento()
 
         private
-        class Memento {
+        class Memento : Serializable {
             @Suppress("unused")
             private
             fun readResolve(): Any? = SerializableWriteReplaceBean("42")
