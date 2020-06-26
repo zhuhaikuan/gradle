@@ -18,7 +18,6 @@ package org.gradle.nativeplatform.toolchain.internal
 
 import org.gradle.api.GradleException
 import org.gradle.api.NamedDomainObjectFactory
-import org.gradle.internal.reflect.Instantiator
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.gradle.nativeplatform.toolchain.NativeToolChain
 import org.gradle.nativeplatform.toolchain.internal.compilespec.CCompileSpec
