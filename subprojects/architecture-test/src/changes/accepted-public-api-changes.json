@@ -1,6 +1,30 @@
 {
     "acceptedApiChanges": [
         {
+            "type": "org.gradle.api.reporting.GenerateBuildDashboard",
+            "member": "Method org.gradle.api.reporting.GenerateBuildDashboard.getCollectionCallbackActionDecorator()",
+            "acceptation": "Service is no longer required",
+            "changes": [
+                "Method has been removed"
+            ]
+        },
+        {
+            "type": "org.gradle.api.reporting.GenerateBuildDashboard",
+            "member": "Method org.gradle.api.reporting.GenerateBuildDashboard.getInstantiator()",
+            "acceptation": "Service is no longer required",
+            "changes": [
+                "Method has been removed"
+            ]
+        },
+        {
+            "type": "org.gradle.testing.jacoco.tasks.JacocoReportBase",
+            "member": "Method org.gradle.testing.jacoco.tasks.JacocoReportBase.getCallbackActionDecorator()",
+            "acceptation": "Service is no longer required",
+            "changes": [
+                "Method has been removed"
+            ]
+        },
+        {
             "type": "org.gradle.api.tasks.JavaExec",
             "member": "Method org.gradle.api.tasks.JavaExec.getDslExecActionFactory()",
             "acceptation": "Service is no longer required",
