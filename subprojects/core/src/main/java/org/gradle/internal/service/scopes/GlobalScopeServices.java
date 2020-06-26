@@ -17,6 +17,7 @@
 package org.gradle.internal.service.scopes;
 
 import com.google.common.collect.Iterables;
+import org.gradle.api.Action;
 import org.gradle.api.execution.internal.DefaultTaskInputsListeners;
 import org.gradle.api.execution.internal.TaskInputsListeners;
 import org.gradle.api.internal.ClassPathRegistry;
@@ -110,6 +111,7 @@ import org.gradle.process.internal.health.memory.JvmMemoryInfo;
 import org.gradle.process.internal.health.memory.MemoryManager;
 import org.gradle.process.internal.health.memory.OsMemoryInfo;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -250,7 +252,13 @@ public class GlobalScopeServices extends WorkerSharedGlobalScopeServices {
     }
 
     CollectionCallbackActionDecorator createCollectionCallbackActionDecorator() {
-        return CollectionCallbackActionDecorator.NOOP;
+        // Callbacks (and the containers in general) should not be used outside of build logic. Use strict decorator here to avoid accidentally using the no-op decorator
+        return new CollectionCallbackActionDecorator() {
+            @Override
+            public <T> Action<T> decorate(@Nullable Action<T> action) {
+                throw new IllegalStateException("Callbacks are not available outside of a build invocation.");
+            }
+        };
     }
 
     DomainObjectCollectionFactory createDomainObjectCollectionFactory(InstantiatorFactory instantiatorFactory, ServiceRegistry services, CollectionCallbackActionDecorator collectionCallbackActionDecorator) {

@@ -27,11 +27,14 @@ import org.gradle.groovy.scripts.ScriptSource;
 import org.gradle.internal.extensibility.ExtensibleDynamicObject;
 import org.gradle.internal.metaobject.DynamicObject;
 import org.gradle.internal.reflect.Instantiator;
+import org.gradle.internal.service.scopes.Scopes;
 import org.gradle.internal.service.scopes.ServiceRegistryFactory;
+import org.gradle.internal.service.scopes.ServiceScope;
 
 import java.io.File;
 import java.util.Map;
 
+@ServiceScope(Scopes.Build)
 public class SettingsFactory {
     private final Instantiator instantiator;
     private final ServiceRegistryFactory serviceRegistryFactory;

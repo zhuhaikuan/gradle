@@ -116,6 +116,10 @@ public class CrossBuildSessionScopeServices implements Closeable {
         return services.get(UserCodeApplicationContext.class);
     }
 
+    DomainObjectCollectionFactory createDomainObjectCollectionFactory() {
+        return services.get(DomainObjectCollectionFactory.class);
+    }
+
     BuildOperationNotificationBridge createBuildOperationNotificationBridge() {
         return buildOperationNotificationBridge;
     }
