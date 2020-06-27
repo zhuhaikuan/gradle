@@ -17,7 +17,6 @@
 package org.gradle.internal.jacoco;
 
 import org.gradle.api.Task;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.reporting.ConfigurableReport;
 import org.gradle.api.reporting.DirectoryReport;
 import org.gradle.api.reporting.SingleFileReport;
@@ -28,8 +27,8 @@ import org.gradle.testing.jacoco.tasks.JacocoReportsContainer;
 
 public class JacocoReportsContainerImpl extends TaskReportContainer<ConfigurableReport> implements JacocoReportsContainer {
 
-    public JacocoReportsContainerImpl(Task task, CollectionCallbackActionDecorator callbackActionDecorator) {
-        super(ConfigurableReport.class, task, callbackActionDecorator);
+    public JacocoReportsContainerImpl(Task task) {
+        super(ConfigurableReport.class, task);
         add(TaskGeneratedSingleDirectoryReport.class, "html", task, "index.html");
         add(TaskGeneratedSingleFileReport.class, "xml", task);
         add(TaskGeneratedSingleFileReport.class, "csv", task);
@@ -37,16 +36,16 @@ public class JacocoReportsContainerImpl extends TaskReportContainer<Configurable
 
     @Override
     public DirectoryReport getHtml() {
-        return (DirectoryReport)getByName("html");
+        return (DirectoryReport) getByName("html");
     }
 
     @Override
     public SingleFileReport getXml() {
-        return (SingleFileReport)getByName("xml");
+        return (SingleFileReport) getByName("xml");
     }
 
     @Override
     public SingleFileReport getCsv() {
-        return (SingleFileReport)getByName("csv");
+        return (SingleFileReport) getByName("csv");
     }
 }
