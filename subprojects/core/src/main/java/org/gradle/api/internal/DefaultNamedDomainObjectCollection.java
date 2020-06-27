@@ -238,7 +238,7 @@ public class DefaultNamedDomainObjectCollection<T> extends DefaultDomainObjectCo
      */
     @Override
     protected <S extends T> DefaultNamedDomainObjectCollection<S> filtered(CollectionFilter<S> filter) {
-        return Cast.uncheckedNonnullCast(getInstantiator().newInstance(DefaultNamedDomainObjectCollection.class, this, filter, namer));
+        return Cast.uncheckedNonnullCast(getDomainObjectCollectionFactory().newContainer(Cast.uncheckedCast(DefaultNamedDomainObjectCollection.class), getType(), this, filter, namer));
     }
 
     public String getDisplayName() {

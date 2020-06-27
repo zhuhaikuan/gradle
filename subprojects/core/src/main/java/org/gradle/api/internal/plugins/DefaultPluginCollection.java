@@ -23,6 +23,7 @@ import org.gradle.api.internal.collections.CollectionFilter;
 import org.gradle.api.plugins.PluginCollection;
 import org.gradle.api.specs.Spec;
 import org.gradle.api.specs.Specs;
+import org.gradle.internal.Cast;
 
 import java.util.Collection;
 
@@ -39,7 +40,7 @@ class DefaultPluginCollection<T extends Plugin> extends DefaultDomainObjectSet<T
 
     @Override
     protected <S extends T> DefaultPluginCollection<S> filtered(CollectionFilter<S> filter) {
-        return new DefaultPluginCollection<S>(this, filter);
+        return Cast.uncheckedNonnullCast(getDomainObjectCollectionFactory().newContainer(Cast.uncheckedCast(DefaultPluginCollection.class), getType(), this, filter));
     }
 
     @Override

@@ -26,7 +26,6 @@ import org.gradle.api.distribution.Distribution;
 import org.gradle.api.distribution.DistributionContainer;
 import org.gradle.api.distribution.internal.DefaultDistributionContainer;
 import org.gradle.api.file.CopySpec;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.internal.artifacts.dsl.LazyPublishArtifact;
 import org.gradle.api.internal.file.FileOperations;
 import org.gradle.api.internal.plugins.DefaultArtifactPublicationSet;
@@ -37,7 +36,6 @@ import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.AbstractArchiveTask;
 import org.gradle.api.tasks.bundling.Tar;
 import org.gradle.api.tasks.bundling.Zip;
-import org.gradle.internal.reflect.Instantiator;
 import org.gradle.util.TextUtil;
 
 import javax.inject.Inject;
@@ -58,21 +56,17 @@ public class DistributionPlugin implements Plugin<ProjectInternal> {
     private static final String TASK_DIST_TAR_NAME = "distTar";
     private static final String TASK_ASSEMBLE_NAME = "assembleDist";
 
-    private final Instantiator instantiator;
     private final FileOperations fileOperations;
-    private final CollectionCallbackActionDecorator callbackActionDecorator;
 
     @Inject
-    public DistributionPlugin(Instantiator instantiator, FileOperations fileOperations, CollectionCallbackActionDecorator callbackActionDecorator) {
-        this.instantiator = instantiator;
+    public DistributionPlugin(FileOperations fileOperations) {
         this.fileOperations = fileOperations;
-        this.callbackActionDecorator = callbackActionDecorator;
     }
 
     @Override
     public void apply(final ProjectInternal project) {
         project.getPluginManager().apply(BasePlugin.class);
-        DistributionContainer distributions = project.getExtensions().create(DistributionContainer.class, "distributions", DefaultDistributionContainer.class, Distribution.class, instantiator, project.getObjects(), fileOperations, callbackActionDecorator);
+        DistributionContainer distributions = project.getExtensions().create(DistributionContainer.class, "distributions", DefaultDistributionContainer.class, Distribution.class, project.getObjects(), fileOperations);
 
         // TODO - refactor this action out so it can be unit tested
         distributions.all(dist -> {
@@ -121,7 +115,7 @@ public class DistributionPlugin implements Plugin<ProjectInternal> {
 
             final CopySpec childSpec = project.copySpec();
             childSpec.with(distribution.getContents());
-            childSpec.into((Callable<String>)() -> TextUtil.minus(task.getArchiveFileName().get(), "." + task.getArchiveExtension().get()));
+            childSpec.into((Callable<String>) () -> TextUtil.minus(task.getArchiveFileName().get(), "." + task.getArchiveExtension().get()));
             task.with(childSpec);
         });
 
@@ -142,7 +136,7 @@ public class DistributionPlugin implements Plugin<ProjectInternal> {
         project.getTasks().register(taskName, DefaultTask.class, assembleTask -> {
             assembleTask.setDescription("Assembles the " + distribution.getName() + " distributions");
             assembleTask.setGroup(DISTRIBUTION_GROUP);
-            assembleTask.dependsOn((Object[])tasks);
+            assembleTask.dependsOn((Object[]) tasks);
         });
     }
 }

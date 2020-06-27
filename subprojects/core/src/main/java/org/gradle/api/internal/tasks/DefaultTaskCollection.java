@@ -62,7 +62,7 @@ public class DefaultTaskCollection<T extends Task> extends DefaultNamedDomainObj
 
     @Override
     protected <S extends T> DefaultTaskCollection<S> filtered(CollectionFilter<S> filter) {
-        return Cast.uncheckedNonnullCast(getInstantiator().newInstance(DefaultTaskCollection.class, this, filter, project, parentMutationGuard));
+        return Cast.uncheckedCast(getDomainObjectCollectionFactory().newContainer(Cast.uncheckedCast(DefaultTaskCollection.class), Task.class, this, filter, project, parentMutationGuard));
     }
 
     @Override

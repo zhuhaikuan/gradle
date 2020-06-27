@@ -22,6 +22,7 @@ import org.gradle.api.DomainObjectCollection;
 import org.gradle.api.internal.collections.CollectionEventRegister;
 import org.gradle.api.internal.collections.CollectionFilter;
 import org.gradle.api.internal.collections.DefaultCollectionEventRegister;
+import org.gradle.api.internal.collections.DomainObjectCollectionFactory;
 import org.gradle.api.internal.collections.ElementSource;
 import org.gradle.api.internal.collections.FilteredCollection;
 import org.gradle.api.internal.provider.CollectionProviderInternal;
@@ -81,7 +82,16 @@ public class DefaultDomainObjectCollection<T> extends AbstractCollection<T> impl
         if (createdUsingDeprecatedMethod()) {
             return CollectionCallbackActionDecorator.NOOP;
         }
-        throw new UnsupportedOperationException(String.format("%s subtypes must be instantiated by Gradle and not instantiated directly.", DomainObjectCollection.class.getName()));
+        throw broken();
+    }
+
+    @Inject
+    protected DomainObjectCollectionFactory getDomainObjectCollectionFactory() {
+        throw broken();
+    }
+
+    private UnsupportedOperationException broken() {
+        throw new UnsupportedOperationException(String.format("Subtypes of %s must be instantiated by Gradle and not instantiated directly.", DomainObjectCollection.class.getName()));
     }
 
     protected void realized(ProviderInternal<? extends T> provider) {
@@ -113,7 +123,7 @@ public class DefaultDomainObjectCollection<T> extends AbstractCollection<T> impl
     }
 
     protected <S extends T> DefaultDomainObjectCollection<S> filtered(CollectionFilter<S> filter) {
-        return new DefaultDomainObjectCollection<S>(this, filter);
+        return Cast.uncheckedNonnullCast(getDomainObjectCollectionFactory().newContainer(Cast.uncheckedCast(DefaultDomainObjectCollection.class), type, this, filter));
     }
 
     protected <S extends T> ElementSource<S> filteredStore(final CollectionFilter<S> filter) {

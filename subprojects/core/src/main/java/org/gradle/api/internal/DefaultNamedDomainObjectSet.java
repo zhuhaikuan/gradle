@@ -65,7 +65,7 @@ public class DefaultNamedDomainObjectSet<T> extends DefaultNamedDomainObjectColl
 
     @Override
     protected <S extends T> DefaultNamedDomainObjectSet<S> filtered(CollectionFilter<S> filter) {
-        return Cast.uncheckedNonnullCast(getInstantiator().newInstance(DefaultNamedDomainObjectSet.class, this, filter, getNamer()));
+        return Cast.uncheckedNonnullCast(getDomainObjectCollectionFactory().newContainer(Cast.uncheckedCast(DefaultNamedDomainObjectSet.class), getType(), this, filter, getNamer()));
     }
 
     @Override

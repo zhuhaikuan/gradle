@@ -24,6 +24,7 @@ import org.gradle.api.internal.collections.ElementSource;
 import org.gradle.api.internal.collections.IterationOrderRetainingSetElementSource;
 import org.gradle.api.specs.Spec;
 import org.gradle.api.specs.Specs;
+import org.gradle.internal.Cast;
 import org.gradle.internal.ImmutableActionSet;
 
 import java.util.LinkedHashSet;
@@ -71,7 +72,7 @@ public class DefaultDomainObjectSet<T> extends DefaultDomainObjectCollection<T> 
 
     @Override
     protected <S extends T> DefaultDomainObjectSet<S> filtered(CollectionFilter<S> filter) {
-        return new DefaultDomainObjectSet<S>(this, filter);
+        return Cast.uncheckedNonnullCast(getDomainObjectCollectionFactory().newContainer(Cast.uncheckedCast(DefaultDomainObjectSet.class), getType(), this, filter));
     }
 
     @Override
