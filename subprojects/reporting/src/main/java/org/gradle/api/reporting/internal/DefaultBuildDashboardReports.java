@@ -17,15 +17,14 @@
 package org.gradle.api.reporting.internal;
 
 import org.gradle.api.Task;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.reporting.BuildDashboardReports;
 import org.gradle.api.reporting.DirectoryReport;
 import org.gradle.api.reporting.Report;
 
 public class DefaultBuildDashboardReports extends TaskReportContainer<Report> implements BuildDashboardReports {
 
-    public DefaultBuildDashboardReports(Task task, CollectionCallbackActionDecorator callbackActionDecorator) {
-        super(DirectoryReport.class, task, callbackActionDecorator);
+    public DefaultBuildDashboardReports(Task task) {
+        super(DirectoryReport.class, task);
         add(TaskGeneratedSingleDirectoryReport.class, "html", task, "index.html");
     }
 

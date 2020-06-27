@@ -17,9 +17,9 @@ package org.gradle.api.internal;
 
 import groovy.lang.Closure;
 import org.gradle.api.Action;
-import org.gradle.api.NamedDomainObjectProvider;
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.NamedDomainObjectContainer;
+import org.gradle.api.NamedDomainObjectProvider;
 import org.gradle.api.Namer;
 import org.gradle.internal.Cast;
 import org.gradle.internal.Transformers;
@@ -27,19 +27,18 @@ import org.gradle.internal.metaobject.AbstractDynamicObject;
 import org.gradle.internal.metaobject.ConfigureDelegate;
 import org.gradle.internal.metaobject.DynamicInvokeResult;
 import org.gradle.internal.metaobject.DynamicObject;
-import org.gradle.internal.reflect.Instantiator;
 import org.gradle.util.ConfigureUtil;
 
 import javax.annotation.Nullable;
 import java.util.Map;
 
 public abstract class AbstractPolymorphicDomainObjectContainer<T>
-        extends AbstractNamedDomainObjectContainer<T> implements PolymorphicDomainObjectContainerInternal<T> {
+    extends AbstractNamedDomainObjectContainer<T> implements PolymorphicDomainObjectContainerInternal<T> {
 
     private final ContainerElementsDynamicObject elementsDynamicObject = new ContainerElementsDynamicObject();
 
-    protected AbstractPolymorphicDomainObjectContainer(Class<T> type, Instantiator instantiator, Namer<? super T> namer, CollectionCallbackActionDecorator callbackDecorator) {
-        super(type, instantiator, namer, callbackDecorator);
+    protected AbstractPolymorphicDomainObjectContainer(Class<T> type, Namer<? super T> namer) {
+        super(type, namer);
     }
 
     protected abstract <U extends T> U doCreate(String name, Class<U> type);
@@ -156,9 +155,9 @@ public abstract class AbstractPolymorphicDomainObjectContainer<T>
 
         private boolean isConfigureMethod(String name, Object... arguments) {
             return (arguments.length == 1 && arguments[0] instanceof Closure
-                    || arguments.length == 1 && arguments[0] instanceof Class
-                    || arguments.length == 2 && arguments[0] instanceof Class && arguments[1] instanceof Closure)
-                    && hasProperty(name);
+                || arguments.length == 1 && arguments[0] instanceof Class
+                || arguments.length == 2 && arguments[0] instanceof Class && arguments[1] instanceof Closure)
+                && hasProperty(name);
         }
     }
 

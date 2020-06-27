@@ -34,12 +34,10 @@ public class FactoryNamedDomainObjectContainer<T> extends AbstractNamedDomainObj
      * <p>Creates a container that instantiates using the given factory.<p>
      *
      * @param type The concrete type of element in the container (must implement {@link Named})
-     * @param instantiator The instantiator to use to create any other collections based on this one
      * @param factory The factory responsible for creating new instances on demand
-     * @param collectionCallbackActionDecorator the decorator for collection callback action execution
      */
-    public FactoryNamedDomainObjectContainer(Class<T> type, Instantiator instantiator, NamedDomainObjectFactory<T> factory, CollectionCallbackActionDecorator collectionCallbackActionDecorator) {
-        this(type, instantiator, Named.Namer.forType(type), factory, MutationGuards.identity(), collectionCallbackActionDecorator);
+    public FactoryNamedDomainObjectContainer(Class<T> type, NamedDomainObjectFactory<T> factory) {
+        this(type, Named.Namer.forType(type), factory, MutationGuards.identity());
     }
 
     /**
@@ -53,7 +51,7 @@ public class FactoryNamedDomainObjectContainer<T> extends AbstractNamedDomainObj
      */
     @Deprecated
     public FactoryNamedDomainObjectContainer(Class<T> type, Instantiator instantiator, NamedDomainObjectFactory<T> factory) {
-        this(type, instantiator, Named.Namer.forType(type), factory, MutationGuards.identity(), CollectionCallbackActionDecorator.NOOP);
+        this(type, factory);
         DeprecationLogger.deprecateInternalApi("constructor FactoryNamedDomainObjectContainer(Class<T>, Instantiator, NamedDomainObjectFactory<T>)")
             .replaceWith("ObjectFactory.domainObjectContainer(Class<T>, NamedDomainObjectFactory<T>)")
             .willBeRemovedInGradle7()
@@ -65,12 +63,11 @@ public class FactoryNamedDomainObjectContainer<T> extends AbstractNamedDomainObj
      * <p>Creates a container that instantiates using the given factory.<p>
      *
      * @param type The concrete type of element in the container
-     * @param instantiator The instantiator to use to create any other collections based on this one
      * @param namer The naming strategy to use
      * @param factory The factory responsible for creating new instances on demand
      */
-    public FactoryNamedDomainObjectContainer(Class<T> type, Instantiator instantiator, Namer<? super T> namer, NamedDomainObjectFactory<T> factory, MutationGuard crossProjectConfiguratorMutationGuard, CollectionCallbackActionDecorator collectionCallbackActionDecorator) {
-        super(type, instantiator, namer, collectionCallbackActionDecorator);
+    public FactoryNamedDomainObjectContainer(Class<T> type, Namer<? super T> namer, NamedDomainObjectFactory<T> factory, MutationGuard crossProjectConfiguratorMutationGuard) {
+        super(type, namer);
         this.factory = factory;
         this.crossProjectConfiguratorMutationGuard = crossProjectConfiguratorMutationGuard;
     }
@@ -79,23 +76,21 @@ public class FactoryNamedDomainObjectContainer<T> extends AbstractNamedDomainObj
      * <p>Creates a container that instantiates using the given factory.<p>
      *
      * @param type The concrete type of element in the container (must implement {@link Named})
-     * @param instantiator The instantiator to use to create any other collections based on this one
      * @param factoryClosure The closure responsible for creating new instances on demand
      */
-    public FactoryNamedDomainObjectContainer(Class<T> type, Instantiator instantiator, final Closure<?> factoryClosure, CollectionCallbackActionDecorator collectionCallbackActionDecorator) {
-        this(type, instantiator, Named.Namer.forType(type), factoryClosure, MutationGuards.identity(), collectionCallbackActionDecorator);
+    public FactoryNamedDomainObjectContainer(Class<T> type, Closure<?> factoryClosure) {
+        this(type, Named.Namer.forType(type), factoryClosure, MutationGuards.identity());
     }
 
     /**
      * <p>Creates a container that instantiates using the given factory.<p>
      *
      * @param type The concrete type of element in the container
-     * @param instantiator The instantiator to use to create any other collections based on this one
      * @param namer The naming strategy to use
      * @param factoryClosure The factory responsible for creating new instances on demand
      */
-    public FactoryNamedDomainObjectContainer(Class<T> type, Instantiator instantiator, Namer<? super T> namer, final Closure<?> factoryClosure, MutationGuard mutationGuard, CollectionCallbackActionDecorator collectionCallbackActionDecorator) {
-        this(type, instantiator, namer, new ClosureObjectFactory<>(type, factoryClosure), mutationGuard, collectionCallbackActionDecorator);
+    public FactoryNamedDomainObjectContainer(Class<T> type, Namer<? super T> namer, final Closure<?> factoryClosure, MutationGuard mutationGuard) {
+        this(type, namer, new ClosureObjectFactory<>(type, factoryClosure), mutationGuard);
     }
 
     @Override

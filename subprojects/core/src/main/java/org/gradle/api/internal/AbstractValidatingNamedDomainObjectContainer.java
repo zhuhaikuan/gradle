@@ -19,7 +19,6 @@ package org.gradle.api.internal;
 import org.gradle.api.Action;
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.Namer;
-import org.gradle.internal.reflect.Instantiator;
 import org.gradle.util.NameValidator;
 
 /**
@@ -31,13 +30,13 @@ public abstract class AbstractValidatingNamedDomainObjectContainer<T> extends Ab
 
     private final String nameDescription;
 
-    protected AbstractValidatingNamedDomainObjectContainer(Class<T> type, Instantiator instantiator, Namer<? super T> namer, CollectionCallbackActionDecorator callbackActionDecorator) {
-        super(type, instantiator, namer, callbackActionDecorator);
+    protected AbstractValidatingNamedDomainObjectContainer(Class<T> type, Namer<? super T> namer) {
+        super(type, namer);
         nameDescription = type.getSimpleName() + " name";
     }
 
-    protected AbstractValidatingNamedDomainObjectContainer(Class<T> type, Instantiator instantiator, CollectionCallbackActionDecorator callbackActionDecorator) {
-        super(type, instantiator, callbackActionDecorator);
+    protected AbstractValidatingNamedDomainObjectContainer(Class<T> type) {
+        super(type);
         nameDescription = type.getSimpleName() + " name";
     }
 

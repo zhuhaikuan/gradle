@@ -23,22 +23,20 @@ import org.gradle.api.UnknownDomainObjectException;
 import org.gradle.api.artifacts.ArtifactRepositoryContainer;
 import org.gradle.api.artifacts.UnknownRepositoryException;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.internal.DefaultNamedDomainObjectList;
 import org.gradle.api.internal.InternalAction;
 import org.gradle.api.internal.artifacts.repositories.ArtifactRepositoryInternal;
 import org.gradle.internal.Actions;
-import org.gradle.internal.reflect.Instantiator;
 import org.gradle.util.ConfigureUtil;
 import org.gradle.util.GUtil;
 
 public class DefaultArtifactRepositoryContainer extends DefaultNamedDomainObjectList<ArtifactRepository>
-        implements ArtifactRepositoryContainer {
+    implements ArtifactRepositoryContainer {
 
     private final Action<ArtifactRepository> addLastAction = DefaultArtifactRepositoryContainer.super::add;
 
-    public DefaultArtifactRepositoryContainer(Instantiator instantiator, CollectionCallbackActionDecorator callbackActionDecorator) {
-        super(ArtifactRepository.class, instantiator, new RepositoryNamer(), callbackActionDecorator);
+    public DefaultArtifactRepositoryContainer() {
+        super(ArtifactRepository.class, new RepositoryNamer());
         whenObjectAdded((InternalAction<ArtifactRepository>) artifactRepository -> {
             if (artifactRepository instanceof ArtifactRepositoryInternal) {
                 ArtifactRepositoryInternal repository = (ArtifactRepositoryInternal) artifactRepository;

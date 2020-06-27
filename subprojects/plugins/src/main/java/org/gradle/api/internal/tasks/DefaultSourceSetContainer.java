@@ -17,14 +17,12 @@ package org.gradle.api.internal.tasks;
 
 import org.gradle.api.Namer;
 import org.gradle.api.internal.AbstractValidatingNamedDomainObjectContainer;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.internal.file.FileCollectionFactory;
 import org.gradle.api.internal.file.FileResolver;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.reflect.TypeOf;
 import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
-import org.gradle.internal.reflect.Instantiator;
 
 import javax.inject.Inject;
 
@@ -34,26 +32,24 @@ public class DefaultSourceSetContainer extends AbstractValidatingNamedDomainObje
     private final ObjectFactory objectFactory;
     private final FileResolver fileResolver;
     private final FileCollectionFactory fileCollectionFactory;
-    private final Instantiator instantiator;
 
     @Inject
-    public DefaultSourceSetContainer(FileResolver fileResolver, FileCollectionFactory fileCollectionFactory, Instantiator instantiator, ObjectFactory objectFactory, CollectionCallbackActionDecorator collectionCallbackActionDecorator) {
-        super(SourceSet.class, instantiator, new Namer<SourceSet>() {
+    public DefaultSourceSetContainer(FileResolver fileResolver, FileCollectionFactory fileCollectionFactory, ObjectFactory objectFactory) {
+        super(SourceSet.class, new Namer<SourceSet>() {
             @Override
             public String determineName(SourceSet ss) {
                 return ss.getName();
             }
-        }, collectionCallbackActionDecorator);
+        });
         this.fileResolver = fileResolver;
         this.fileCollectionFactory = fileCollectionFactory;
-        this.instantiator = instantiator;
         this.objectFactory = objectFactory;
     }
 
     @Override
     protected SourceSet doCreate(String name) {
-        DefaultSourceSet sourceSet = instantiator.newInstance(DefaultSourceSet.class, name, objectFactory);
-        sourceSet.setClasses(instantiator.newInstance(DefaultSourceSetOutput.class, sourceSet.getDisplayName(), fileResolver, fileCollectionFactory));
+        DefaultSourceSet sourceSet = getInstantiator().newInstance(DefaultSourceSet.class, name, objectFactory);
+        sourceSet.setClasses(getInstantiator().newInstance(DefaultSourceSetOutput.class, sourceSet.getDisplayName(), fileResolver, fileCollectionFactory));
         return sourceSet;
     }
 

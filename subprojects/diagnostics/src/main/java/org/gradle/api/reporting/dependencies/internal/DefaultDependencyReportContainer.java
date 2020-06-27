@@ -29,8 +29,8 @@ import javax.inject.Inject;
 public class DefaultDependencyReportContainer extends TaskReportContainer<Report> implements DependencyReportContainer {
 
     @Inject
-    public DefaultDependencyReportContainer(Task task, CollectionCallbackActionDecorator callbackActionDecorator) {
-        super(Report.class, task, callbackActionDecorator);
+    public DefaultDependencyReportContainer(Task task) {
+        super(Report.class, task);
         add(TaskGeneratedSingleDirectoryReport.class, "html", task, "index.html");
     }
 

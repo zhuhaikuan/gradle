@@ -47,8 +47,8 @@ public class CompositeDomainObjectSet<T> extends DelegatingDomainObjectSet<T> im
     private final CollectionCallbackActionDecorator callbackActionDecorator;
 
     public static <T> CompositeDomainObjectSet<T> create(Class<T> type, DomainObjectCollectionFactory collectionFactory, CollectionCallbackActionDecorator callbackActionDecorator, Collection<? extends DomainObjectCollection<? extends T>> collections) {
-        DefaultDomainObjectSet<T> backingSet = collectionFactory.newContainer(Cast.uncheckedCast(DefaultDomainObjectSet.class), type, type, new DomainObjectCompositeCollection<T>(), callbackActionDecorator);
-        CompositeDomainObjectSet<T> out = new CompositeDomainObjectSet<T>(backingSet, callbackActionDecorator);
+        DefaultDomainObjectSet<T> backingSet = collectionFactory.newContainer(Cast.uncheckedCast(DefaultDomainObjectSet.class), type, type, new DomainObjectCompositeCollection<T>());
+        CompositeDomainObjectSet<T> out = new CompositeDomainObjectSet<>(backingSet, callbackActionDecorator);
         for (DomainObjectCollection<? extends T> c : collections) {
             out.addCollection(c);
         }

@@ -27,14 +27,12 @@ import org.gradle.api.artifacts.repositories.InclusiveRepositoryContentDescripto
 import org.gradle.api.artifacts.repositories.IvyArtifactRepository;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.artifacts.repositories.RepositoryContentDescriptor;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.internal.ConfigureByMapAction;
 import org.gradle.api.internal.artifacts.BaseRepositoryFactory;
 import org.gradle.api.internal.artifacts.DefaultArtifactRepositoryContainer;
 import org.gradle.internal.Actions;
 import org.gradle.internal.Cast;
 import org.gradle.internal.Factory;
-import org.gradle.internal.reflect.Instantiator;
 import org.gradle.util.ConfigureUtil;
 
 import java.util.HashMap;
@@ -58,12 +56,9 @@ public class DefaultRepositoryHandler extends DefaultArtifactRepositoryContainer
     private static final String IVY_REPO_DEFAULT_NAME = "ivy";
 
     private final BaseRepositoryFactory repositoryFactory;
-    private final Instantiator instantiator;
 
-    public DefaultRepositoryHandler(BaseRepositoryFactory repositoryFactory, Instantiator instantiator, CollectionCallbackActionDecorator decorator) {
-        super(instantiator, decorator);
+    public DefaultRepositoryHandler(BaseRepositoryFactory repositoryFactory) {
         this.repositoryFactory = repositoryFactory;
-        this.instantiator = instantiator;
     }
 
     @Override
@@ -166,7 +161,7 @@ public class DefaultRepositoryHandler extends DefaultArtifactRepositoryContainer
 
     @Override
     public void exclusiveContent(Action<? super ExclusiveContentRepository> action) {
-        ExclusiveContentRepositorySpec spec = Cast.uncheckedCast(instantiator.newInstance(ExclusiveContentRepositorySpec.class, this));
+        ExclusiveContentRepositorySpec spec = Cast.uncheckedCast(getInstantiator().newInstance(ExclusiveContentRepositorySpec.class, this));
         spec.apply(action);
     }
 

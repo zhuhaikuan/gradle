@@ -35,8 +35,8 @@ import java.util.List;
 import java.util.ListIterator;
 
 public class DefaultNamedDomainObjectList<T> extends DefaultNamedDomainObjectCollection<T> implements NamedDomainObjectList<T> {
-    public DefaultNamedDomainObjectList(DefaultNamedDomainObjectList<? super T> objects, CollectionFilter<T> filter, Instantiator instantiator, Namer<? super T> namer) {
-        super(objects, filter, instantiator, namer);
+    public DefaultNamedDomainObjectList(DefaultNamedDomainObjectList<? super T> objects, CollectionFilter<T> filter, Namer<? super T> namer) {
+        super(objects, filter, namer);
     }
 
     /**
@@ -44,7 +44,7 @@ public class DefaultNamedDomainObjectList<T> extends DefaultNamedDomainObjectCol
      */
     @Deprecated
     public DefaultNamedDomainObjectList(Class<T> type, Instantiator instantiator, Namer<? super T> namer) {
-        super(type, new ListElementSource<T>(), instantiator, namer, CollectionCallbackActionDecorator.NOOP);
+        super(type, new ListElementSource<>(), namer);
         DeprecationLogger.deprecateInternalApi("constructor DefaultNamedDomainObjectList(Class<T>, Instantiator, Namer<T>)")
             .replaceWith("ObjectFactory.namedDomainObjectList(Class<T>)")
             .willBeRemovedInGradle7()
@@ -52,8 +52,8 @@ public class DefaultNamedDomainObjectList<T> extends DefaultNamedDomainObjectCol
             .nagUser();
     }
 
-    public DefaultNamedDomainObjectList(Class<T> type, Instantiator instantiator, Namer<? super T> namer, CollectionCallbackActionDecorator decorator) {
-        super(type, new ListElementSource<T>(), instantiator, namer, decorator);
+    public DefaultNamedDomainObjectList(Class<T> type, Namer<? super T> namer) {
+        super(type, new ListElementSource<T>(), namer);
     }
 
     @Override
@@ -154,12 +154,12 @@ public class DefaultNamedDomainObjectList<T> extends DefaultNamedDomainObjectCol
 
     @Override
     public NamedDomainObjectList<T> matching(Spec<? super T> spec) {
-        return new DefaultNamedDomainObjectList<T>(this, createFilter(spec), getInstantiator(), getNamer());
+        return new DefaultNamedDomainObjectList<T>(this, createFilter(spec), getNamer());
     }
 
     @Override
     public <S extends T> NamedDomainObjectList<S> withType(Class<S> type) {
-        return new DefaultNamedDomainObjectList<S>(this, createFilter(type), getInstantiator(), getNamer());
+        return new DefaultNamedDomainObjectList<S>(this, createFilter(type), getNamer());
     }
 
     @Override

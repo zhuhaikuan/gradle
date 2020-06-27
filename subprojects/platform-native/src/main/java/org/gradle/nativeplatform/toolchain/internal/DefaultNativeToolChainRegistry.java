@@ -18,11 +18,9 @@ package org.gradle.nativeplatform.toolchain.internal;
 import org.gradle.api.Action;
 import org.gradle.api.GradleException;
 import org.gradle.api.InvalidUserDataException;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer;
 import org.gradle.internal.logging.text.DiagnosticsVisitor;
 import org.gradle.internal.logging.text.TreeFormatter;
-import org.gradle.internal.reflect.Instantiator;
 import org.gradle.nativeplatform.platform.NativePlatform;
 import org.gradle.nativeplatform.platform.internal.NativePlatformInternal;
 import org.gradle.nativeplatform.toolchain.NativeToolChain;
@@ -37,8 +35,8 @@ public class DefaultNativeToolChainRegistry extends DefaultPolymorphicDomainObje
     private final Map<String, Class<? extends NativeToolChain>> registeredDefaults = new LinkedHashMap<String, Class<? extends NativeToolChain>>();
     private final List<NativeToolChainInternal> searchOrder = new ArrayList<NativeToolChainInternal>();
 
-    public DefaultNativeToolChainRegistry(Instantiator instantiator, CollectionCallbackActionDecorator collectionCallbackActionDecorator) {
-        super(NativeToolChain.class, instantiator, collectionCallbackActionDecorator);
+    public DefaultNativeToolChainRegistry() {
+        super(NativeToolChain.class);
         whenObjectAdded(new Action<NativeToolChain>() {
             @Override
             public void execute(NativeToolChain toolChain) {
@@ -181,7 +179,7 @@ public class DefaultNativeToolChainRegistry extends DefaultPolymorphicDomainObje
         }
     }
 
-    private static class UnsupportedToolChainDescription extends AbstractUnavailabilityToolChainSearchDescription{
+    private static class UnsupportedToolChainDescription extends AbstractUnavailabilityToolChainSearchDescription {
         public UnsupportedToolChainDescription(NativeLanguage sourceLanguage, NativePlatform targetPlatform, Map<String, PlatformToolProvider> candidates) {
             super(sourceLanguage, targetPlatform, candidates);
         }

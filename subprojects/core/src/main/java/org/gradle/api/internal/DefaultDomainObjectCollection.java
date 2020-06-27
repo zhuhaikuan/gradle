@@ -48,8 +48,8 @@ public class DefaultDomainObjectCollection<T> extends AbstractCollection<T> impl
     private final CollectionEventRegister<T> eventRegister;
     private final ElementSource<T> store;
 
-    public DefaultDomainObjectCollection(Class<? extends T> type, ElementSource<T> store, CollectionCallbackActionDecorator callbackActionDecorator) {
-        this(type, store, (CollectionEventRegister<T>) null);
+    public DefaultDomainObjectCollection(Class<? extends T> type, ElementSource<T> store) {
+        this(type, store, null);
     }
 
     protected DefaultDomainObjectCollection(Class<? extends T> type, ElementSource<T> store, @Nullable CollectionEventRegister<T> eventRegister) {

@@ -34,32 +34,32 @@ import java.util.Set;
 public class DefaultNamedDomainObjectSet<T> extends DefaultNamedDomainObjectCollection<T> implements NamedDomainObjectSet<T> {
     private final MutationGuard parentMutationGuard;
 
-    public DefaultNamedDomainObjectSet(Class<? extends T> type, Instantiator instantiator, Namer<? super T> namer, CollectionCallbackActionDecorator decorator) {
-        super(type, new SortedSetElementSource<T>(new Namer.Comparator<T>(namer)), instantiator, namer, decorator);
+    public DefaultNamedDomainObjectSet(Class<? extends T> type, Namer<? super T> namer) {
+        super(type, new SortedSetElementSource<T>(new Namer.Comparator<T>(namer)), namer);
         this.parentMutationGuard = MutationGuards.identity();
     }
 
     @Deprecated
     public DefaultNamedDomainObjectSet(Class<? extends T> type, Instantiator instantiator) {
-        this(type, instantiator, CollectionCallbackActionDecorator.NOOP);
-        DeprecationLogger.deprecateInternalApi("constructor DefaultNamedDomainObjectSet(Class<T>, Instantiator, Namer<T>)")
+        this(type);
+        DeprecationLogger.deprecateInternalApi("constructor DefaultNamedDomainObjectSet(Class<T>, Instantiator)")
             .replaceWith("ObjectFactory.namedDomainObjectSet(Class<T>)")
             .willBeRemovedInGradle7()
             .withUserManual("custom_gradle_types", "nameddomainobjectset")
             .nagUser();
     }
 
-    public DefaultNamedDomainObjectSet(Class<? extends T> type, Instantiator instantiator, CollectionCallbackActionDecorator decorator) {
-        this(type, instantiator, Named.Namer.forType(type), decorator);
+    public DefaultNamedDomainObjectSet(Class<? extends T> type) {
+        this(type, Named.Namer.forType(type));
     }
 
     // should be protected, but use of the class generator forces it to be public
-    public DefaultNamedDomainObjectSet(DefaultNamedDomainObjectSet<? super T> collection, CollectionFilter<T> filter, Instantiator instantiator, Namer<? super T> namer) {
-        this(collection, filter, instantiator, namer, MutationGuards.identity());
+    public DefaultNamedDomainObjectSet(DefaultNamedDomainObjectSet<? super T> collection, CollectionFilter<T> filter, Namer<? super T> namer) {
+        this(collection, filter, namer, MutationGuards.identity());
     }
 
-    public DefaultNamedDomainObjectSet(DefaultNamedDomainObjectSet<? super T> collection, CollectionFilter<T> filter, Instantiator instantiator, Namer<? super T> namer, MutationGuard parentMutationGuard) {
-        super(collection, filter, instantiator, namer);
+    public DefaultNamedDomainObjectSet(DefaultNamedDomainObjectSet<? super T> collection, CollectionFilter<T> filter, Namer<? super T> namer, MutationGuard parentMutationGuard) {
+        super(collection, filter, namer);
         this.parentMutationGuard = parentMutationGuard;
     }
 

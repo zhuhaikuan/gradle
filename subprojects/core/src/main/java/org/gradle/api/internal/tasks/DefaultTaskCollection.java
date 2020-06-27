@@ -23,7 +23,6 @@ import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.NamedDomainObjectCollectionSchema;
 import org.gradle.api.Task;
 import org.gradle.api.UnknownTaskException;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.internal.DefaultNamedDomainObjectSet;
 import org.gradle.api.internal.MutationGuard;
 import org.gradle.api.internal.collections.CollectionFilter;
@@ -36,7 +35,6 @@ import org.gradle.api.specs.Specs;
 import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.internal.Cast;
-import org.gradle.internal.reflect.Instantiator;
 import org.gradle.model.internal.core.ModelPath;
 
 import java.util.Map;
@@ -50,14 +48,14 @@ public class DefaultTaskCollection<T extends Task> extends DefaultNamedDomainObj
 
     private final MutationGuard parentMutationGuard;
 
-    public DefaultTaskCollection(Class<T> type, Instantiator instantiator, ProjectInternal project, MutationGuard parentMutationGuard, CollectionCallbackActionDecorator decorator) {
-        super(type, instantiator, NAMER, decorator);
+    public DefaultTaskCollection(Class<T> type, ProjectInternal project, MutationGuard parentMutationGuard) {
+        super(type, NAMER);
         this.project = project;
         this.parentMutationGuard = parentMutationGuard;
     }
 
-    public DefaultTaskCollection(DefaultTaskCollection<? super T> collection, CollectionFilter<T> filter, Instantiator instantiator, ProjectInternal project, MutationGuard parentMutationGuard) {
-        super(collection, filter, instantiator, NAMER);
+    public DefaultTaskCollection(DefaultTaskCollection<? super T> collection, CollectionFilter<T> filter, ProjectInternal project, MutationGuard parentMutationGuard) {
+        super(collection, filter, NAMER);
         this.project = project;
         this.parentMutationGuard = parentMutationGuard;
     }

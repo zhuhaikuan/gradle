@@ -17,15 +17,13 @@
 package org.gradle.api.publish.internal;
 
 import org.gradle.api.InvalidUserDataException;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer;
 import org.gradle.api.publish.Publication;
 import org.gradle.api.publish.PublicationContainer;
-import org.gradle.internal.reflect.Instantiator;
 
 public class DefaultPublicationContainer extends DefaultPolymorphicDomainObjectContainer<Publication> implements PublicationContainer {
-    public DefaultPublicationContainer(Instantiator instantiator, CollectionCallbackActionDecorator collectionCallbackActionDecorator) {
-        super(Publication.class, instantiator, collectionCallbackActionDecorator);
+    public DefaultPublicationContainer() {
+        super(Publication.class);
     }
 
     @Override

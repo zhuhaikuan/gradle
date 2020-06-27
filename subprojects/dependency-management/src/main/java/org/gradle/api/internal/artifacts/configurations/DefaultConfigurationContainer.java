@@ -23,7 +23,6 @@ import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.UnknownConfigurationException;
 import org.gradle.api.capabilities.Capability;
 import org.gradle.api.internal.AbstractValidatingNamedDomainObjectContainer;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.internal.DocumentationRegistry;
 import org.gradle.api.internal.DomainObjectContext;
 import org.gradle.api.internal.artifacts.ComponentSelectorConverter;
@@ -102,11 +101,10 @@ public class DefaultConfigurationContainer extends AbstractValidatingNamedDomain
                                          DependencyLockingProvider dependencyLockingProvider,
                                          ProjectStateRegistry projectStateRegistry,
                                          DocumentationRegistry documentationRegistry,
-                                         CollectionCallbackActionDecorator callbackDecorator,
                                          UserCodeApplicationContext userCodeApplicationContext,
                                          DomainObjectCollectionFactory domainObjectCollectionFactory,
                                          ObjectFactory objectFactory) {
-        super(Configuration.class, instantiator, new Configuration.Namer(), callbackDecorator);
+        super(Configuration.class, new Configuration.Namer());
         this.resolver = resolver;
         this.instantiator = instantiator;
         this.context = context;

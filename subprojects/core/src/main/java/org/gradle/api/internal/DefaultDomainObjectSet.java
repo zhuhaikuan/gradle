@@ -25,7 +25,6 @@ import org.gradle.api.internal.collections.IterationOrderRetainingSetElementSour
 import org.gradle.api.specs.Spec;
 import org.gradle.api.specs.Specs;
 import org.gradle.internal.ImmutableActionSet;
-import org.gradle.internal.deprecation.DeprecationLogger;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -34,21 +33,20 @@ public class DefaultDomainObjectSet<T> extends DefaultDomainObjectCollection<T> 
     // TODO: Combine these with MutationGuard
     private ImmutableActionSet<Void> beforeContainerChange = ImmutableActionSet.empty();
 
-    /**
-     * This internal constructor is used by the 'com.android.application' plugin which we test as part of our ci pipeline.
-     */
-    @Deprecated
     public DefaultDomainObjectSet(Class<? extends T> type) {
-        super(type, new IterationOrderRetainingSetElementSource<T>(), CollectionCallbackActionDecorator.NOOP);
-        DeprecationLogger.deprecateInternalApi("constructor DefaultDomainObjectSet(Class<T>)")
-            .replaceWith("ObjectFactory.domainObjectSet(Class<T>)")
-            .willBeRemovedInGradle7()
-            .withUserManual("custom_gradle_types", "domainobjectset")
-            .nagUser();
+        super(type, new IterationOrderRetainingSetElementSource<>());
     }
 
-    public DefaultDomainObjectSet(Class<? extends T> type, CollectionCallbackActionDecorator decorator) {
-        super(type, new IterationOrderRetainingSetElementSource<T>(), decorator);
+    public DefaultDomainObjectSet(Class<? extends T> type, ElementSource<T> store) {
+        super(type, store);
+    }
+
+    protected DefaultDomainObjectSet(DefaultDomainObjectSet<? super T> store, CollectionFilter<T> filter) {
+        this(filter.getType(), store.filteredStore(filter), store.filteredEvents(filter));
+    }
+
+    protected DefaultDomainObjectSet(Class<? extends T> type, ElementSource<T> store, CollectionEventRegister<T> eventRegister) {
+        super(type, store, eventRegister);
     }
 
     /**
@@ -69,18 +67,6 @@ public class DefaultDomainObjectSet<T> extends DefaultDomainObjectCollection<T> 
     @Override
     protected void assertMutableCollectionContents() {
         beforeContainerChange.execute(null);
-    }
-
-    public DefaultDomainObjectSet(Class<? extends T> type, ElementSource<T> store, CollectionCallbackActionDecorator decorator) {
-        super(type, store, decorator);
-    }
-
-    protected DefaultDomainObjectSet(DefaultDomainObjectSet<? super T> store, CollectionFilter<T> filter) {
-        this(filter.getType(), store.filteredStore(filter), store.filteredEvents(filter));
-    }
-
-    protected DefaultDomainObjectSet(Class<? extends T> type, ElementSource<T> store, CollectionEventRegister<T> eventRegister) {
-        super(type, store, eventRegister);
     }
 
     @Override

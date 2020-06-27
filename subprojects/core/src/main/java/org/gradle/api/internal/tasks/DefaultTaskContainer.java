@@ -29,7 +29,6 @@ import org.gradle.api.NonNullApi;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.UnknownTaskException;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.internal.MutationGuards;
 import org.gradle.api.internal.NamedDomainObjectContainerConfigureDelegate;
 import org.gradle.api.internal.TaskInternal;
@@ -96,14 +95,12 @@ public class DefaultTaskContainer extends DefaultTaskCollection<Task> implements
     private MutableModelNode modelNode;
 
     public DefaultTaskContainer(final ProjectInternal project,
-                                Instantiator instantiator,
                                 final ITaskFactory taskFactory,
                                 ProjectAccessListener projectAccessListener,
                                 TaskStatistics statistics,
                                 BuildOperationExecutor buildOperationExecutor,
-                                CrossProjectConfigurator crossProjectConfigurator,
-                                CollectionCallbackActionDecorator callbackDecorator) {
-        super(Task.class, instantiator, project, MutationGuards.of(crossProjectConfigurator), callbackDecorator);
+                                CrossProjectConfigurator crossProjectConfigurator) {
+        super(Task.class, project, MutationGuards.of(crossProjectConfigurator));
         this.taskFactory = taskFactory;
         taskInstantiator = new TaskInstantiator(taskFactory, project);
         this.projectAccessListener = projectAccessListener;

@@ -16,7 +16,6 @@
 package org.gradle.util;
 
 import org.gradle.api.DomainObjectSet;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.internal.DefaultDomainObjectSet;
 
 import java.util.ArrayList;
@@ -56,7 +55,7 @@ public class WrapUtil {
     @SuppressWarnings("varargs")
     @Deprecated
     public static <T> DomainObjectSet<T> toDomainObjectSet(Class<T> type, T... items) {
-        DefaultDomainObjectSet<T> set = new DefaultDomainObjectSet<T>(type, CollectionCallbackActionDecorator.NOOP) {
+        DefaultDomainObjectSet<T> set = new DefaultDomainObjectSet<T>(type) {
             @Override
             protected boolean createdUsingDeprecatedMethod() {
                 return true;

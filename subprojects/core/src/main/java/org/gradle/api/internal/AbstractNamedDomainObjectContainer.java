@@ -27,7 +27,6 @@ import org.gradle.api.reflect.TypeOf;
 import org.gradle.internal.Actions;
 import org.gradle.internal.Cast;
 import org.gradle.internal.metaobject.ConfigureDelegate;
-import org.gradle.internal.reflect.Instantiator;
 import org.gradle.util.ConfigureUtil;
 
 import javax.annotation.Nullable;
@@ -37,12 +36,12 @@ import static org.gradle.api.reflect.TypeOf.typeOf;
 
 public abstract class AbstractNamedDomainObjectContainer<T> extends DefaultNamedDomainObjectSet<T> implements NamedDomainObjectContainer<T>, HasPublicType {
 
-    protected AbstractNamedDomainObjectContainer(Class<T> type, Instantiator instantiator, Namer<? super T> namer, CollectionCallbackActionDecorator callbackDecorator) {
-        super(type, instantiator, namer, callbackDecorator);
+    protected AbstractNamedDomainObjectContainer(Class<T> type, Namer<? super T> namer) {
+        super(type, namer);
     }
 
-    protected AbstractNamedDomainObjectContainer(Class<T> type, Instantiator instantiator, CollectionCallbackActionDecorator callbackActionDecorator) {
-        super(type, instantiator, Named.Namer.forType(type), callbackActionDecorator);
+    protected AbstractNamedDomainObjectContainer(Class<T> type) {
+        super(type, Named.Namer.forType(type));
     }
 
     /**
@@ -99,7 +98,8 @@ public abstract class AbstractNamedDomainObjectContainer<T> extends DefaultNamed
 
     @Override
     public TypeOf<?> getPublicType() {
-        return parameterizedTypeOf(new TypeOf<NamedDomainObjectContainer<?>>() {}, typeOf(getType()));
+        return parameterizedTypeOf(new TypeOf<NamedDomainObjectContainer<?>>() {
+        }, typeOf(getType()));
     }
 
     @Override

@@ -32,8 +32,8 @@ public class DefaultPolymorphicDomainObjectContainer<T> extends AbstractPolymorp
     implements ExtensiblePolymorphicDomainObjectContainer<T> {
     protected final DefaultPolymorphicNamedEntityInstantiator<T> namedEntityInstantiator;
 
-    public DefaultPolymorphicDomainObjectContainer(Class<T> type, Instantiator instantiator, Namer<? super T> namer, CollectionCallbackActionDecorator callbackDecorator) {
-        super(type, instantiator, namer, callbackDecorator);
+    public DefaultPolymorphicDomainObjectContainer(Class<T> type, Namer<? super T> namer) {
+        super(type, namer);
         namedEntityInstantiator = new DefaultPolymorphicNamedEntityInstantiator<T>(type, "this container");
     }
 
@@ -42,7 +42,7 @@ public class DefaultPolymorphicDomainObjectContainer<T> extends AbstractPolymorp
      */
     @Deprecated
     public DefaultPolymorphicDomainObjectContainer(Class<T> type, Instantiator instantiator) {
-        this(type, instantiator, Named.Namer.forType(type), CollectionCallbackActionDecorator.NOOP);
+        this(type, Named.Namer.forType(type));
         DeprecationLogger.deprecateInternalApi("constructor DefaultPolymorphicDomainObjectContainer(Class<T>, Instantiator)")
             .replaceWith("ObjectFactory.polymorphicDomainObjectContainer(Class<T>)")
             .willBeRemovedInGradle7()
@@ -50,8 +50,8 @@ public class DefaultPolymorphicDomainObjectContainer<T> extends AbstractPolymorp
             .nagUser();
     }
 
-    public DefaultPolymorphicDomainObjectContainer(Class<T> type, Instantiator instantiator, CollectionCallbackActionDecorator callbackDecorator) {
-        this(type, instantiator, Named.Namer.forType(type), callbackDecorator);
+    public DefaultPolymorphicDomainObjectContainer(Class<T> type) {
+        this(type, Named.Namer.forType(type));
     }
 
     @Override

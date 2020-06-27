@@ -20,7 +20,6 @@ import org.gradle.api.Action;
 import org.gradle.api.NamedDomainObjectFactory;
 import org.gradle.api.Namer;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.internal.DefaultPolymorphicDomainObjectContainer;
 import org.gradle.api.internal.collections.DomainObjectCollectionFactory;
 import org.gradle.api.model.ObjectFactory;
@@ -33,9 +32,8 @@ public class DefaultRepositories extends DefaultPolymorphicDomainObjectContainer
     public DefaultRepositories(Instantiator instantiator,
                                ObjectFactory objectFactory,
                                Action<PrebuiltLibrary> binaryFactory,
-                               CollectionCallbackActionDecorator collectionCallbackActionDecorator,
                                DomainObjectCollectionFactory domainObjectCollectionFactory) {
-        super(ArtifactRepository.class, instantiator, new ArtifactRepositoryNamer(), collectionCallbackActionDecorator);
+        super(ArtifactRepository.class, new ArtifactRepositoryNamer());
         registerFactory(PrebuiltLibraries.class, new NamedDomainObjectFactory<PrebuiltLibraries>() {
             @Override
             public PrebuiltLibraries create(String name) {

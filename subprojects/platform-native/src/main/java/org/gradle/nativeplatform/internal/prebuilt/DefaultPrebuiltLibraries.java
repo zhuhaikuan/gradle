@@ -19,10 +19,8 @@ package org.gradle.nativeplatform.internal.prebuilt;
 import org.gradle.api.Action;
 import org.gradle.api.artifacts.repositories.RepositoryContentDescriptor;
 import org.gradle.api.internal.AbstractNamedDomainObjectContainer;
-import org.gradle.api.internal.CollectionCallbackActionDecorator;
 import org.gradle.api.internal.collections.DomainObjectCollectionFactory;
 import org.gradle.api.model.ObjectFactory;
-import org.gradle.internal.reflect.Instantiator;
 import org.gradle.nativeplatform.PrebuiltLibraries;
 import org.gradle.nativeplatform.PrebuiltLibrary;
 
@@ -32,8 +30,8 @@ public class DefaultPrebuiltLibraries extends AbstractNamedDomainObjectContainer
     private String name;
     private final DomainObjectCollectionFactory domainObjectCollectionFactory;
 
-    public DefaultPrebuiltLibraries(String name, Instantiator instantiator, ObjectFactory objectFactory, Action<PrebuiltLibrary> libraryInitializer, CollectionCallbackActionDecorator collectionCallbackActionDecorator, DomainObjectCollectionFactory domainObjectCollectionFactory) {
-        super(PrebuiltLibrary.class, instantiator, collectionCallbackActionDecorator);
+    public DefaultPrebuiltLibraries(String name, ObjectFactory objectFactory, Action<PrebuiltLibrary> libraryInitializer, DomainObjectCollectionFactory domainObjectCollectionFactory) {
+        super(PrebuiltLibrary.class);
         this.name = name;
         this.objectFactory = objectFactory;
         this.libraryInitializer = libraryInitializer;

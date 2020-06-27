@@ -69,37 +69,37 @@ public class DefaultDomainObjectCollectionFactory implements DomainObjectCollect
 
     private <T> NamedDomainObjectContainer<T> container(Class<T> elementType, InstanceGenerator elementInstantiator) {
         ReflectiveNamedDomainObjectFactory<T> objectFactory = new ReflectiveNamedDomainObjectFactory<T>(elementType, elementInstantiator);
-        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(FactoryNamedDomainObjectContainer.class, elementType, new DynamicPropertyNamer(), objectFactory, mutationGuard, collectionCallbackActionDecorator));
+        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(FactoryNamedDomainObjectContainer.class, elementType, new DynamicPropertyNamer(), objectFactory, mutationGuard));
     }
 
     @Override
     public <T> NamedDomainObjectContainer<T> newNamedDomainObjectContainer(Class<T> elementType, NamedDomainObjectFactory<T> factory) {
-        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(FactoryNamedDomainObjectContainer.class, elementType, new DynamicPropertyNamer(), factory, mutationGuard, collectionCallbackActionDecorator));
+        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(FactoryNamedDomainObjectContainer.class, elementType, new DynamicPropertyNamer(), factory, mutationGuard));
     }
 
     @Override
     public <T> NamedDomainObjectContainer<T> newNamedDomainObjectContainer(Class<T> type, Closure<?> factoryClosure) {
-        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(FactoryNamedDomainObjectContainer.class, type, new DynamicPropertyNamer(), factoryClosure, mutationGuard, collectionCallbackActionDecorator));
+        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(FactoryNamedDomainObjectContainer.class, type, new DynamicPropertyNamer(), factoryClosure, mutationGuard));
     }
 
     @Override
     public <T> ExtensiblePolymorphicDomainObjectContainer<T> newPolymorphicDomainObjectContainer(Class<T> elementType) {
-        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(DefaultPolymorphicDomainObjectContainer.class, elementType, collectionCallbackActionDecorator));
+        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(DefaultPolymorphicDomainObjectContainer.class, elementType));
     }
 
     @Override
     public <T> DomainObjectSet<T> newDomainObjectSet(Class<T> elementType) {
-        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(DefaultDomainObjectSet.class, elementType, collectionCallbackActionDecorator));
+        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(DefaultDomainObjectSet.class, elementType));
     }
 
     @Override
     public <T> NamedDomainObjectSet<T> newNamedDomainObjectSet(Class<T> elementType) {
-        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(DefaultNamedDomainObjectSet.class, elementType, new DynamicPropertyNamer(), collectionCallbackActionDecorator));
+        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(DefaultNamedDomainObjectSet.class, elementType, new DynamicPropertyNamer()));
     }
 
     @Override
     public <T> NamedDomainObjectList<T> newNamedDomainObjectList(Class<T> elementType) {
-        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(DefaultNamedDomainObjectList.class, elementType, new DynamicPropertyNamer(), collectionCallbackActionDecorator));
+        return Cast.uncheckedCast(serviceInjectingInstantiator.newInstance(DefaultNamedDomainObjectList.class, elementType, new DynamicPropertyNamer()));
     }
 
     @Override
