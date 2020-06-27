@@ -23,15 +23,15 @@ import org.gradle.api.internal.DefaultNamedDomainObjectSet;
 import org.gradle.api.reporting.Report;
 import org.gradle.api.reporting.ReportContainer;
 import org.gradle.api.specs.Spec;
-import org.gradle.api.tasks.Internal;
+import org.gradle.internal.instantiation.InstantiatorFactory;
+import org.gradle.internal.service.ServiceRegistry;
 import org.gradle.util.ConfigureUtil;
 
-import javax.annotation.Nullable;
+import javax.inject.Inject;
 import java.util.Map;
-import java.util.SortedMap;
 
 public class DefaultReportContainer<T extends Report> extends DefaultNamedDomainObjectSet<T> implements ReportContainer<T> {
-    private NamedDomainObjectSet<T> enabled;
+    private final NamedDomainObjectSet<T> enabled;
 
     public DefaultReportContainer(Class<? extends T> type) {
         super(type, Report.NAMER);
@@ -60,19 +60,18 @@ public class DefaultReportContainer<T extends Report> extends DefaultNamedDomain
         return this;
     }
 
-    @Nullable
-    @Internal
-    public T getFirstEnabled() {
-        SortedMap<String, T> map = enabled.getAsMap();
-        if (map.isEmpty()) {
-            return null;
-        } else {
-            return map.get(map.firstKey());
-        }
+    @Inject
+    protected InstantiatorFactory getInstantiatorFactory() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Inject
+    protected ServiceRegistry getServicesRegistry() {
+        throw new UnsupportedOperationException();
     }
 
     protected <N extends T> N add(Class<N> clazz, Object... constructionArgs) {
-        N report = getInstantiator().newInstance(clazz, constructionArgs);
+        N report = getInstantiatorFactory().decorateLenient(getServicesRegistry()).newInstance(clazz, constructionArgs);
         String name = report.getName();
         if (name.equals("enabled")) {
             throw new InvalidUserDataException("Reports that are part of a ReportContainer cannot be named 'enabled'");

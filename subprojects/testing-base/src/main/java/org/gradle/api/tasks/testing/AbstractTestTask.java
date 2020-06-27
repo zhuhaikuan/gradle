@@ -26,6 +26,7 @@ import org.gradle.api.file.DeleteSpec;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileSystemOperations;
 import org.gradle.api.internal.ConventionTask;
+import org.gradle.api.internal.collections.DomainObjectCollectionFactory;
 import org.gradle.api.internal.tasks.testing.DefaultTestTaskReports;
 import org.gradle.api.internal.tasks.testing.FailFastTestListenerInternal;
 import org.gradle.api.internal.tasks.testing.NoMatchingTestsReporter;
@@ -56,6 +57,7 @@ import org.gradle.api.internal.tasks.testing.results.TestListenerInternal;
 import org.gradle.api.logging.LogLevel;
 import org.gradle.api.model.ReplacedBy;
 import org.gradle.api.reporting.DirectoryReport;
+import org.gradle.api.reporting.Report;
 import org.gradle.api.reporting.Reporting;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Nested;
@@ -120,11 +122,16 @@ public abstract class AbstractTestTask extends ConventionTask implements Verific
         testListenerBroadcaster = listenerManager.createAnonymousBroadcaster(TestListener.class);
         binaryResultsDirectory = getProject().getObjects().directoryProperty();
 
-        reports = getProject().getObjects().newInstance(DefaultTestTaskReports.class, this);
+        reports = getDomainObjectCollectionFactory().newContainer(DefaultTestTaskReports.class, Report.class, this);
         reports.getJunitXml().setEnabled(true);
         reports.getHtml().setEnabled(true);
 
         filter = instantiator.newInstance(DefaultTestFilter.class);
+    }
+
+    @Inject
+    protected DomainObjectCollectionFactory getDomainObjectCollectionFactory() {
+        throw new UnsupportedOperationException();
     }
 
     @Inject
