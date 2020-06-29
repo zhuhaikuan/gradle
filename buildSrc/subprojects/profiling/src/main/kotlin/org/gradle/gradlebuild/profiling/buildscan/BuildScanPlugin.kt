@@ -16,6 +16,7 @@
 package org.gradle.gradlebuild.profiling.buildscan
 
 import com.gradle.scan.plugin.BuildScanExtension
+import gradlebuild.jvm.tasks.ClasspathManifest
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -24,11 +25,11 @@ import org.gradle.api.plugins.quality.Checkstyle
 import org.gradle.api.plugins.quality.CodeNarc
 import org.gradle.api.reporting.Reporting
 import org.gradle.api.tasks.compile.AbstractCompile
-import org.gradle.gradlebuild.BuildEnvironment.isCiServer
-import org.gradle.gradlebuild.BuildEnvironment.isGhActions
-import org.gradle.gradlebuild.BuildEnvironment.isJenkins
-import org.gradle.gradlebuild.BuildEnvironment.isTravis
-import org.gradle.gradlebuild.packaging.ClasspathManifest
+import gradlebuild.basics.BuildEnvironment.isCiServer
+import gradlebuild.basics.BuildEnvironment.isGhActions
+import gradlebuild.basics.BuildEnvironment.isJenkins
+import gradlebuild.basics.BuildEnvironment.isTravis
+import gradlebuild.basics.kotlindsl.execAndGetStdout
 import org.gradle.kotlin.dsl.*
 import org.jsoup.Jsoup
 import org.jsoup.parser.Parser
