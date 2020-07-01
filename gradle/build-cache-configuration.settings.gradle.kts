@@ -15,14 +15,12 @@
  */
 import java.net.URI
 
-fun isUSCacheNode() = System.getenv("BUILD_AGENT_NAME")?.contains("EC2") ?: false
 /*
  * This script is applied to the settings in buildSrc and the main build. That is why we
  * need this to be a script unless we can model dual usage better with composite/included builds or another solution.
  */
 
-val remoteCacheUrl = System.getProperty("gradle.cache.remote.url")?.let { URI(it) }
-val remoteCacheUrlUS = System.getProperty("gradle.cache.remote.url.us")?.let { URI(it) }
+val remoteCacheUrl = System.getProperty("gradle.cache.remote.url")?.let { URI(it) } ?: determineCacheNode()
 val isCiServer = System.getenv().containsKey("CI")
 val remotePush = System.getProperty("gradle.cache.remote.push") != "false"
 val remoteCacheUsername = System.getProperty("gradle.cache.remote.username", "")
@@ -33,7 +31,7 @@ val disableLocalCache = System.getProperty("disableLocalCache")?.toBoolean() ?: 
 if (isRemoteBuildCacheEnabled) {
     buildCache {
         remote(HttpBuildCache::class.java) {
-            url = if(isUSCacheNode()) remoteCacheUrlUS else remoteCacheUrl
+            url = remoteCacheUrl
             isPush = isCiServer && remotePush
             if (remoteCacheUsername.isNotEmpty() && remoteCachePassword.isNotEmpty()) {
                 credentials {
@@ -50,5 +48,15 @@ if (disableLocalCache) {
         local {
             isEnabled = false
         }
+    }
+}
+
+fun determineCacheNode(): URI {
+    val cacheNode = System.getProperty("cacheNode", "eu")
+    return when(cacheNode) {
+        "eu" ->  URI("https://eu-build-cache.gradle.org/cache/")
+        "us" ->  URI("https://us-build-cache.gradle.org/cache/")
+        "au" ->  URI("https://us-build-cache.gradle.org/cache/")
+        else -> throw IllegalArgumentException("Unrecognized cacheNode: $cacheNode")
     }
 }
