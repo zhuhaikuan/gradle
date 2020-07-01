@@ -43,7 +43,6 @@ import org.gradle.internal.MutableBoolean;
 import org.gradle.util.GUtil;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;

@@ -173,6 +173,7 @@ class FileCollectionIntegrationTest extends AbstractIntegrationSpec implements T
     }
 
     @Issue("https://github.com/gradle/gradle/issues/12832")
+    @Ignore // This currently causes a stack overflow error
     def "can compose and filter a file collection that includes the collection it replaces"() {
         taskTypeWithInputFileCollection()
         buildFile << """

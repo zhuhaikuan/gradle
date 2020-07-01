@@ -1225,10 +1225,10 @@ public class DefaultConfiguration extends AbstractFileCollection implements Conf
 
         @Override
         protected void visitContents(FileCollectionStructureVisitor visitor) {
-            visitContents(new ResolvedFileCollectionVisitor(visitor));
+            visitArtifacts(new ResolvedFileCollectionVisitor(visitor));
         }
 
-        private void visitContents(ResolvedFilesCollectingVisitor visitor) {
+        private void visitArtifacts(ResolvedFilesCollectingVisitor visitor) {
             getSelectedArtifacts().visitArtifacts(visitor, lenient);
 
             if (!lenient) {
