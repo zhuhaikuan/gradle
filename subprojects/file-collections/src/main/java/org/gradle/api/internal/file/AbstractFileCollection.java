@@ -22,7 +22,6 @@ import org.gradle.api.Task;
 import org.gradle.api.file.DirectoryTree;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.FileSystemLocation;
-import org.gradle.api.file.FileTree;
 import org.gradle.api.file.FileVisitDetails;
 import org.gradle.api.file.FileVisitor;
 import org.gradle.api.internal.file.collections.DirectoryFileTree;
@@ -156,7 +155,7 @@ public abstract class AbstractFileCollection implements FileCollectionInternal {
 
     @Override
     public FileCollection plus(FileCollection collection) {
-        return new UnionFileCollection(this, collection);
+        return new UnionFileCollection(this, (FileCollectionInternal) collection);
     }
 
     @Override
@@ -275,7 +274,7 @@ public abstract class AbstractFileCollection implements FileCollectionInternal {
     }
 
     @Override
-    public FileTree getAsFileTree() {
+    public FileTreeInternal getAsFileTree() {
         return new FileCollectionBackFileTree(patternSetFactory, this);
     }
 
@@ -285,7 +284,7 @@ public abstract class AbstractFileCollection implements FileCollectionInternal {
     }
 
     @Override
-    public FileCollection filter(final Spec<? super File> filterSpec) {
+    public FileCollectionInternal filter(final Spec<? super File> filterSpec) {
         return new FilteredFileCollection(this, filterSpec);
     }
 

@@ -16,11 +16,16 @@
 
 package org.gradle.api.internal.file;
 
-import org.gradle.api.internal.file.collections.FileCollectionResolveContext;
-import org.gradle.api.internal.file.collections.ResolvableFileCollectionResolveContext;
+import org.gradle.api.internal.file.collections.DirectoryFileTree;
+import org.gradle.api.internal.file.collections.FileSystemMirroringFileTree;
+import org.gradle.api.internal.file.collections.FileTreeAdapter;
 import org.gradle.api.internal.tasks.TaskDependencyResolveContext;
 import org.gradle.api.tasks.util.PatternSet;
 import org.gradle.internal.Factory;
+import org.gradle.internal.nativeintegration.services.FileSystems;
+
+import java.io.File;
+import java.util.function.Consumer;
 
 public class FileCollectionBackFileTree extends CompositeFileTree {
     private final AbstractFileCollection collection;
@@ -35,10 +40,30 @@ public class FileCollectionBackFileTree extends CompositeFileTree {
     }
 
     @Override
-    public void visitContents(FileCollectionResolveContext context) {
-        ResolvableFileCollectionResolveContext nested = context.newContext();
-        nested.add(collection);
-        context.addAll(nested.resolveAsFileTrees());
+    protected void visitChildren(Consumer<FileCollectionInternal> visitor) {
+        collection.visitStructure(new FileCollectionStructureVisitor() {
+            @Override
+            public void visitCollection(Source source, Iterable<File> contents) {
+                for (File file : contents) {
+                    visitor.accept(new FileTreeAdapter(new DirectoryFileTree(file, patternSetFactory.create(), FileSystems.getDefault()), patternSetFactory));
+                }
+            }
+
+            @Override
+            public void visitGenericFileTree(FileTreeInternal fileTree, FileSystemMirroringFileTree sourceTree) {
+                visitor.accept(fileTree);
+            }
+
+            @Override
+            public void visitFileTree(File root, PatternSet patterns, FileTreeInternal fileTree) {
+                visitor.accept(fileTree);
+            }
+
+            @Override
+            public void visitFileTreeBackedByFile(File file, FileTreeInternal fileTree, FileSystemMirroringFileTree sourceTree) {
+                visitor.accept(fileTree);
+            }
+        });
     }
 
     @Override

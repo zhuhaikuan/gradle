@@ -93,7 +93,7 @@ public class FileParameterUtils {
      *
      * The value is the file tree rooted at the provided path for an input directory, and the provided path otherwise.
      */
-    public static FileCollection resolveInputFileValue(FileCollectionFactory fileCollectionFactory, InputFilePropertyType inputFilePropertyType, Object path) {
+    public static FileCollectionInternal resolveInputFileValue(FileCollectionFactory fileCollectionFactory, InputFilePropertyType inputFilePropertyType, Object path) {
         if (inputFilePropertyType == InputFilePropertyType.DIRECTORY) {
             return fileCollectionFactory.resolving(path).getAsFileTree();
         } else {

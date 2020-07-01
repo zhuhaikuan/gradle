@@ -87,13 +87,13 @@ class FileTreeCodec(
             val specs = readNonNull<List<FileTreeSpec>>()
             val fileTrees = specs.map {
                 when (it) {
-                    is WrappedFileCollectionTreeSpec -> it.collection.asFileTree as FileTreeInternal
+                    is WrappedFileCollectionTreeSpec -> it.collection.asFileTree
                     is DirectoryTreeSpec -> fileCollectionFactory.treeOf(directoryFileTreeFactory.create(it.file, it.patterns))
                     is GeneratedTreeSpec -> it.spec.run {
                         fileCollectionFactory.generated(tmpDir, fileName, fileGenerationListener, contentGenerator)
                     }
-                    is ZipTreeSpec -> fileOperations.zipTree(it.file) as FileTreeInternal
-                    is TarTreeSpec -> fileOperations.tarTree(it.file) as FileTreeInternal
+                    is ZipTreeSpec -> fileOperations.zipTree(it.file)
+                    is TarTreeSpec -> fileOperations.tarTree(it.file)
                 }
             }
             val tree = fileCollectionFactory.treeOf(fileTrees)

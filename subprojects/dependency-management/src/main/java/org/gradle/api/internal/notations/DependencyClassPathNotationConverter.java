@@ -19,16 +19,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.gradle.api.artifacts.SelfResolvingDependency;
-import org.gradle.api.file.FileCollection;
 import org.gradle.api.internal.ClassPathRegistry;
 import org.gradle.api.internal.artifacts.dependencies.DefaultSelfResolvingDependency;
 import org.gradle.api.internal.artifacts.dsl.dependencies.DependencyFactory;
 import org.gradle.api.internal.file.CompositeFileCollection;
 import org.gradle.api.internal.file.FileCollectionFactory;
 import org.gradle.api.internal.file.FileCollectionInternal;
-import org.gradle.api.internal.file.collections.BuildDependenciesOnlyFileCollectionResolveContext;
 import org.gradle.api.internal.file.collections.FileCollectionAdapter;
-import org.gradle.api.internal.file.collections.FileCollectionResolveContext;
 import org.gradle.api.internal.file.collections.SingletonFileSet;
 import org.gradle.api.internal.runtimeshaded.RuntimeShadedJarFactory;
 import org.gradle.api.internal.runtimeshaded.RuntimeShadedJarType;
@@ -45,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Consumer;
 
 import static org.gradle.api.internal.artifacts.dsl.dependencies.DependencyFactory.ClassPathNotation.GRADLE_API;
 import static org.gradle.api.internal.artifacts.dsl.dependencies.DependencyFactory.ClassPathNotation.GRADLE_TEST_KIT;
@@ -92,14 +90,14 @@ public class DependencyClassPathNotationConverter implements NotationConverter<D
         if (runningFromInstallation && notation.equals(GRADLE_API)) {
             fileCollectionInternal = new GeneratedFileCollection(notation.displayName) {
                 @Override
-                FileCollection generateFileCollection() {
+                FileCollectionInternal generateFileCollection() {
                     return gradleApiFileCollection(getClassPath(notation));
                 }
             };
         } else if (runningFromInstallation && notation.equals(GRADLE_TEST_KIT)) {
             fileCollectionInternal = new GeneratedFileCollection(notation.displayName) {
                 @Override
-                FileCollection generateFileCollection() {
+                FileCollectionInternal generateFileCollection() {
                     return gradleTestKitFileCollection(getClassPath(notation));
                 }
             };
@@ -165,7 +163,7 @@ public class DependencyClassPathNotationConverter implements NotationConverter<D
     abstract static class GeneratedFileCollection extends CompositeFileCollection {
 
         private final String displayName;
-        private FileCollection generatedCollection;
+        private FileCollectionInternal generatedCollection;
 
         public GeneratedFileCollection(String notation) {
             this.displayName = notation + " files";
@@ -177,17 +175,13 @@ public class DependencyClassPathNotationConverter implements NotationConverter<D
         }
 
         @Override
-        public void visitContents(FileCollectionResolveContext context) {
-            // we assume generated file collections have no build dependencies
-            if (context instanceof BuildDependenciesOnlyFileCollectionResolveContext) {
-                return;
-            }
+        protected void visitChildren(Consumer<FileCollectionInternal> visitor) {
             if (generatedCollection == null) {
                 generatedCollection = generateFileCollection();
             }
-            context.add(generatedCollection);
+            visitor.accept(generatedCollection);
         }
 
-        abstract FileCollection generateFileCollection();
+        abstract FileCollectionInternal generateFileCollection();
     }
 }

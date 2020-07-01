@@ -16,60 +16,52 @@
 
 package org.gradle.api.internal.file.collections;
 
-import org.gradle.api.Buildable;
 import org.gradle.api.Task;
 import org.gradle.api.file.DirectoryTree;
-import org.gradle.api.file.FileCollection;
+import org.gradle.api.internal.file.FileCollectionInternal;
 import org.gradle.api.internal.provider.ProviderInternal;
-import org.gradle.api.internal.tasks.TaskDependencyContainer;
 import org.gradle.api.tasks.TaskOutputs;
+import org.gradle.api.tasks.util.PatternSet;
+import org.gradle.internal.Factory;
 import org.gradle.internal.file.PathToFileResolver;
 import org.gradle.util.DeferredUtil;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
+import java.util.function.Consumer;
 
 public class UnpackingVisitor {
-    private final FileCollectionResolveContext context;
+    private final Consumer<FileCollectionInternal> visitor;
     private final PathToFileResolver resolver;
+    private final Factory<PatternSet> patternSetFactory;
 
-    public UnpackingVisitor(FileCollectionResolveContext context, PathToFileResolver resolver) {
-        this.context = context;
+    public UnpackingVisitor(Consumer<FileCollectionInternal> visitor, PathToFileResolver resolver, Factory<PatternSet> patternSetFactory) {
+        this.visitor = visitor;
         this.resolver = resolver;
+        this.patternSetFactory = patternSetFactory;
     }
 
     public void add(@Nullable Object element) {
-        if (element instanceof FileCollection) {
+        if (element instanceof FileCollectionInternal) {
             // FileCollection is-a Iterable, Buildable and TaskDependencyContainer, so check before checking for these things
-            context.add(element);
+            visitor.accept((FileCollectionInternal) element);
             return;
         }
         if (element instanceof DirectoryTree) {
-            context.add(element);
+            visitor.accept(new FileTreeAdapter((MinimalFileTree) element, patternSetFactory));
             return;
         }
         if (element instanceof ProviderInternal) {
             // ProviderInternal is-a TaskDependencyContainer, so check first
-            ProviderInternal provider = (ProviderInternal) element;
-            if (!context.maybeAdd(provider)) {
-                // Unpack the provider
-                add(provider.get());
-            }
+            ProviderInternal<?> provider = (ProviderInternal<?>) element;
+            visitor.accept(new ProviderBackedFileCollection(provider, resolver, patternSetFactory));
             return;
         }
 
-        // Elements that may or may not be interesting only for build dependency calculation
-        if (element instanceof Buildable || element instanceof TaskDependencyContainer) {
-            if (context.maybeAdd(element)) {
-                return;
-            }
-            // Else, continue below
-        }
-
         if (element instanceof Task) {
-            context.add(((Task) element).getOutputs().getFiles());
+            visitor.accept((FileCollectionInternal) ((Task) element).getOutputs().getFiles());
         } else if (element instanceof TaskOutputs) {
-            context.add(((TaskOutputs) element).getFiles());
+            visitor.accept((FileCollectionInternal) ((TaskOutputs) element).getFiles());
         } else if (DeferredUtil.isNestableDeferred(element)) {
             Object deferredResult = DeferredUtil.unpackNestableDeferred(element);
             if (deferredResult != null) {
@@ -77,7 +69,7 @@ public class UnpackingVisitor {
             }
         } else if (element instanceof Path) {
             // Path is-a Iterable, so check before checking for Iterable
-            context.add(element, resolver);
+            visitor.accept(new FileCollectionAdapter(new ListBackedFileSet(((Path) element).toFile()), patternSetFactory));
         } else if (element instanceof Iterable) {
             Iterable<?> iterable = (Iterable) element;
             for (Object item : iterable) {
@@ -90,7 +82,7 @@ public class UnpackingVisitor {
             }
         } else if (element != null) {
             // Treat everything else as a single file
-            context.add(element, resolver);
+            visitor.accept(new FileCollectionAdapter(new ListBackedFileSet(resolver.resolve(element)), patternSetFactory));
         }
     }
 }

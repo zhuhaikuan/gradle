@@ -59,9 +59,9 @@ public interface FileOperations {
 
     ConfigurableFileTree fileTree(Map<String, ?> args);
 
-    FileTree zipTree(Object zipPath);
+    FileTreeInternal zipTree(Object zipPath);
 
-    FileTree tarTree(Object tarPath);
+    FileTreeInternal tarTree(Object tarPath);
 
     CopySpec copySpec();
 

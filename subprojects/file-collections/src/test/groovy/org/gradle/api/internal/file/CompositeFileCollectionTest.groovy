@@ -18,7 +18,7 @@ package org.gradle.api.internal.file
 
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.file.AbstractFileCollectionTest.TestFileCollection
-import org.gradle.api.internal.file.collections.FileCollectionResolveContext
+
 import org.gradle.api.internal.file.collections.MinimalFileSet
 import org.gradle.api.internal.tasks.TaskDependencyResolveContext
 import org.gradle.api.tasks.util.PatternSet
