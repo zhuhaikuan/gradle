@@ -20,7 +20,6 @@ import org.gradle.api.Action
 import org.gradle.api.file.FileTree
 import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.file.FileVisitor
-
 import org.gradle.api.tasks.util.PatternFilterable
 import org.gradle.api.tasks.util.PatternSet
 import org.gradle.internal.Actions
@@ -28,6 +27,8 @@ import org.gradle.internal.Factory
 import org.gradle.testfixtures.internal.NativeServicesTestFixture
 import org.gradle.util.TestUtil
 import spock.lang.Specification
+
+import java.util.function.Consumer
 
 class CompositeFileTreeTest extends Specification {
     private final FileTreeInternal source1 = Mock()
@@ -40,9 +41,9 @@ class CompositeFileTreeTest extends Specification {
         }
 
         @Override
-        void visitContents(FileCollectionResolveContext context) {
-            context.add(source1)
-            context.add(source2)
+        protected void visitChildren(Consumer<FileCollectionInternal> visitor) {
+            visitor.accept(source1)
+            visitor.accept(source2)
         }
     }
 
@@ -51,7 +52,7 @@ class CompositeFileTreeTest extends Specification {
     }
 
     def matchingWithClosureReturnsUnionOfFilteredSets() {
-        final Closure closure = { }
+        final Closure closure = {}
         final FileTreeInternal filtered1 = Mock()
         final FileTreeInternal filtered2 = Mock()
         final PatternSet patterns = Mock()

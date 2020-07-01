@@ -18,7 +18,6 @@ package org.gradle.api.internal.file
 
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.file.AbstractFileCollectionTest.TestFileCollection
-
 import org.gradle.api.internal.file.collections.MinimalFileSet
 import org.gradle.api.internal.tasks.TaskDependencyResolveContext
 import org.gradle.api.tasks.util.PatternSet
@@ -26,6 +25,8 @@ import org.gradle.test.fixtures.file.TestNameTestDirectoryProvider
 import org.gradle.util.UsesNativeServices
 import org.junit.Rule
 import spock.lang.Specification
+
+import java.util.function.Consumer
 
 @UsesNativeServices
 class CompositeFileCollectionTest extends Specification {
@@ -201,8 +202,10 @@ class CompositeFileCollectionTest extends Specification {
         }
 
         @Override
-        void visitContents(FileCollectionResolveContext context) {
-            context.addAll(sourceCollections)
+        protected void visitChildren(Consumer<FileCollectionInternal> visitor) {
+            sourceCollections.forEach {
+                visitor.accept(sourceCollections)
+            }
         }
 
         @Override
