@@ -30,21 +30,6 @@ See the [Gradle 6.x upgrade guide](userguide/upgrading_version_6.html#changes_@b
 
 For Java, Groovy, Kotlin and Android compatibility, see the [full compatibility notes](userguide/compatibility.html).
 
-<!-- Do not add breaking changes or deprecations here! Add them to the upgrade guide instead. -->
-
-<!--
-Add release features here!
-## 1
-
-details of 1
-
-## 2
-
-details of 2
-
-## n
--->
-
 ## Improved handling of ZIP archives on runtime classpaths
 Runtime classpath analysis can now inspect manifest and `META-INF` properties files, ignore changes to comments, and selectively ignore attributes or properties that don't impact the
 runtime classpath.
